@@ -13,7 +13,7 @@ export class GraphService {
     const client = this.getClient(accessToken);
     const result = await client
       .api('/me/messages')
-      .select('id,subject,bodyPreview,from,toRecipients,receivedDateTime,body')
+      .select('id,subject,bodyPreview,from,toRecipients,receivedDateTime,body,webLink')
       .top(top)
       .orderby('receivedDateTime desc')
       .get();

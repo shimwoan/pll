@@ -3,6 +3,10 @@ import { AppModule } from './app.module';
 import session from 'express-session';
 
 async function bootstrap() {
+  if (!process.env.SESSION_SECRET) {
+    console.warn('⚠️  SESSION_SECRET not set — using insecure default. Set this in production.');
+  }
+
   const app = await NestFactory.create(AppModule);
 
   app.use(

@@ -80,7 +80,13 @@ export function EmailDetailPage() {
         <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Email Preview (5 lines)</h3>
-            <Button variant="ghost" size="sm" className="gap-1 text-xs text-gray-400 h-6 px-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-xs text-gray-400 h-6 px-2"
+              onClick={() => selectedEmail.webLink ? window.open(selectedEmail.webLink, '_blank') : null}
+              disabled={!selectedEmail.webLink}
+            >
               <ExternalLink size={11} /> Open in Outlook
             </Button>
           </div>

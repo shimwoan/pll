@@ -21,6 +21,7 @@ export function EmailsPage() {
   const { emails, filters, isLoading, isSyncing, fetchEmails, syncEmails, setFilter } = useEmailStore()
   const navigate = useNavigate()
   const [summary, setSummary] = useState({ pending: 0, confirmed: 0, unclassified: 0 })
+  const [syncMessage, setSyncMessage] = useState<string | null>(null)
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Fetch unfiltered summary for stat cards
@@ -45,7 +46,8 @@ export function EmailsPage() {
 
   const handleSync = async () => {
     const result = await syncEmails()
-    alert(`Synced ${result.synced} emails from Outlook`)
+    setSyncMessage(`${result.synced} emails synced from Outlook`)
+    setTimeout(() => setSyncMessage(null), 3000)
   }
 
   return (
@@ -71,6 +73,12 @@ export function EmailsPage() {
           </Button>
         </div>
       </div>
+
+      {syncMessage && (
+        <div className="mb-4 px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+          {syncMessage}
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-white border border-gray-200 rounded-lg p-4">

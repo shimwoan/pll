@@ -26,7 +26,9 @@ export class EmailService {
       fromAddress,
     });
 
-    const status = result.matchedCaseId ? 'PENDING_REVIEW' : 'UNCLASSIFIED';
+    const status = (result.matchedCaseId || result.matchMethod === 'sender_domain')
+      ? 'PENDING_REVIEW'
+      : 'UNCLASSIFIED';
 
     await this.prisma.email.upsert({
       where: { messageId: msg.id },
@@ -43,6 +45,7 @@ export class EmailService {
         aiReason: result.reason,
         matchedCaseId: result.matchedCaseId,
         matchMethod: result.matchMethod,
+        webLink: msg.webLink || null,
         status: status as any,
       },
       update: {},
@@ -134,17 +137,32 @@ export class EmailService {
     });
   }
 
-  async handleWebhook(body: any, accessToken?: string) {
+  async handleWebhook(body: any, sessionAccessToken?: string) {
     if (!Array.isArray(body?.value)) return { received: true };
 
     for (const notification of body.value) {
       if (notification.clientState !== 'pll-email-webhook') {
-        this.logger.warn('Webhook clientState mismatch — ignoring notification');
+        this.logger.warn('Webhook clientState mismatch — ignoring');
         continue;
       }
 
       const messageId = notification.resourceData?.id;
-      if (!messageId || !accessToken) continue;
+      if (!messageId) continue;
+
+      // Use session token if available, otherwise look up from DB
+      let accessToken = sessionAccessToken;
+      if (!accessToken) {
+        const stored = await this.prisma.userToken.findFirst({
+          orderBy: { updatedAt: 'desc' },
+          where: { expiresAt: { gt: new Date() } },
+        });
+        accessToken = stored?.accessToken;
+      }
+
+      if (!accessToken) {
+        this.logger.warn('No valid access token for webhook processing');
+        continue;
+      }
 
       try {
         const msg = await this.graph.getMessage(accessToken, messageId);

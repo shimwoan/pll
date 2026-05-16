@@ -102,9 +102,14 @@ export function ClassificationPanel({
               </>
             )}
             {(email.status === 'CONFIRMED' || email.status === 'EDITED') && (
-              <Button size="sm" variant="outline" onClick={() => setIsEditing(true)} className="gap-1.5">
-                <Pencil size={13} /> Edit
-              </Button>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => setIsEditing(true)} className="gap-1.5">
+                  <Pencil size={13} /> Edit
+                </Button>
+                <Button size="sm" variant="ghost" onClick={onUnclassify} disabled={isLoading} className="gap-1.5 text-gray-500">
+                  <X size={13} /> Unclassify
+                </Button>
+              </div>
             )}
           </>
         ) : (

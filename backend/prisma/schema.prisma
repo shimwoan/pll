@@ -41,8 +41,20 @@ model Email {
   reviewedBy     String?
   reviewedAt     DateTime?
 
+  webLink        String?
+
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
+}
+
+model UserToken {
+  id           String   @id @default(cuid())
+  userEmail    String   @unique
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 enum EmailStatus {

@@ -22,6 +22,7 @@ export interface Email {
   matchedCaseId: string | null
   matchMethod: string | null
   status: 'PENDING_REVIEW' | 'CONFIRMED' | 'EDITED' | 'UNCLASSIFIED'
+  webLink: string | null
   reviewedBy: string | null
   reviewedAt: string | null
   case?: { caseNumber: string; clientName: string } | null
