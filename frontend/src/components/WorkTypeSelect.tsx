@@ -22,7 +22,8 @@ interface WorkTypeSelectProps {
 export function WorkTypeSelect({ value, onChange }: WorkTypeSelectProps) {
   const [isCustom, setIsCustom] = useState(false)
 
-  const handleSelect = (val: string) => {
+  const handleSelect = (val: string | null) => {
+    if (val === null) return
     if (val === 'Other') {
       setIsCustom(true)
       onChange('')

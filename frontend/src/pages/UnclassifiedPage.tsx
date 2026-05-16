@@ -4,7 +4,8 @@ import { EmailTable } from '@/components/EmailTable'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { emailApi, Email } from '@/lib/api'
+import { emailApi } from '@/lib/api'
+import type { Email } from '@/lib/api'
 
 export function UnclassifiedPage() {
   const navigate = useNavigate()

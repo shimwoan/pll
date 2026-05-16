@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import { emailApi, Email } from '@/lib/api'
+import { emailApi } from '@/lib/api'
+import type { Email } from '@/lib/api'
 
 interface EmailFilters {
   status: string

@@ -89,7 +89,7 @@ export function EmailsPage() {
           ))}
         </div>
 
-        <Select value={filters.category || 'all'} onValueChange={(v) => setFilter('category', v === 'all' ? '' : v)}>
+        <Select value={filters.category || 'all'} onValueChange={(v) => setFilter('category', v === 'all' || v === null ? '' : v)}>
           <SelectTrigger className="w-40 h-9 text-sm">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>

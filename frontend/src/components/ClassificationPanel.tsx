@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { WorkTypeSelect } from './WorkTypeSelect'
 import { CategoryBadge } from './CategoryBadge'
-import { Email } from '@/lib/api'
+import type { Email } from '@/lib/api'
 import { Check, Pencil, X } from 'lucide-react'
 
 const CATEGORIES = ['Settlement', 'Medical', 'Client', 'Insurance', 'Police', 'Other']
@@ -49,7 +49,7 @@ export function ClassificationPanel({
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500 w-24">Category</span>
           {isEditing ? (
-            <Select value={category} onValueChange={setCategory}>
+            <Select value={category} onValueChange={(val) => { if (val !== null) setCategory(val) }}>
               <SelectTrigger className="h-7 text-sm flex-1">
                 <SelectValue />
               </SelectTrigger>

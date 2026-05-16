@@ -1,5 +1,5 @@
 import { Mail, AlertTriangle } from 'lucide-react'
-import { Email } from '@/lib/api'
+import type { Email } from '@/lib/api'
 import { CategoryBadge } from './CategoryBadge'
 import { EmailStatusBadge } from './EmailStatusBadge'
 import { useNavigate } from 'react-router-dom'
