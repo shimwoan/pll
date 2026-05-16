@@ -1,0 +1,143 @@
+import { PrismaService } from '../prisma/prisma.service';
+import { GraphService } from '../graph/graph.service';
+import { ClassificationService } from '../classification/classification.service';
+import { EditEmailDto } from './dto/edit-email.dto';
+export declare class EmailService {
+    private prisma;
+    private graph;
+    private classification;
+    constructor(prisma: PrismaService, graph: GraphService, classification: ClassificationService);
+    syncEmails(accessToken: string): Promise<{
+        synced: any;
+    }>;
+    findAll(filters: {
+        status?: string;
+        category?: string;
+        search?: string;
+    }): Promise<({
+        case: {
+            caseNumber: string;
+            clientName: string;
+        } | null;
+    } & {
+        id: string;
+        createdAt: Date;
+        matchedCaseId: string | null;
+        matchMethod: string | null;
+        messageId: string;
+        subject: string;
+        bodyPreview: string;
+        fromAddress: string;
+        fromName: string;
+        toAddress: string;
+        receivedAt: Date;
+        aiCategory: string | null;
+        aiConfidence: number | null;
+        aiReason: string | null;
+        finalCategory: string | null;
+        workTypeTitle: string | null;
+        status: import("@prisma/client").$Enums.EmailStatus;
+        reviewedBy: string | null;
+        reviewedAt: Date | null;
+        updatedAt: Date;
+    })[]>;
+    findOne(id: string): Promise<({
+        case: {
+            id: string;
+            caseNumber: string;
+            claimNumber: string | null;
+            clientName: string;
+            handler: string;
+            stage: string;
+            createdAt: Date;
+        } | null;
+    } & {
+        id: string;
+        createdAt: Date;
+        matchedCaseId: string | null;
+        matchMethod: string | null;
+        messageId: string;
+        subject: string;
+        bodyPreview: string;
+        fromAddress: string;
+        fromName: string;
+        toAddress: string;
+        receivedAt: Date;
+        aiCategory: string | null;
+        aiConfidence: number | null;
+        aiReason: string | null;
+        finalCategory: string | null;
+        workTypeTitle: string | null;
+        status: import("@prisma/client").$Enums.EmailStatus;
+        reviewedBy: string | null;
+        reviewedAt: Date | null;
+        updatedAt: Date;
+    }) | null>;
+    findUnclassified(): Promise<{
+        id: string;
+        createdAt: Date;
+        matchedCaseId: string | null;
+        matchMethod: string | null;
+        messageId: string;
+        subject: string;
+        bodyPreview: string;
+        fromAddress: string;
+        fromName: string;
+        toAddress: string;
+        receivedAt: Date;
+        aiCategory: string | null;
+        aiConfidence: number | null;
+        aiReason: string | null;
+        finalCategory: string | null;
+        workTypeTitle: string | null;
+        status: import("@prisma/client").$Enums.EmailStatus;
+        reviewedBy: string | null;
+        reviewedAt: Date | null;
+        updatedAt: Date;
+    }[]>;
+    confirm(id: string, reviewedBy: string): Promise<{
+        id: string;
+        createdAt: Date;
+        matchedCaseId: string | null;
+        matchMethod: string | null;
+        messageId: string;
+        subject: string;
+        bodyPreview: string;
+        fromAddress: string;
+        fromName: string;
+        toAddress: string;
+        receivedAt: Date;
+        aiCategory: string | null;
+        aiConfidence: number | null;
+        aiReason: string | null;
+        finalCategory: string | null;
+        workTypeTitle: string | null;
+        status: import("@prisma/client").$Enums.EmailStatus;
+        reviewedBy: string | null;
+        reviewedAt: Date | null;
+        updatedAt: Date;
+    }>;
+    edit(id: string, dto: EditEmailDto, reviewedBy: string): Promise<{
+        id: string;
+        createdAt: Date;
+        matchedCaseId: string | null;
+        matchMethod: string | null;
+        messageId: string;
+        subject: string;
+        bodyPreview: string;
+        fromAddress: string;
+        fromName: string;
+        toAddress: string;
+        receivedAt: Date;
+        aiCategory: string | null;
+        aiConfidence: number | null;
+        aiReason: string | null;
+        finalCategory: string | null;
+        workTypeTitle: string | null;
+        status: import("@prisma/client").$Enums.EmailStatus;
+        reviewedBy: string | null;
+        reviewedAt: Date | null;
+        updatedAt: Date;
+    }>;
+    handleWebhook(body: any): Promise<any>;
+}
