@@ -30,7 +30,7 @@ export class AuthService {
     });
   }
 
-  async refreshToken(refreshToken: string): Promise<msal.AuthenticationResult> {
+  async refreshToken(refreshToken: string): Promise<msal.AuthenticationResult | null> {
     return this.msalClient.acquireTokenByRefreshToken({
       refreshToken,
       scopes: ['Mail.Read', 'Mail.Send', 'User.Read', 'offline_access'],
