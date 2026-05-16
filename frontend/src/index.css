@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+:root {
+  --gold: #B8960C;
+  --gold-light: #D4AF37;
+  --gold-border: #8B6914;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #f8f9fa;
+}
