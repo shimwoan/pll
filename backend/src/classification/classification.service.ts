@@ -98,12 +98,16 @@ Respond with JSON only: {"category": "Settlement|Medical|Client|Insurance|Police
       ],
     });
 
+    const VALID_CATEGORIES = ['Settlement', 'Medical', 'Client', 'Insurance', 'Police', 'Other'];
+
     try {
-      const text = (message.content[0] as any).text;
-      const parsed = JSON.parse(text);
+      const block = message.content[0];
+      if (block.type !== 'text') throw new Error('unexpected block type');
+      const parsed = JSON.parse(block.text);
+      const category = VALID_CATEGORIES.includes(parsed.category) ? parsed.category : 'Other';
       return {
-        category: parsed.category || 'Other',
-        confidence: parsed.confidence || 0.5,
+        category,
+        confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.5,
         reason: parsed.reason || '',
       };
     } catch {

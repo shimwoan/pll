@@ -45,13 +45,20 @@ export class EmailController {
     return this.emailService.edit(id, dto, reviewedBy);
   }
 
+  @Patch(':id/unclassify')
+  unclassify(@Param('id') id: string, @Req() req: Request) {
+    const reviewedBy = (req.session as any).userEmail || 'unknown';
+    return this.emailService.unclassify(id, reviewedBy);
+  }
+
   @Post('webhook')
-  async webhook(@Query('validationToken') validationToken: string, @Body() body: any, @Res() res: Response) {
+  async webhook(@Query('validationToken') validationToken: string, @Body() body: any, @Req() req: Request, @Res() res: Response) {
     if (validationToken) {
       res.setHeader('Content-Type', 'text/plain');
       return res.send(validationToken);
     }
-    const result = await this.emailService.handleWebhook(body);
+    const accessToken = (req.session as any)?.accessToken;
+    const result = await this.emailService.handleWebhook(body, accessToken);
     return res.json(result);
   }
 }

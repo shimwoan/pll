@@ -11,7 +11,7 @@ import { format } from 'date-fns'
 export function EmailDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { selectedEmail, fetchEmail, confirmEmail, editEmail } = useEmailStore()
+  const { selectedEmail, fetchEmail, confirmEmail, editEmail, unclassifyEmail } = useEmailStore()
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export function EmailDetailPage() {
 
   const handleUnclassify = async () => {
     setIsLoading(true)
-    try { await editEmail(selectedEmail.id, { finalCategory: 'Other', workTypeTitle: '' }) }
+    try { await unclassifyEmail(selectedEmail.id) }
     finally { setIsLoading(false) }
   }
 

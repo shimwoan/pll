@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useEmailStore } from '@/store/emailStore'
 import { Layout } from '@/components/Layout'
 import { EmailTable } from '@/components/EmailTable'
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RefreshCw, AlertTriangle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { emailApi } from '@/lib/api'
 
 const TABS = [
   { label: 'All', value: '' },
@@ -19,19 +20,33 @@ const CATEGORIES = ['Settlement', 'Medical', 'Client', 'Insurance', 'Police', 'O
 export function EmailsPage() {
   const { emails, filters, isLoading, isSyncing, fetchEmails, syncEmails, setFilter } = useEmailStore()
   const navigate = useNavigate()
+  const [summary, setSummary] = useState({ pending: 0, confirmed: 0, unclassified: 0 })
+  const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Fetch unfiltered summary for stat cards
   useEffect(() => {
-    fetchEmails()
+    emailApi.list().then((all) => {
+      setSummary({
+        pending: all.filter((e) => e.status === 'PENDING_REVIEW').length,
+        confirmed: all.filter((e) => e.status === 'CONFIRMED' || e.status === 'EDITED').length,
+        unclassified: all.filter((e) => e.status === 'UNCLASSIFIED').length,
+      })
+    })
+  }, [emails])
+
+  // Debounced filter-driven fetch
+  useEffect(() => {
+    if (searchDebounce.current) clearTimeout(searchDebounce.current)
+    searchDebounce.current = setTimeout(() => {
+      fetchEmails()
+    }, filters.search ? 300 : 0)
+    return () => { if (searchDebounce.current) clearTimeout(searchDebounce.current) }
   }, [filters])
 
   const handleSync = async () => {
     const result = await syncEmails()
     alert(`Synced ${result.synced} emails from Outlook`)
   }
-
-  const pendingCount = emails.filter((e) => e.status === 'PENDING_REVIEW').length
-  const confirmedCount = emails.filter((e) => e.status === 'CONFIRMED' || e.status === 'EDITED').length
-  const unclassifiedCount = emails.filter((e) => e.status === 'UNCLASSIFIED').length
 
   return (
     <Layout>
@@ -48,7 +63,7 @@ export function EmailsPage() {
             className="gap-2"
           >
             <AlertTriangle size={14} className="text-amber-500" />
-            Unclassified ({unclassifiedCount})
+            Unclassified ({summary.unclassified})
           </Button>
           <Button size="sm" onClick={handleSync} disabled={isSyncing} className="gap-2">
             <RefreshCw size={14} className={isSyncing ? 'animate-spin' : ''} />
@@ -59,15 +74,15 @@ export function EmailsPage() {
 
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="text-2xl font-bold text-gray-900">{emails.length}</div>
+          <div className="text-2xl font-bold text-gray-900">{summary.pending + summary.confirmed + summary.unclassified}</div>
           <div className="text-sm text-gray-500">Total Emails</div>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="text-2xl font-bold text-amber-600">{pendingCount}</div>
+          <div className="text-2xl font-bold text-amber-600">{summary.pending}</div>
           <div className="text-sm text-gray-500">Pending Review</div>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="text-2xl font-bold text-green-600">{confirmedCount}</div>
+          <div className="text-2xl font-bold text-green-600">{summary.confirmed}</div>
           <div className="text-sm text-gray-500">Confirmed</div>
         </div>
       </div>

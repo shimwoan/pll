@@ -17,7 +17,7 @@ export class AuthService {
 
   async getAuthUrl(): Promise<string> {
     return this.msalClient.getAuthCodeUrl({
-      scopes: ['Mail.Read', 'Mail.Send', 'User.Read', 'offline_access'],
+      scopes: ['Mail.Read', 'User.Read', 'offline_access'],
       redirectUri: process.env.MICROSOFT_REDIRECT_URI!,
     });
   }
@@ -25,7 +25,7 @@ export class AuthService {
   async exchangeCodeForToken(code: string): Promise<msal.AuthenticationResult> {
     return this.msalClient.acquireTokenByCode({
       code,
-      scopes: ['Mail.Read', 'Mail.Send', 'User.Read', 'offline_access'],
+      scopes: ['Mail.Read', 'User.Read', 'offline_access'],
       redirectUri: process.env.MICROSOFT_REDIRECT_URI!,
     });
   }
@@ -33,7 +33,7 @@ export class AuthService {
   async refreshToken(refreshToken: string): Promise<msal.AuthenticationResult | null> {
     return this.msalClient.acquireTokenByRefreshToken({
       refreshToken,
-      scopes: ['Mail.Read', 'Mail.Send', 'User.Read', 'offline_access'],
+      scopes: ['Mail.Read', 'User.Read', 'offline_access'],
     });
   }
 }

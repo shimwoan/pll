@@ -45,6 +45,9 @@ export const emailApi = {
 
   edit: (id: string, data: { finalCategory?: string; workTypeTitle?: string; matchedCaseId?: string }) =>
     api.patch<Email>(`/emails/${id}/edit`, data).then((r) => r.data),
+
+  unclassify: (id: string) =>
+    api.patch<Email>(`/emails/${id}/unclassify`).then((r) => r.data),
 }
 
 export const authApi = {

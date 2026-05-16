@@ -20,6 +20,7 @@ interface EmailStore {
   syncEmails: () => Promise<{ synced: number }>
   confirmEmail: (id: string) => Promise<void>
   editEmail: (id: string, data: { finalCategory?: string; workTypeTitle?: string; matchedCaseId?: string }) => Promise<void>
+  unclassifyEmail: (id: string) => Promise<void>
   setFilter: (key: keyof EmailFilters, value: string) => void
   clearFilters: () => void
 }
@@ -71,6 +72,13 @@ export const useEmailStore = create<EmailStore>((set, get) => ({
 
   editEmail: async (id, data) => {
     await emailApi.edit(id, data)
+    await get().fetchEmails()
+    const updated = await emailApi.get(id)
+    set({ selectedEmail: updated })
+  },
+
+  unclassifyEmail: async (id) => {
+    await emailApi.unclassify(id)
     await get().fetchEmails()
     const updated = await emailApi.get(id)
     set({ selectedEmail: updated })

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GraphService } from '../graph/graph.service';
 import { ClassificationService } from '../classification/classification.service';
@@ -6,54 +6,61 @@ import { EditEmailDto } from './dto/edit-email.dto';
 
 @Injectable()
 export class EmailService {
+  private readonly logger = new Logger(EmailService.name);
+
   constructor(
     private prisma: PrismaService,
     private graph: GraphService,
     private classification: ClassificationService,
   ) {}
 
-  async syncEmails(accessToken: string) {
-    const messages = await this.graph.getMessages(accessToken, 50);
+  async ingestMessage(msg: any) {
+    const fromAddress = msg.from?.emailAddress?.address || '';
+    const fromName = msg.from?.emailAddress?.name || '';
+    const toAddress = msg.toRecipients?.[0]?.emailAddress?.address || '';
+    const bodyPreview = msg.bodyPreview?.slice(0, 500) || '';
 
-    for (const msg of messages) {
-      const existing = await this.prisma.email.findUnique({
-        where: { messageId: msg.id },
-      });
-      if (existing) continue;
+    const result = await this.classification.classify({
+      subject: msg.subject || '(no subject)',
+      bodyPreview,
+      fromAddress,
+    });
 
-      const fromAddress = msg.from?.emailAddress?.address || '';
-      const fromName = msg.from?.emailAddress?.name || '';
-      const toAddress = msg.toRecipients?.[0]?.emailAddress?.address || '';
-      const bodyPreview = msg.bodyPreview?.slice(0, 500) || '';
+    const status = result.matchedCaseId ? 'PENDING_REVIEW' : 'UNCLASSIFIED';
 
-      const result = await this.classification.classify({
+    await this.prisma.email.upsert({
+      where: { messageId: msg.id },
+      create: {
+        messageId: msg.id,
         subject: msg.subject || '(no subject)',
         bodyPreview,
         fromAddress,
-      });
+        fromName,
+        toAddress,
+        receivedAt: new Date(msg.receivedDateTime),
+        aiCategory: result.category,
+        aiConfidence: result.confidence,
+        aiReason: result.reason,
+        matchedCaseId: result.matchedCaseId,
+        matchMethod: result.matchMethod,
+        status: status as any,
+      },
+      update: {},
+    });
+  }
 
-      const status = result.matchedCaseId ? 'PENDING_REVIEW' : 'UNCLASSIFIED';
+  async syncEmails(accessToken: string) {
+    const messages = await this.graph.getMessages(accessToken, 50);
+    let ingested = 0;
 
-      await this.prisma.email.create({
-        data: {
-          messageId: msg.id,
-          subject: msg.subject || '(no subject)',
-          bodyPreview,
-          fromAddress,
-          fromName,
-          toAddress,
-          receivedAt: new Date(msg.receivedDateTime),
-          aiCategory: result.category,
-          aiConfidence: result.confidence,
-          aiReason: result.reason,
-          matchedCaseId: result.matchedCaseId,
-          matchMethod: result.matchMethod,
-          status: status as any,
-        },
-      });
+    for (const msg of messages) {
+      const existing = await this.prisma.email.findUnique({ where: { messageId: msg.id } });
+      if (existing) continue;
+      await this.ingestMessage(msg);
+      ingested++;
     }
 
-    return { synced: messages.length };
+    return { synced: ingested };
   }
 
   async findAll(filters: { status?: string; category?: string; search?: string }) {
@@ -116,8 +123,37 @@ export class EmailService {
     });
   }
 
-  async handleWebhook(body: any) {
-    if (body.validationToken) return body.validationToken;
+  async unclassify(id: string, reviewedBy: string) {
+    return this.prisma.email.update({
+      where: { id },
+      data: {
+        status: 'UNCLASSIFIED' as any,
+        reviewedBy,
+        reviewedAt: new Date(),
+      },
+    });
+  }
+
+  async handleWebhook(body: any, accessToken?: string) {
+    if (!Array.isArray(body?.value)) return { received: true };
+
+    for (const notification of body.value) {
+      if (notification.clientState !== 'pll-email-webhook') {
+        this.logger.warn('Webhook clientState mismatch — ignoring notification');
+        continue;
+      }
+
+      const messageId = notification.resourceData?.id;
+      if (!messageId || !accessToken) continue;
+
+      try {
+        const msg = await this.graph.getMessage(accessToken, messageId);
+        await this.ingestMessage(msg);
+      } catch (err) {
+        this.logger.error(`Failed to ingest webhook message ${messageId}`, err);
+      }
+    }
+
     return { received: true };
   }
 }
