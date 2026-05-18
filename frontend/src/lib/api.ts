@@ -17,6 +17,8 @@ export interface Email {
   aiCategory: string | null
   aiConfidence: number | null
   aiReason: string | null
+  actionCategory: string | null
+  aiSummary: string | null
   finalCategory: string | null
   workTypeTitle: string | null
   matchedCaseId: string | null
@@ -29,8 +31,8 @@ export interface Email {
 }
 
 export const emailApi = {
-  list: (params?: { status?: string; category?: string; search?: string }) =>
-    api.get<Email[]>('/emails', { params }).then((r) => r.data),
+  list: (params?: { status?: string; category?: string; search?: string }, signal?: AbortSignal) =>
+    api.get<Email[]>('/emails', { params, signal }).then((r) => r.data),
 
   get: (id: string) =>
     api.get<Email>(`/emails/${id}`).then((r) => r.data),
@@ -49,6 +51,15 @@ export const emailApi = {
 
   unclassify: (id: string) =>
     api.patch<Email>(`/emails/${id}/unclassify`).then((r) => r.data),
+}
+
+export interface ToastItem {
+  id: string
+  actionCategory: string
+  aiSummary: string
+  subject: string
+  fromName: string
+  receivedAt: string
 }
 
 export const authApi = {
