@@ -1,19 +1,74 @@
+import React, { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { EmailsPage } from '@/pages/EmailsPage'
 import { EmailDetailPage } from '@/pages/EmailDetailPage'
 import { UnclassifiedPage } from '@/pages/UnclassifiedPage'
 import { LoginPage } from '@/pages/LoginPage'
+import { DashboardPage } from '@/pages/DashboardPage'
+import { authApi } from '@/lib/api'
+import { ToastPanel } from '@/components/ToastPanel'
+import { useEmailStore } from '@/store/emailStore'
+
+export const UserContext = React.createContext<string | undefined>(undefined)
+
+function SseListener() {
+  const { fetchEmails, addToast } = useEmailStore()
+
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    const es = new EventSource(`${apiUrl}/emails/events`, { withCredentials: true })
+
+    es.onmessage = (e) => {
+      try {
+        const parsed = JSON.parse(e.data)
+        if (parsed.type === 'new_email' && parsed.email) {
+          addToast(parsed.email)
+        }
+      } catch {
+        // legacy plain-text event — ignore
+      }
+      fetchEmails(true)
+    }
+
+    es.onerror = () => es.close()
+
+    return () => es.close()
+  }, [])
+
+  return null
+}
+
+function ProtectedRoute({ children, authenticated }: { children: React.ReactNode; authenticated: boolean | null }) {
+  if (authenticated === null) return null
+  if (!authenticated) return <Navigate to="/login" replace />
+  return <>{children}</>
+}
 
 export default function App() {
+  const [userName, setUserName] = useState<string | undefined>(undefined)
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    authApi.me().then((r) => {
+      setAuthenticated(r.authenticated)
+      if (r.authenticated) setUserName(r.name)
+    }).catch(() => setAuthenticated(false))
+  }, [])
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/emails" replace />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/emails" element={<EmailsPage />} />
-        <Route path="/emails/unclassified" element={<UnclassifiedPage />} />
-        <Route path="/emails/:id" element={<EmailDetailPage />} />
-      </Routes>
-    </BrowserRouter>
+    <UserContext.Provider value={userName}>
+      <BrowserRouter>
+        {authenticated && <SseListener />}
+        {authenticated && <ToastPanel />}
+        <Routes>
+          <Route path="/login" element={authenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<ProtectedRoute authenticated={authenticated}><DashboardPage /></ProtectedRoute>} />
+          <Route path="/emails" element={<ProtectedRoute authenticated={authenticated}><EmailsPage /></ProtectedRoute>} />
+          <Route path="/emails/unclassified" element={<ProtectedRoute authenticated={authenticated}><UnclassifiedPage /></ProtectedRoute>} />
+          <Route path="/emails/:id" element={<ProtectedRoute authenticated={authenticated}><EmailDetailPage /></ProtectedRoute>} />
+        </Routes>
+      </BrowserRouter>
+    </UserContext.Provider>
   )
 }
