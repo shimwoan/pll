@@ -43,8 +43,6 @@ export function EmailDetailPage() {
     finally { setIsLoading(false) }
   }
 
-  const previewLines = selectedEmail.bodyPreview.split('\n').slice(0, 5).join('\n')
-
   return (
     <Layout compact>
       <button
@@ -92,7 +90,7 @@ export function EmailDetailPage() {
               </button>
             </div>
             <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
-              {previewLines}
+              {selectedEmail.bodyPreview}
             </pre>
           </div>
         </div>
