@@ -80,7 +80,7 @@ export function EmailDetailPage() {
 
           <div className="border border-gray-100 rounded-lg p-3 bg-gray-50">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Preview</span>
+              <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">{selectedEmail.body ? 'Full Body' : 'Preview'}</span>
               <button
                 className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-40"
                 onClick={() => selectedEmail.webLink ? window.open(selectedEmail.webLink, '_blank', 'noopener,noreferrer') : null}
@@ -90,7 +90,7 @@ export function EmailDetailPage() {
               </button>
             </div>
             <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
-              {selectedEmail.bodyPreview}
+              {selectedEmail.body || selectedEmail.bodyPreview}
             </pre>
           </div>
         </div>

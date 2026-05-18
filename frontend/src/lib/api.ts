@@ -10,6 +10,7 @@ export interface Email {
   messageId: string
   subject: string
   bodyPreview: string
+  body: string | null
   fromAddress: string
   fromName: string
   toAddress: string
