@@ -63,13 +63,14 @@ export class EmailService {
     const bodyPreview = msg.bodyPreview?.slice(0, 500) || '';
 
     const rawBody = msg.body?.content || '';
-    const body = rawBody
+    const convertedBody = rawBody
       ? convert(rawBody, { wordwrap: false, selectors: [{ selector: 'a', options: { ignoreHref: true } }, { selector: 'img', format: 'skip' }] })
-      : bodyPreview;
+      : null;
+    const body = convertedBody;
 
     const result = await this.classification.classify({
       subject: msg.subject || '(no subject)',
-      body,
+      body: body || bodyPreview,
       fromAddress,
       fromName,
     });
@@ -168,30 +169,52 @@ export class EmailService {
     });
     if (!email) return null;
 
-    if (!email.body) {
+    if (!email.body || !email.aiSummary) {
       try {
-        let accessToken: string | null = sessionToken || null;
-        if (!accessToken) {
+        let body = email.body;
+
+        if (!body) {
           const stored = await this.prisma.userToken.findFirst({ orderBy: { updatedAt: 'desc' } });
-          accessToken = stored ? await this.getFreshToken(stored.userEmail) : null;
-        }
-        if (accessToken) {
-          const msg = await this.graph.getMessage(accessToken, email.messageId);
-          const rawBody = msg.body?.content || '';
-          if (rawBody) {
-            const body = convert(rawBody, {
-              wordwrap: false,
-              selectors: [
-                { selector: 'a', options: { ignoreHref: true } },
-                { selector: 'img', format: 'skip' },
-              ],
-            });
-            await this.prisma.email.update({ where: { id }, data: { body } });
-            return { ...email, body };
+          const accessToken = stored ? await this.getFreshToken(stored.userEmail) : null;
+          if (accessToken) {
+            const msg = await this.graph.getMessage(accessToken, email.messageId);
+            const rawBody = msg.body?.content || '';
+            if (rawBody) {
+              body = convert(rawBody, {
+                wordwrap: false,
+                selectors: [
+                  { selector: 'a', options: { ignoreHref: true } },
+                  { selector: 'img', format: 'skip' },
+                ],
+              });
+            }
           }
         }
-      } catch (err) {
-        this.logger.warn(`Failed to fetch body on-demand for ${id}: ${err}`);
+
+        if (body) {
+          const aiResult = await this.classification.classify({
+            subject: email.subject,
+            body,
+            fromAddress: email.fromAddress,
+            fromName: email.fromName,
+          });
+          const updated = await this.prisma.email.update({
+            where: { id },
+            data: {
+              body,
+              aiCategory: aiResult.category,
+              actionCategory: aiResult.actionCategory,
+              aiSummary: aiResult.aiSummary,
+              aiReason: aiResult.reason,
+              matchedCaseId: aiResult.matchedCaseId ?? email.matchedCaseId,
+              matchMethod: aiResult.matchMethod ?? email.matchMethod,
+            },
+            include: { case: true },
+          });
+          return updated;
+        }
+      } catch (err: any) {
+        this.logger.error(`Failed to fetch/classify on-demand for ${id}: ${err?.message ?? err}`);
       }
     }
 
