@@ -218,6 +218,40 @@ export class EmailService {
     });
   }
 
+  async backfillBodies(accessToken?: string) {
+    if (!accessToken) {
+      const stored = await this.prisma.userToken.findFirst({ orderBy: { updatedAt: 'desc' } });
+      if (stored) accessToken = await this.getFreshToken(stored.userEmail) ?? undefined;
+    }
+    if (!accessToken) return { updated: 0, error: 'No access token' };
+
+    const emails = await this.prisma.email.findMany({
+      where: { body: null },
+      select: { id: true, messageId: true },
+    });
+
+    let updated = 0;
+    for (const email of emails) {
+      try {
+        const msg = await this.graph.getMessage(accessToken, email.messageId);
+        const rawBody = msg.body?.content || '';
+        if (!rawBody) continue;
+        const body = convert(rawBody, {
+          wordwrap: false,
+          selectors: [
+            { selector: 'a', options: { ignoreHref: true } },
+            { selector: 'img', format: 'skip' },
+          ],
+        });
+        await this.prisma.email.update({ where: { id: email.id }, data: { body } });
+        updated++;
+      } catch (err) {
+        this.logger.warn(`Backfill failed for ${email.messageId}: ${err}`);
+      }
+    }
+    return { updated };
+  }
+
   async handleWebhook(body: any) {
     this.logger.log(`Webhook received: ${body?.value?.length ?? 0} notifications`);
     if (!Array.isArray(body?.value)) return { received: true };

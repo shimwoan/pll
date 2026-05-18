@@ -35,6 +35,12 @@ export class EmailController {
     return this.emailService.syncEmails();
   }
 
+  @Post('backfill-bodies')
+  async backfillBodies(@Req() req: Request) {
+    const session = req.session as any;
+    return this.emailService.backfillBodies(session.accessToken);
+  }
+
   @Get()
   findAll(
     @Query('status') status?: string,

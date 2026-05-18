@@ -44,6 +44,9 @@ export const emailApi = {
   sync: () =>
     api.post<{ synced: number }>('/emails/sync').then((r) => r.data),
 
+  backfillBodies: () =>
+    api.post<{ updated: number; error?: string }>('/emails/backfill-bodies').then((r) => r.data),
+
   confirm: (id: string) =>
     api.patch<Email>(`/emails/${id}/confirm`).then((r) => r.data),
 

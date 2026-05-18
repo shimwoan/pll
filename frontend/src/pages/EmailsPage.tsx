@@ -4,9 +4,9 @@ import { Layout } from '@/components/Layout'
 import { EmailTable } from '@/components/EmailTable'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { RefreshCw, AlertTriangle } from 'lucide-react'
+import { RefreshCw, AlertTriangle, Database } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { authApi } from '@/lib/api'
+import { authApi, emailApi } from '@/lib/api'
 
 const TABS = [
   { label: 'All', value: '' },
@@ -27,6 +27,7 @@ export function EmailsPage() {
   const { emails, allEmails, filters, isLoading, isSyncing, fetchEmails, syncEmails, setFilter } = useEmailStore()
   const navigate = useNavigate()
   const [syncMessage, setSyncMessage] = useState<string | null>(null)
+  const [isBackfilling, setIsBackfilling] = useState(false)
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleSync = async () => {
@@ -41,6 +42,17 @@ export function EmailsPage() {
       setSyncMessage(`Synced ${result.synced} new email${result.synced === 1 ? '' : 's'} from Outlook`)
     }
     setTimeout(() => setSyncMessage(null), 5000)
+  }
+
+  const handleBackfill = async () => {
+    setIsBackfilling(true)
+    try {
+      const result = await emailApi.backfillBodies()
+      setSyncMessage(result.error ? result.error : `Body 업데이트: ${result.updated}개 완료`)
+    } finally {
+      setIsBackfilling(false)
+      setTimeout(() => setSyncMessage(null), 5000)
+    }
   }
 
   const summary = {
@@ -77,6 +89,15 @@ export function EmailsPage() {
           >
             <AlertTriangle size={12} />
             {summary.unclassified} unclassified
+          </button>
+          <button
+            onClick={handleBackfill}
+            disabled={isBackfilling}
+            className="flex items-center gap-1.5 text-xs text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            title="기존 이메일 본문 불러오기"
+          >
+            <Database size={12} className={isBackfilling ? 'animate-pulse' : ''} />
+            {isBackfilling ? 'Loading...' : 'Load Bodies'}
           </button>
           <button
             onClick={handleSync}
