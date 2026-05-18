@@ -115,6 +115,9 @@ export const useEmailStore = create<EmailStore>((set, get) => ({
   },
 
   addToast: (item) => {
-    set((state) => ({ toasts: [item, ...state.toasts] }))
+    set((state) => {
+      if (state.toasts.some((t) => t.id === item.id)) return state
+      return { toasts: [item, ...state.toasts] }
+    })
   },
 }))

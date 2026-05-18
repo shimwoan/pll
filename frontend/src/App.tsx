@@ -16,25 +16,45 @@ function SseListener() {
 
   useEffect(() => {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-    const es = new EventSource(`${apiUrl}/emails/events`, { withCredentials: true })
+    let es: EventSource
+    let retryDelay = 1000
+    let retryTimer: ReturnType<typeof setTimeout> | null = null
+    let closed = false
 
-    es.onmessage = (e) => {
-      try {
-        const parsed = JSON.parse(e.data)
-        if (parsed.type === 'new_email' && parsed.email) {
-          addToast(parsed.email)
+    function connect() {
+      es = new EventSource(`${apiUrl}/emails/events`, { withCredentials: true })
+
+      es.onopen = () => { retryDelay = 1000 }
+
+      es.onmessage = (e) => {
+        try {
+          const parsed = JSON.parse(e.data)
+          if (parsed.type === 'new_email' && parsed.email) {
+            addToast(parsed.email)
+            fetchEmails(true)
+          }
+        } catch {
+          // comment or non-JSON keepalive — ignore
         }
-      } catch {
-        // legacy plain-text event — ignore
       }
-      fetchEmails(true)
+
+      es.onerror = () => {
+        es.close()
+        if (closed) return
+        retryTimer = setTimeout(() => {
+          retryDelay = Math.min(retryDelay * 2, 30000)
+          connect()
+        }, retryDelay)
+      }
     }
 
-    es.onerror = () => {
-      // Let EventSource handle automatic reconnection — don't force close
-    }
+    connect()
 
-    return () => es.close()
+    return () => {
+      closed = true
+      if (retryTimer) clearTimeout(retryTimer)
+      es.close()
+    }
   }, [])
 
   return null
