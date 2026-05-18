@@ -7,14 +7,16 @@ datasource db {
 }
 
 model Case {
-  id          String   @id @default(cuid())
-  caseNumber  String   @unique
-  claimNumber String?
-  clientName  String
-  handler     String
-  stage       String   @default("Claim")
-  emails      Email[]
-  createdAt   DateTime @default(now())
+  id           String    @id @default(cuid())
+  caseNumber   String    @unique
+  claimNumbers String[]
+  clientName   String
+  handler      String
+  stage        String    @default("Claim")
+  dateOfLoss   DateTime?
+  dueDate      DateTime?
+  emails       Email[]
+  createdAt    DateTime  @default(now())
 }
 
 model Email {

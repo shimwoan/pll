@@ -41,10 +41,8 @@ let AuthController = AuthController_1 = class AuthController {
         }
         try {
             const result = await this.authService.exchangeCodeForToken(code);
-            req.session.accessToken = result.accessToken;
             req.session.userEmail = result.account?.username;
             req.session.userName = result.account?.name;
-            req.session.tokenExpiresAt = result.expiresOn?.toISOString();
             await this.prisma.userToken.upsert({
                 where: { userEmail: result.account?.username || '' },
                 create: {
@@ -71,15 +69,22 @@ let AuthController = AuthController_1 = class AuthController {
             res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
         }
     }
-    me(req) {
+    async me(req) {
         const session = req.session;
-        if (!session.accessToken)
+        if (session.userEmail) {
+            const token = await this.prisma.userToken.findUnique({ where: { userEmail: session.userEmail } });
+            if (token)
+                return { authenticated: true, email: session.userEmail, name: session.userName };
+        }
+        const token = await this.prisma.userToken.findFirst({ orderBy: { updatedAt: 'desc' } });
+        if (!token)
             return { authenticated: false };
-        return {
-            authenticated: true,
-            email: session.userEmail,
-            name: session.userName,
-        };
+        const freshToken = await this.authService.acquireSilent(token.userEmail).catch(() => null);
+        if (!freshToken)
+            return { authenticated: false };
+        session.userEmail = token.userEmail;
+        session.userName = freshToken.account?.name ?? token.userEmail;
+        return { authenticated: true, email: session.userEmail, name: session.userName };
     }
     logout(req, res) {
         req.session.destroy(() => {
@@ -111,7 +116,7 @@ __decorate([
     __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], AuthController.prototype, "me", null);
 __decorate([
     (0, common_1.Get)('logout'),

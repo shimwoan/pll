@@ -90,18 +90,21 @@ const warningSol = solAlerts.filter(a => a.severity === 'warning').length
 
 export function DashboardPage() {
   return (
-    <Layout compact>
+    <Layout>
       {/* Page Title */}
-      <div className="flex items-baseline justify-between mb-4">
-        <h1 className="text-base font-semibold text-gray-800">Operations Overview</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-lg font-semibold text-gray-800">Operations Overview</h1>
+          <p className="text-xs text-gray-400 mt-0.5">Firm-wide performance and case activity</p>
+        </div>
         <span className="text-xs text-gray-400">
           {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
         </span>
       </div>
 
       {/* Alert Strip */}
-      <div className="flex items-stretch gap-3 mb-3">
-        <div className="flex items-center gap-2.5 bg-red-50 border border-red-100 rounded-lg px-4 py-2 flex-1">
+      <div className="flex items-stretch gap-3 mb-6">
+        <div className="flex items-center gap-2.5 bg-red-50 border border-red-100 rounded-lg px-4 py-4 flex-1">
           <AlertTriangle size={13} className="text-red-500 shrink-0" />
           <div>
             <div className="text-xs font-semibold text-red-700 uppercase tracking-wide leading-none mb-0.5">SOL Critical</div>
@@ -111,7 +114,7 @@ export function DashboardPage() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2.5 bg-white border border-gray-100 rounded-lg px-4 py-2 flex-1">
+        <div className="flex items-center gap-2.5 bg-white border border-gray-100 rounded-lg px-4 py-4 flex-1">
           <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
           <div>
             <div className="text-xs font-medium text-gray-400 uppercase tracking-wide leading-none mb-0.5">Overdue Tasks</div>
@@ -120,7 +123,7 @@ export function DashboardPage() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2.5 bg-white border border-gray-100 rounded-lg px-4 py-2 flex-1">
+        <div className="flex items-center gap-2.5 bg-white border border-gray-100 rounded-lg px-4 py-4 flex-1">
           <Mail size={13} className="text-gray-400 shrink-0" />
           <div>
             <div className="text-xs font-medium text-gray-400 uppercase tracking-wide leading-none mb-0.5">Email Queue</div>
@@ -132,7 +135,7 @@ export function DashboardPage() {
       </div>
 
       {/* KPI Strip */}
-      <div className="grid grid-cols-4 gap-3 mb-3">
+      <div className="grid grid-cols-4 gap-3 mb-6">
         {kpis.map(({ label, value, delta }) => (
           <div key={label} className="bg-white border border-gray-100 rounded-lg px-4 py-2.5">
             <div className="text-xs text-gray-400 mb-0.5 uppercase tracking-wide font-medium">{label}</div>
@@ -143,7 +146,7 @@ export function DashboardPage() {
       </div>
 
       {/* Operational: SOL + Pipeline + CM */}
-      <div className="grid grid-cols-5 gap-3 mb-3 items-stretch">
+      <div className="grid grid-cols-5 gap-3 mb-6 items-stretch">
         <div className="col-span-2 bg-white border border-gray-100 rounded-lg p-4 flex flex-col">
           <div className="text-sm font-medium text-gray-700 mb-0.5">SOL Deadlines</div>
           <div className="text-xs text-gray-400 mb-2">Statute of limitations tracking</div>

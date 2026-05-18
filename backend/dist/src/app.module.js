@@ -15,6 +15,7 @@ const auth_module_1 = require("./auth/auth.module");
 const graph_module_1 = require("./graph/graph.module");
 const classification_module_1 = require("./classification/classification.module");
 const email_module_1 = require("./email/email.module");
+const cases_module_1 = require("./cases/cases.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -28,6 +29,7 @@ exports.AppModule = AppModule = __decorate([
             graph_module_1.GraphModule,
             classification_module_1.ClassificationModule,
             email_module_1.EmailModule,
+            cases_module_1.CasesModule,
         ],
     })
 ], AppModule);

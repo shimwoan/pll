@@ -12,7 +12,7 @@ export declare class EmailService {
     constructor(prisma: PrismaService, graph: GraphService, classification: ClassificationService, auth: AuthService);
     private getFreshToken;
     ingestMessage(msg: any): Promise<void>;
-    syncEmails(accessToken?: string): Promise<{
+    syncEmails(userEmail?: string): Promise<{
         synced: number;
         error: string;
     } | {
@@ -39,6 +39,7 @@ export declare class EmailService {
         messageId: string;
         subject: string;
         bodyPreview: string;
+        body: string | null;
         fromAddress: string;
         fromName: string;
         toAddress: string;
@@ -53,15 +54,17 @@ export declare class EmailService {
         reviewedAt: Date | null;
         webLink: string | null;
     })[]>;
-    findOne(id: string): Promise<({
+    findOne(id: string, _sessionToken?: string, userEmail?: string): Promise<({
         case: {
             id: string;
             createdAt: Date;
             caseNumber: string;
-            claimNumber: string | null;
+            claimNumbers: string[];
             clientName: string;
             handler: string;
             stage: string;
+            dateOfLoss: Date | null;
+            dueDate: Date | null;
         } | null;
     } & {
         id: string;
@@ -74,6 +77,7 @@ export declare class EmailService {
         messageId: string;
         subject: string;
         bodyPreview: string;
+        body: string | null;
         fromAddress: string;
         fromName: string;
         toAddress: string;
@@ -99,6 +103,7 @@ export declare class EmailService {
         messageId: string;
         subject: string;
         bodyPreview: string;
+        body: string | null;
         fromAddress: string;
         fromName: string;
         toAddress: string;
@@ -124,6 +129,7 @@ export declare class EmailService {
         messageId: string;
         subject: string;
         bodyPreview: string;
+        body: string | null;
         fromAddress: string;
         fromName: string;
         toAddress: string;
@@ -149,6 +155,7 @@ export declare class EmailService {
         messageId: string;
         subject: string;
         bodyPreview: string;
+        body: string | null;
         fromAddress: string;
         fromName: string;
         toAddress: string;
@@ -174,6 +181,7 @@ export declare class EmailService {
         messageId: string;
         subject: string;
         bodyPreview: string;
+        body: string | null;
         fromAddress: string;
         fromName: string;
         toAddress: string;

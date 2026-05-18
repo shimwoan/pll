@@ -65,10 +65,13 @@ export function EmailsPage() {
   }, [])
 
   return (
-    <Layout compact>
+    <Layout>
       {/* Page Title */}
-      <div className="flex items-baseline justify-between mb-4">
-        <h1 className="text-base font-semibold text-gray-800">Email Queue</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-lg font-semibold text-gray-800">Email Queue</h1>
+          <p className="text-xs text-gray-400 mt-0.5">Incoming emails pending classification and review</p>
+        </div>
         <div className="flex items-center gap-2">
           {syncMessage && <span className="text-xs text-gray-400">{syncMessage}</span>}
           <button
@@ -90,7 +93,7 @@ export function EmailsPage() {
       </div>
 
       {/* KPI Strip */}
-      <div className="grid grid-cols-4 gap-3 mb-3">
+      <div className="grid grid-cols-4 gap-3 mb-6">
         <div className="bg-white border border-gray-100 rounded-lg px-4 py-2.5">
           <div className="text-xs text-gray-400 mb-0.5 uppercase tracking-wide font-medium">Total</div>
           <div className="text-xl font-semibold text-gray-800 leading-tight">{summary.pending + summary.confirmed + summary.unclassified}</div>
@@ -114,7 +117,7 @@ export function EmailsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2 mb-3">
+      <div className="flex gap-2 mb-6">
         <div className="flex gap-0.5 bg-gray-100 rounded-lg p-0.5">
           {TABS.map((tab) => (
             <button

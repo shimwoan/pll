@@ -10,14 +10,14 @@ export declare class AuthController {
     constructor(authService: AuthService, graphService: GraphService, prisma: PrismaService);
     login(res: Response): Promise<void>;
     callback(code: string, error: string, req: Request, res: Response): Promise<void>;
-    me(req: Request): {
-        authenticated: boolean;
-        email?: undefined;
-        name?: undefined;
-    } | {
+    me(req: Request): Promise<{
         authenticated: boolean;
         email: any;
         name: any;
-    };
+    } | {
+        authenticated: boolean;
+        email?: undefined;
+        name?: undefined;
+    }>;
     logout(req: Request, res: Response): void;
 }

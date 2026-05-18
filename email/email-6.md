@@ -22,7 +22,7 @@ Our client did not have a Dash Cam in their vehicle at the time of the accident,
 From: Miranda L Barnett
 Sent: Thursday, April 4, 2024 12:55 PM
 To: Andrew Chang
-Cc: PLL+24784@***.com
+Cc: PLL+24793@***.com
 Subject: RE: Claim #24-6123424
 
 Good afternoon,

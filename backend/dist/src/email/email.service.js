@@ -12,6 +12,7 @@ var EmailService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmailService = void 0;
 const common_1 = require("@nestjs/common");
+const html_to_text_1 = require("html-to-text");
 const main_1 = require("../main");
 const prisma_service_1 = require("../prisma/prisma.service");
 const graph_service_1 = require("../graph/graph.service");
@@ -48,9 +49,13 @@ let EmailService = EmailService_1 = class EmailService {
                 return silent.accessToken;
             }
         }
-        catch { }
-        if (!stored.refreshToken)
+        catch (err) {
+            this.logger.warn(`MSAL silent refresh failed for ${userEmail}: ${err?.message}`);
+        }
+        if (!stored.refreshToken) {
+            this.logger.warn(`No refresh token stored for ${userEmail}`);
             return null;
+        }
         try {
             const result = await this.auth.refreshToken(stored.refreshToken);
             if (!result)
@@ -65,7 +70,8 @@ let EmailService = EmailService_1 = class EmailService {
             });
             return result.accessToken;
         }
-        catch {
+        catch (err) {
+            this.logger.error(`Refresh token fallback failed for ${userEmail}: ${err?.message}`);
             return null;
         }
     }
@@ -74,10 +80,14 @@ let EmailService = EmailService_1 = class EmailService {
         const fromName = msg.from?.emailAddress?.name || '';
         const toAddress = msg.toRecipients?.[0]?.emailAddress?.address || '';
         const bodyPreview = msg.bodyPreview?.slice(0, 500) || '';
-        const body = msg.body?.content || bodyPreview;
+        const rawBody = msg.body?.content || '';
+        const convertedBody = rawBody
+            ? (0, html_to_text_1.convert)(rawBody, { wordwrap: false, selectors: [{ selector: 'a', options: { ignoreHref: true } }, { selector: 'img', format: 'skip' }] })
+            : null;
+        const body = convertedBody;
         const result = await this.classification.classify({
             subject: msg.subject || '(no subject)',
-            body,
+            body: body || bodyPreview,
             fromAddress,
             fromName,
         });
@@ -90,6 +100,7 @@ let EmailService = EmailService_1 = class EmailService {
                 messageId: msg.id,
                 subject: msg.subject || '(no subject)',
                 bodyPreview,
+                body,
                 fromAddress,
                 fromName,
                 toAddress,
@@ -115,12 +126,11 @@ let EmailService = EmailService_1 = class EmailService {
             receivedAt: saved.receivedAt.toISOString(),
         });
     }
-    async syncEmails(accessToken) {
-        if (!accessToken) {
-            const stored = await this.prisma.userToken.findFirst({ orderBy: { updatedAt: 'desc' } });
-            if (stored)
-                accessToken = await this.getFreshToken(stored.userEmail) ?? undefined;
-        }
+    async syncEmails(userEmail) {
+        const email = userEmail
+            ? await this.prisma.userToken.findUnique({ where: { userEmail } })
+            : await this.prisma.userToken.findFirst({ orderBy: { updatedAt: 'desc' } });
+        const accessToken = email ? await this.getFreshToken(email.userEmail) ?? undefined : undefined;
         if (!accessToken) {
             return { synced: 0, error: 'No access token available. Please log in first.' };
         }
@@ -164,11 +174,63 @@ let EmailService = EmailService_1 = class EmailService {
             orderBy: { receivedAt: 'desc' },
         });
     }
-    async findOne(id) {
-        return this.prisma.email.findUnique({
+    async findOne(id, _sessionToken, userEmail) {
+        const email = await this.prisma.email.findUnique({
             where: { id },
             include: { case: true },
         });
+        if (!email)
+            return null;
+        if (!email.aiSummary) {
+            try {
+                let body = email.body;
+                if (!body) {
+                    const stored = userEmail
+                        ? await this.prisma.userToken.findUnique({ where: { userEmail } })
+                        : await this.prisma.userToken.findFirst({ orderBy: { updatedAt: 'desc' } });
+                    const accessToken = stored ? await this.getFreshToken(stored.userEmail) : null;
+                    if (accessToken) {
+                        const msg = await this.graph.getMessage(accessToken, email.messageId);
+                        const rawBody = msg.body?.content || '';
+                        if (rawBody) {
+                            body = (0, html_to_text_1.convert)(rawBody, {
+                                wordwrap: false,
+                                selectors: [
+                                    { selector: 'a', options: { ignoreHref: true } },
+                                    { selector: 'img', format: 'skip' },
+                                ],
+                            });
+                        }
+                    }
+                }
+                if (body) {
+                    const aiResult = await this.classification.classify({
+                        subject: email.subject,
+                        body,
+                        fromAddress: email.fromAddress,
+                        fromName: email.fromName,
+                    });
+                    const updated = await this.prisma.email.update({
+                        where: { id },
+                        data: {
+                            body,
+                            aiCategory: aiResult.category,
+                            actionCategory: aiResult.actionCategory,
+                            aiSummary: aiResult.aiSummary,
+                            aiReason: aiResult.reason,
+                            matchedCaseId: aiResult.matchedCaseId ?? email.matchedCaseId,
+                            matchMethod: aiResult.matchMethod ?? email.matchMethod,
+                        },
+                        include: { case: true },
+                    });
+                    return updated;
+                }
+            }
+            catch (err) {
+                this.logger.error(`Failed to fetch/classify on-demand for ${id}: ${err?.message ?? err}`);
+            }
+        }
+        return email;
     }
     async findUnclassified() {
         return this.prisma.email.findMany({

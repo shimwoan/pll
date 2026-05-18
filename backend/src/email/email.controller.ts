@@ -13,26 +13,9 @@ export class EmailController {
 
   @Post('sync')
   async sync(@Req() req: Request) {
-    const session = req.session as any;
-
-    if (session.userEmail) {
-      // Silently refresh if token is expired or close to expiry (within 5 min)
-      const expiry: Date | undefined = session.tokenExpiresAt ? new Date(session.tokenExpiresAt) : undefined;
-      const needsRefresh = !expiry || expiry <= new Date(Date.now() + 5 * 60 * 1000);
-      if (needsRefresh) {
-        try {
-          const fresh = await this.authService.acquireSilent(session.userEmail);
-          if (fresh) {
-            session.accessToken = fresh.accessToken;
-            session.tokenExpiresAt = fresh.expiresOn?.toISOString();
-          }
-        } catch {}
-      }
-      return this.emailService.syncEmails(session.accessToken);
-    }
-
-    // No session — fall back to DB-stored token (handles server restarts)
-    return this.emailService.syncEmails();
+    const userEmail = (req.session as any).userEmail;
+    // emailService.syncEmails() uses getFreshToken internally (DB + MSAL silent)
+    return this.emailService.syncEmails(userEmail);
   }
 
   @Get()
@@ -51,8 +34,8 @@ export class EmailController {
 
   @Get(':id')
   findOne(@Param('id') id: string, @Req() req: Request) {
-    const accessToken = (req.session as any).accessToken;
-    return this.emailService.findOne(id, accessToken);
+    const userEmail = (req.session as any).userEmail;
+    return this.emailService.findOne(id, undefined, userEmail);
   }
 
   @Patch(':id/confirm')

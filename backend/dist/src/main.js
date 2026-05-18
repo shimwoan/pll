@@ -8,6 +8,8 @@ exports.broadcastSse = broadcastSse;
 const core_1 = require("@nestjs/core");
 const app_module_1 = require("./app.module");
 const express_session_1 = __importDefault(require("express-session"));
+const connect_pg_simple_1 = __importDefault(require("connect-pg-simple"));
+const PgStore = (0, connect_pg_simple_1.default)(express_session_1.default);
 exports.sseClients = new Set();
 function broadcastSse(payload) {
     const data = JSON.stringify({ type: 'new_email', email: payload });
@@ -24,13 +26,19 @@ async function bootstrap() {
         secret: process.env.SESSION_SECRET || 'dev-secret',
         resave: false,
         saveUninitialized: false,
-        cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 },
+        store: new PgStore({ conString: process.env.DATABASE_URL, createTableIfMissing: true }),
+        cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 },
     }));
     app.enableCors({
         origin: process.env.FRONTEND_URL || 'http://localhost:5173',
         credentials: true,
     });
     app.use('/emails/events', (req, res) => {
+        const sess = req.session;
+        if (!sess?.userEmail) {
+            res.writeHead(401).end();
+            return;
+        }
         res.writeHead(200, {
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',

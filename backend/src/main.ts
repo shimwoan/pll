@@ -1,7 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import session from 'express-session';
+import ConnectPgSimple from 'connect-pg-simple';
 import type { Request, Response } from 'express';
+
+const PgStore = ConnectPgSimple(session);
 
 // SSE clients registry — shared with EmailService via module ref
 export const sseClients = new Set<Response>();
@@ -34,7 +37,8 @@ async function bootstrap() {
       secret: process.env.SESSION_SECRET || 'dev-secret',
       resave: false,
       saveUninitialized: false,
-      cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 },
+      store: new PgStore({ conString: process.env.DATABASE_URL, createTableIfMissing: true }),
+      cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 },
     }),
   );
 
@@ -46,7 +50,7 @@ async function bootstrap() {
   // SSE endpoint — registered before NestJS router to bypass interceptors
   app.use('/emails/events', (req: Request, res: Response) => {
     const sess = (req as any).session;
-    if (!sess?.accessToken) {
+    if (!sess?.userEmail) {
       res.writeHead(401).end();
       return;
     }

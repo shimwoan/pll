@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { GraphModule } from './graph/graph.module';
 import { ClassificationModule } from './classification/classification.module';
 import { EmailModule } from './email/email.module';
+import { CasesModule } from './cases/cases.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { EmailModule } from './email/email.module';
     GraphModule,
     ClassificationModule,
     EmailModule,
+    CasesModule,
   ],
 })
 export class AppModule {}

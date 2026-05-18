@@ -37,3 +37,7 @@ body {
   color: #111827;
   -webkit-font-smoothing: antialiased;
 }
+
+button {
+  cursor: pointer;
+}

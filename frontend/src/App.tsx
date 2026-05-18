@@ -5,6 +5,7 @@ import { EmailDetailPage } from '@/pages/EmailDetailPage'
 import { UnclassifiedPage } from '@/pages/UnclassifiedPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { MattersPage } from '@/pages/MattersPage'
 import { authApi } from '@/lib/api'
 import { ToastPanel } from '@/components/ToastPanel'
 import { useEmailStore } from '@/store/emailStore'
@@ -86,6 +87,7 @@ export default function App() {
           <Route path="/login" element={authenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<ProtectedRoute authenticated={authenticated}><DashboardPage /></ProtectedRoute>} />
+          <Route path="/matters" element={<ProtectedRoute authenticated={authenticated}><MattersPage /></ProtectedRoute>} />
           <Route path="/emails" element={<ProtectedRoute authenticated={authenticated}><EmailsPage /></ProtectedRoute>} />
           <Route path="/emails/unclassified" element={<ProtectedRoute authenticated={authenticated}><UnclassifiedPage /></ProtectedRoute>} />
           <Route path="/emails/:id" element={<ProtectedRoute authenticated={authenticated}><EmailDetailPage /></ProtectedRoute>} />

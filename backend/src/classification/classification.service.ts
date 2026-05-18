@@ -54,22 +54,48 @@ export class ClassificationService {
   private async matchCase(email: { subject: string; body: string; fromAddress: string }) {
     const text = `${email.subject} ${email.body}`;
 
-    const caseNumberMatch = text.match(/\b(\d{4}-PI-\d{3,})\b/i);
-    if (caseNumberMatch) {
+    // 1. PLL 내부 사건번호 패턴: (24793) 또는 PLL+24793
+    const pllCaseMatch = text.match(/\((\d{4,})\)|PLL\+(\d{4,})/i);
+    if (pllCaseMatch) {
+      const num = pllCaseMatch[1] ?? pllCaseMatch[2];
+      const found = await this.prisma.case.findUnique({ where: { caseNumber: num } });
+      if (found) return { caseId: found.id, method: 'case_number' };
+    }
+
+    // 2. 표준 사건번호 패턴: 2026-PI-001
+    const standardCaseMatch = text.match(/\b(\d{4}-PI-\d{3,})\b/i);
+    if (standardCaseMatch) {
       const found = await this.prisma.case.findUnique({
-        where: { caseNumber: caseNumberMatch[1].toUpperCase() },
+        where: { caseNumber: standardCaseMatch[1].toUpperCase() },
       });
       if (found) return { caseId: found.id, method: 'case_number' };
     }
 
-    const claimMatch = text.match(/\b([A-Z]{2}-\d{4}-\d{4,})\b/i);
-    if (claimMatch) {
+    // 3. 클레임번호 — 배열 필드에서 검색
+    const claimPatterns = [
+      text.match(/\b(\d{2}-\d{7,})\b/),        // Progressive: 24-6123424
+      text.match(/\b(\d{9,}-\d)\b/),            // Farmers: 7007451196-1
+      text.match(/\b([A-Z]{2}-\d{4}-\d{4,})\b/i), // SF-2024-8821 등
+    ].filter(Boolean);
+
+    for (const match of claimPatterns) {
+      const claimNum = match![1];
       const found = await this.prisma.case.findFirst({
-        where: { claimNumber: claimMatch[1].toUpperCase() },
+        where: { claimNumbers: { has: claimNum } },
       });
       if (found) return { caseId: found.id, method: 'claim_number' };
     }
 
+    // 4. 클라이언트 이름 매칭
+    const allCases = await this.prisma.case.findMany({ select: { id: true, clientName: true } });
+    for (const c of allCases) {
+      const nameParts = c.clientName.toLowerCase().split(' ').filter((p) => p.length > 2);
+      if (nameParts.some((part) => text.toLowerCase().includes(part))) {
+        return { caseId: c.id, method: 'client_name' };
+      }
+    }
+
+    // 5. 발신자 도메인
     const domain = email.fromAddress.split('@')[1]?.toLowerCase();
     if (domain) {
       const isInsurance = INSURANCE_DOMAINS.some((d) => domain === d || domain.endsWith('.' + d));

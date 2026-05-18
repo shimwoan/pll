@@ -44,21 +44,40 @@ let ClassificationService = class ClassificationService {
     }
     async matchCase(email) {
         const text = `${email.subject} ${email.body}`;
-        const caseNumberMatch = text.match(/\b(\d{4}-PI-\d{3,})\b/i);
-        if (caseNumberMatch) {
+        const pllCaseMatch = text.match(/\((\d{4,})\)|PLL\+(\d{4,})/i);
+        if (pllCaseMatch) {
+            const num = pllCaseMatch[1] ?? pllCaseMatch[2];
+            const found = await this.prisma.case.findUnique({ where: { caseNumber: num } });
+            if (found)
+                return { caseId: found.id, method: 'case_number' };
+        }
+        const standardCaseMatch = text.match(/\b(\d{4}-PI-\d{3,})\b/i);
+        if (standardCaseMatch) {
             const found = await this.prisma.case.findUnique({
-                where: { caseNumber: caseNumberMatch[1].toUpperCase() },
+                where: { caseNumber: standardCaseMatch[1].toUpperCase() },
             });
             if (found)
                 return { caseId: found.id, method: 'case_number' };
         }
-        const claimMatch = text.match(/\b([A-Z]{2}-\d{4}-\d{4,})\b/i);
-        if (claimMatch) {
+        const claimPatterns = [
+            text.match(/\b(\d{2}-\d{7,})\b/),
+            text.match(/\b(\d{9,}-\d)\b/),
+            text.match(/\b([A-Z]{2}-\d{4}-\d{4,})\b/i),
+        ].filter(Boolean);
+        for (const match of claimPatterns) {
+            const claimNum = match[1];
             const found = await this.prisma.case.findFirst({
-                where: { claimNumber: claimMatch[1].toUpperCase() },
+                where: { claimNumbers: { has: claimNum } },
             });
             if (found)
                 return { caseId: found.id, method: 'claim_number' };
+        }
+        const allCases = await this.prisma.case.findMany({ select: { id: true, clientName: true } });
+        for (const c of allCases) {
+            const nameParts = c.clientName.toLowerCase().split(' ').filter((p) => p.length > 2);
+            if (nameParts.some((part) => text.toLowerCase().includes(part))) {
+                return { caseId: c.id, method: 'client_name' };
+            }
         }
         const domain = email.fromAddress.split('@')[1]?.toLowerCase();
         if (domain) {
@@ -80,16 +99,16 @@ let ClassificationService = class ClassificationService {
 
 아래 이메일을 분석해 다음 6개 중 정확히 하나의 action_category를 선택하세요:
 - "답변 필요": 상대방(보험사, 병원, 고객 등)이 자료·정보·회신을 명시적으로 요청한 경우
-- "서류 제출": Lien 서명, 자료 반송, 첨부파일 전달이 필요한 경우
+- "서류 제출": 상대방이 Lien 서명, 자료 반송, 첨부파일 전달을 **요청**한 경우 (우리가 먼저 보내는 건 해당 없음)
 - "답변 확인": 우리가 보낸 이메일에 대해 상대방 회신이 왔는지 팔로업이 필요한 경우
 - "검토 필요": 내용이 불명확하거나 복합적이어서 담당자 검토가 필요한 경우
-- "참고": 단순 안내, Thank you, 별도 액션 불필요한 경우
+- "참고": 단순 안내, Thank you letter 발송, 우리가 먼저 첨부파일을 보내는 경우, 별도 액션 불필요한 경우
 - "미정": 위 5개 중 명확히 해당하지 않는 경우
 
 아울러 이메일 내용을 한국어로 한 줄(30자 이내)로 요약하세요.
 
 [이메일 정보]
-발신자: ${email.fromName ?? ''}
+발신자: ${(0, phi_masker_1.maskPhi)(email.fromName ?? '')}
 제목: ${subject}
 본문: ${body}
 
@@ -104,7 +123,7 @@ JSON만 출력하세요:
             const actionCategory = ACTION_CATEGORIES.includes(parsed.action_category) ? parsed.action_category : '미정';
             return {
                 actionCategory,
-                aiSummary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 60) : '',
+                aiSummary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 30) : '',
             };
         }
         catch {

@@ -25,23 +25,8 @@ let EmailController = class EmailController {
         this.authService = authService;
     }
     async sync(req) {
-        const session = req.session;
-        if (session.userEmail) {
-            const expiry = session.tokenExpiresAt ? new Date(session.tokenExpiresAt) : undefined;
-            const needsRefresh = !expiry || expiry <= new Date(Date.now() + 5 * 60 * 1000);
-            if (needsRefresh) {
-                try {
-                    const fresh = await this.authService.acquireSilent(session.userEmail);
-                    if (fresh) {
-                        session.accessToken = fresh.accessToken;
-                        session.tokenExpiresAt = fresh.expiresOn?.toISOString();
-                    }
-                }
-                catch { }
-            }
-            return this.emailService.syncEmails(session.accessToken);
-        }
-        return this.emailService.syncEmails();
+        const userEmail = req.session.userEmail;
+        return this.emailService.syncEmails(userEmail);
     }
     findAll(status, category, search) {
         return this.emailService.findAll({ status, category, search });
@@ -49,8 +34,9 @@ let EmailController = class EmailController {
     findUnclassified() {
         return this.emailService.findUnclassified();
     }
-    findOne(id) {
-        return this.emailService.findOne(id);
+    findOne(id, req) {
+        const userEmail = req.session.userEmail;
+        return this.emailService.findOne(id, undefined, userEmail);
     }
     confirm(id, req) {
         const reviewedBy = req.session.userEmail || 'unknown';
@@ -99,8 +85,9 @@ __decorate([
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], EmailController.prototype, "findOne", null);
 __decorate([

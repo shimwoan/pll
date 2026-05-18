@@ -61,7 +61,7 @@ export function EmailTable({ emails, isLoading }: EmailTableProps) {
               <td className="px-4 py-2.5 max-w-xs">
                 <span className="truncate block text-xs font-medium text-gray-800">{email.subject}</span>
                 <span className="truncate block text-xs text-gray-400">
-                  {email.bodyPreview.length > 60 ? email.bodyPreview.slice(0, 60) + '...' : email.bodyPreview}
+                  {email.aiSummary || (email.bodyPreview.length > 60 ? email.bodyPreview.slice(0, 60) + '...' : email.bodyPreview)}
                 </span>
               </td>
               <td className="px-4 py-2.5 text-xs">

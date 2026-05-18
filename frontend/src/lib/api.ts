@@ -63,6 +63,23 @@ export interface ToastItem {
   receivedAt: string
 }
 
+export interface Case {
+  id: string
+  caseNumber: string
+  claimNumbers: string[]
+  clientName: string
+  handler: string
+  stage: string
+  dateOfLoss: string | null
+  dueDate: string | null
+  createdAt: string
+}
+
+export const caseApi = {
+  list: (params?: { search?: string }) =>
+    api.get<Case[]>('/cases', { params }).then((r) => r.data),
+}
+
 export const authApi = {
   me: () => api.get<{ authenticated: boolean; email?: string; name?: string }>('/auth/me').then((r) => r.data),
   login: () => { window.location.href = `${import.meta.env.VITE_API_URL}/auth/login` },

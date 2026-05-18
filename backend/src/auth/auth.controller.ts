@@ -31,10 +31,8 @@ export class AuthController {
     try {
       const result = await this.authService.exchangeCodeForToken(code);
 
-(req.session as any).accessToken = result.accessToken;
-      (req.session as any).userEmail = result.account?.username;
+(req.session as any).userEmail = result.account?.username;
       (req.session as any).userName = result.account?.name;
-      (req.session as any).tokenExpiresAt = result.expiresOn?.toISOString();
 
       // Persist token for webhook use
       await this.prisma.userToken.upsert({
@@ -67,14 +65,28 @@ export class AuthController {
   }
 
   @Get('me')
-  me(@Req() req: Request) {
+  async me(@Req() req: Request) {
     const session = req.session as any;
-    if (!session.accessToken) return { authenticated: false };
-    return {
-      authenticated: true,
-      email: session.userEmail,
-      name: session.userName,
-    };
+
+    // Session intact — fast path
+    if (session.userEmail) {
+      const token = await this.prisma.userToken.findUnique({ where: { userEmail: session.userEmail } });
+      if (token) return { authenticated: true, email: session.userEmail, name: session.userName };
+    }
+
+    // Session lost but token exists in DB — restore session silently
+    const token = await this.prisma.userToken.findFirst({ orderBy: { updatedAt: 'desc' } });
+    if (!token) return { authenticated: false };
+
+    // Try to get a fresh token to confirm the account is still valid
+    const freshToken = await this.authService.acquireSilent(token.userEmail).catch(() => null);
+    if (!freshToken) return { authenticated: false };
+
+    // Restore session
+    session.userEmail = token.userEmail;
+    session.userName = freshToken.account?.name ?? token.userEmail;
+
+    return { authenticated: true, email: session.userEmail, name: session.userName };
   }
 
   @Get('logout')

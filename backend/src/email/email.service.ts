@@ -35,10 +35,15 @@ export class EmailService {
         });
         return silent.accessToken;
       }
-    } catch {}
+    } catch (err) {
+      this.logger.warn(`MSAL silent refresh failed for ${userEmail}: ${(err as any)?.message}`);
+    }
 
     // Fallback to stored refresh token
-    if (!stored.refreshToken) return null;
+    if (!stored.refreshToken) {
+      this.logger.warn(`No refresh token stored for ${userEmail}`);
+      return null;
+    }
     try {
       const result = await this.auth.refreshToken(stored.refreshToken);
       if (!result) return null;
@@ -51,7 +56,8 @@ export class EmailService {
         },
       });
       return result.accessToken;
-    } catch {
+    } catch (err) {
+      this.logger.error(`Refresh token fallback failed for ${userEmail}: ${(err as any)?.message}`);
       return null;
     }
   }
@@ -113,11 +119,11 @@ export class EmailService {
     });
   }
 
-  async syncEmails(accessToken?: string) {
-    if (!accessToken) {
-      const stored = await this.prisma.userToken.findFirst({ orderBy: { updatedAt: 'desc' } });
-      if (stored) accessToken = await this.getFreshToken(stored.userEmail) ?? undefined;
-    }
+  async syncEmails(userEmail?: string) {
+    const email = userEmail
+      ? await this.prisma.userToken.findUnique({ where: { userEmail } })
+      : await this.prisma.userToken.findFirst({ orderBy: { updatedAt: 'desc' } });
+    const accessToken = email ? await this.getFreshToken(email.userEmail) ?? undefined : undefined;
     if (!accessToken) {
       return { synced: 0, error: 'No access token available. Please log in first.' };
     }
@@ -162,19 +168,21 @@ export class EmailService {
     });
   }
 
-  async findOne(id: string, sessionToken?: string) {
+  async findOne(id: string, _sessionToken?: string, userEmail?: string) {
     const email = await this.prisma.email.findUnique({
       where: { id },
       include: { case: true },
     });
     if (!email) return null;
 
-    if (!email.body || !email.aiSummary) {
+    if (!email.aiSummary) {
       try {
         let body = email.body;
 
         if (!body) {
-          const stored = await this.prisma.userToken.findFirst({ orderBy: { updatedAt: 'desc' } });
+          const stored = userEmail
+            ? await this.prisma.userToken.findUnique({ where: { userEmail } })
+            : await this.prisma.userToken.findFirst({ orderBy: { updatedAt: 'desc' } });
           const accessToken = stored ? await this.getFreshToken(stored.userEmail) : null;
           if (accessToken) {
             const msg = await this.graph.getMessage(accessToken, email.messageId);

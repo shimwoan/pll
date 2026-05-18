@@ -9,7 +9,6 @@
 
 Thank you letter 발송
 로펌 → 고객에게 사건의뢰해주셔서 감사하다는 Thank you letter 발송
-스페인어, 한국어, 영어 버전의 첨부파일을 함께 발송하며, 참고용으로 27824의 영어 샘플을 추가합니다.
 Next Action : 따로 없습니다. (고객이 메일 확인했는지 ack 확인 정도일텐데, 대부분 잘 받았다는 답변을 고객은 하지 않음)
 
 
@@ -19,7 +18,7 @@ View
 
 From: Omar <omar@.com>
 To: "client@gmail.com" <client@gmail.com>
-CC: "PLL+27824@.com" <PLL+27824@.com>, Smith <smith@.com>
+CC: "PLL+24793@.com" <PLL+24793@.com>, Smith <smith@.com>
 Date: 04/23/2025 10:10 AM
 Subject: DOL 04/20/2025 - Jos**h John Bowen
 
