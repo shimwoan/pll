@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { convert } from 'html-to-text';
 import { broadcastSse } from '../main';
 import { PrismaService } from '../prisma/prisma.service';
 import { GraphService } from '../graph/graph.service';
@@ -61,7 +62,10 @@ export class EmailService {
     const toAddress = msg.toRecipients?.[0]?.emailAddress?.address || '';
     const bodyPreview = msg.bodyPreview?.slice(0, 500) || '';
 
-    const body = msg.body?.content || bodyPreview;
+    const rawBody = msg.body?.content || '';
+    const body = rawBody
+      ? convert(rawBody, { wordwrap: false, selectors: [{ selector: 'a', options: { ignoreHref: true } }, { selector: 'img', format: 'skip' }] })
+      : bodyPreview;
 
     const result = await this.classification.classify({
       subject: msg.subject || '(no subject)',
