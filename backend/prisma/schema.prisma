@@ -30,6 +30,8 @@ model Email {
   aiCategory     String?
   aiConfidence   Float?
   aiReason       String?
+  actionCategory String?
+  aiSummary      String?
   finalCategory  String?
   workTypeTitle  String?
 
