@@ -80,7 +80,7 @@ export function EmailDetailPage() {
 
           <div className="border border-gray-100 rounded-lg p-3 bg-gray-50">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">{selectedEmail.body ? 'Full Body' : 'Preview'}</span>
+              <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Full Body</span>
               <button
                 className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-40"
                 onClick={() => selectedEmail.webLink ? window.open(selectedEmail.webLink, '_blank', 'noopener,noreferrer') : null}
@@ -89,9 +89,10 @@ export function EmailDetailPage() {
                 <ExternalLink size={11} /> Open in Outlook
               </button>
             </div>
-            <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
-              {selectedEmail.body || selectedEmail.bodyPreview}
-            </pre>
+            {selectedEmail.body
+              ? <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">{selectedEmail.body}</pre>
+              : <div className="text-xs text-gray-400 italic py-2">본문 불러오는 중...</div>
+            }
           </div>
         </div>
 

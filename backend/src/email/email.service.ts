@@ -161,7 +161,7 @@ export class EmailService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, sessionToken?: string) {
     const email = await this.prisma.email.findUnique({
       where: { id },
       include: { case: true },
@@ -170,8 +170,11 @@ export class EmailService {
 
     if (!email.body) {
       try {
-        const stored = await this.prisma.userToken.findFirst({ orderBy: { updatedAt: 'desc' } });
-        const accessToken = stored ? await this.getFreshToken(stored.userEmail) : null;
+        let accessToken: string | null = sessionToken || null;
+        if (!accessToken) {
+          const stored = await this.prisma.userToken.findFirst({ orderBy: { updatedAt: 'desc' } });
+          accessToken = stored ? await this.getFreshToken(stored.userEmail) : null;
+        }
         if (accessToken) {
           const msg = await this.graph.getMessage(accessToken, email.messageId);
           const rawBody = msg.body?.content || '';

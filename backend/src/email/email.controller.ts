@@ -50,8 +50,9 @@ export class EmailController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.emailService.findOne(id);
+  findOne(@Param('id') id: string, @Req() req: Request) {
+    const accessToken = (req.session as any).accessToken;
+    return this.emailService.findOne(id, accessToken);
   }
 
   @Patch(':id/confirm')
