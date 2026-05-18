@@ -14,7 +14,7 @@ const TABS = [
   { label: 'Confirmed', value: 'CONFIRMED' },
 ]
 
-const CATEGORIES = ['Settlement', 'Medical', 'Client', 'Insurance', 'Police', 'Other']
+const CATEGORIES = ['답변 필요', '서류 제출', '답변 확인', '검토 필요', '참고', '미정']
 
 export function EmailsPage() {
   const { emails, allEmails, filters, isLoading, isSyncing, fetchEmails, syncEmails, setFilter } = useEmailStore()

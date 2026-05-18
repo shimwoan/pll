@@ -30,7 +30,9 @@ function SseListener() {
       fetchEmails(true)
     }
 
-    es.onerror = () => es.close()
+    es.onerror = () => {
+      // Let EventSource handle automatic reconnection — don't force close
+    }
 
     return () => es.close()
   }, [])

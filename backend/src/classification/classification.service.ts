@@ -103,7 +103,7 @@ export class ClassificationService {
 아울러 이메일 내용을 한국어로 한 줄(30자 이내)로 요약하세요.
 
 [이메일 정보]
-발신자: ${email.fromName ?? ''}
+발신자: ${maskPhi(email.fromName ?? '')}
 제목: ${subject}
 본문: ${body}
 
@@ -119,7 +119,7 @@ JSON만 출력하세요:
       const actionCategory = ACTION_CATEGORIES.includes(parsed.action_category) ? parsed.action_category : '미정';
       return {
         actionCategory,
-        aiSummary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 60) : '',
+        aiSummary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 30) : '',
       };
     } catch {
       return { actionCategory: '미정', aiSummary: '' };

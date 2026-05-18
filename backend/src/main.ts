@@ -45,6 +45,11 @@ async function bootstrap() {
 
   // SSE endpoint — registered before NestJS router to bypass interceptors
   app.use('/emails/events', (req: Request, res: Response) => {
+    const sess = (req as any).session;
+    if (!sess?.accessToken) {
+      res.writeHead(401).end();
+      return;
+    }
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
