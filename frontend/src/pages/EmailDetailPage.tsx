@@ -78,6 +78,13 @@ export function EmailDetailPage() {
             </div>
           )}
 
+          {selectedEmail.aiSummary && (
+            <div className="mb-2 px-3 py-2 bg-blue-50 border border-blue-100 rounded-lg">
+              <span className="text-xs text-blue-400 font-medium uppercase tracking-wide mr-2">AI 요약</span>
+              <span className="text-xs text-blue-800">{selectedEmail.aiSummary}</span>
+            </div>
+          )}
+
           <div className="border border-gray-100 rounded-lg p-3 bg-gray-50">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Full Body</span>
