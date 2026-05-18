@@ -1,6 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import type { Response } from 'express';
-import { sseClients } from '../main';
+import { broadcastSse } from '../main';
 import { PrismaService } from '../prisma/prisma.service';
 import { GraphService } from '../graph/graph.service';
 import { ClassificationService } from '../classification/classification.service';
@@ -10,13 +9,6 @@ import { EditEmailDto } from './dto/edit-email.dto';
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private pushSseUpdate() {
-    this.logger.log(`Pushing SSE to ${sseClients.size} clients`);
-    for (const res of sseClients) {
-      res.write('data: new_email\n\n');
-    }
-  }
-
   constructor(
     private prisma: PrismaService,
     private graph: GraphService,
@@ -82,7 +74,7 @@ export class EmailService {
       ? 'PENDING_REVIEW'
       : 'UNCLASSIFIED';
 
-    await this.prisma.email.upsert({
+    const saved = await this.prisma.email.upsert({
       where: { messageId: msg.id },
       create: {
         messageId: msg.id,
@@ -95,12 +87,23 @@ export class EmailService {
         aiCategory: result.category,
         aiConfidence: result.confidence,
         aiReason: result.reason,
+        actionCategory: result.actionCategory,
+        aiSummary: result.aiSummary,
         matchedCaseId: result.matchedCaseId,
         matchMethod: result.matchMethod,
         webLink: msg.webLink || null,
         status: status as any,
       },
       update: {},
+    });
+
+    broadcastSse({
+      id: saved.id,
+      actionCategory: result.actionCategory,
+      aiSummary: result.aiSummary,
+      subject: msg.subject || '(no subject)',
+      fromName,
+      receivedAt: saved.receivedAt.toISOString(),
     });
   }
 
@@ -234,7 +237,6 @@ export class EmailService {
       try {
         const msg = await this.graph.getMessage(accessToken, messageId);
         await this.ingestMessage(msg);
-        this.pushSseUpdate();
       } catch (err) {
         this.logger.error(`Failed to ingest webhook message ${messageId}`, err);
       }
