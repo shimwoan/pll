@@ -84,6 +84,7 @@ export class EmailService {
         messageId: msg.id,
         subject: msg.subject || '(no subject)',
         bodyPreview,
+        body,
         fromAddress,
         fromName,
         toAddress,

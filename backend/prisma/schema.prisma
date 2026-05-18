@@ -22,6 +22,7 @@ model Email {
   messageId      String      @unique
   subject        String
   bodyPreview    String
+  body           String?
   fromAddress    String
   fromName       String
   toAddress      String
