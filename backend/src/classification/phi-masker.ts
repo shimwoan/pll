@@ -39,7 +39,7 @@ const PHI_PATTERNS: Array<{ pattern: RegExp; replacement: string }> = [
 // Salutation + name: requires at least one additional word after first name (first+last minimum)
 // Supports both "Dear John Smith" and "Dear John," (single first name with optional comma)
 const SALUTATION_PATTERN = /\b(?:Dear|Hi|Hello)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3}),?/g;
-const FORMAL_LABEL_PATTERN = /(?:\b(?:Patient|Client|Claimant)\b|(?:고객|의뢰인|환자))[:,：\s]+([가-힣]{2,4}|[A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})/g;
+const FORMAL_LABEL_PATTERN = /\b(?:Patient|Client|Claimant)[:,\s]+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})/g;
 
 // Titles that precede a full name — dot is optional ("Dr Williams" vs "Dr. Williams")
 const TITLED_NAME_PATTERN = /\b(?:Mr\.?|Mrs\.?|Ms\.?|Dr\.?|Prof\.?)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\b/g;
@@ -89,10 +89,6 @@ export function maskPhi(text: string, fromName?: string): string {
   masked = masked.replace(SALUTATION_PATTERN, (match, name) => match.replace(name, '[NAME]'));
   masked = masked.replace(FORMAL_LABEL_PATTERN, (match, name) => match.replace(name, '[NAME]'));
   masked = masked.replace(TITLED_NAME_PATTERN, (match, name) => match.replace(name, '[NAME]'));
-
-  // Mask Korean names after Korean salutations
-  masked = masked.replace(/(?:안녕하세요|안녕히\s*계세요)\s+([가-힣]{2,4})\s*(?:고객님|님|씨)?/g,
-    (match, name) => match.replace(name, '[NAME]'));
 
   // Apply all structural PHI patterns
   for (const { pattern, replacement } of PHI_PATTERNS) {

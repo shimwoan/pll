@@ -135,25 +135,6 @@ describe('maskPhi', () => {
   });
 });
 
-describe('Korean name masking', () => {
-  it('masks Korean full name after 고객:', () => {
-    expect(maskPhi('고객: 김민준')).toContain('[NAME]')
-    expect(maskPhi('고객: 김민준')).not.toContain('김민준')
-  })
-
-  it('masks Korean name after 의뢰인:', () => {
-    expect(maskPhi('의뢰인: 박서연입니다')).toContain('[NAME]')
-  })
-
-  it('masks Korean name after 안녕하세요', () => {
-    expect(maskPhi('안녕하세요 이준호 고객님')).toContain('[NAME]')
-  })
-
-  it('does not mask single Korean char', () => {
-    expect(maskPhi('안')).toBe('안')
-  })
-})
-
 describe('DOL date masking', () => {
   it('masks DOL date pattern', () => {
     expect(maskPhi('DOL 04/20/2025')).toContain('[DOL]')
