@@ -14,7 +14,14 @@ const TABS = [
   { label: 'Confirmed', value: 'CONFIRMED' },
 ]
 
-const CATEGORIES = ['답변 필요', '서류 제출', '답변 확인', '검토 필요', '참고', '미정']
+const CATEGORIES: { label: string; value: string }[] = [
+  { label: 'Reply Required', value: '답변 필요' },
+  { label: 'Submit Docs', value: '서류 제출' },
+  { label: 'Awaiting Reply', value: '답변 확인' },
+  { label: 'Needs Review', value: '검토 필요' },
+  { label: 'FYI', value: '참고' },
+  { label: 'Unresolved', value: '미정' },
+]
 
 export function EmailsPage() {
   const { emails, allEmails, filters, isLoading, isSyncing, fetchEmails, syncEmails, setFilter } = useEmailStore()
@@ -131,7 +138,7 @@ export function EmailsPage() {
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
             {CATEGORIES.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
+              <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
             ))}
           </SelectContent>
         </Select>
