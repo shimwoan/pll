@@ -1,15 +1,16 @@
 const STATUS_CONFIG = {
-  PENDING_REVIEW: { label: 'Pending Review', className: 'bg-amber-100 text-amber-800' },
-  CONFIRMED: { label: 'Confirmed', className: 'bg-green-100 text-green-800' },
-  EDITED: { label: 'Edited', className: 'bg-blue-100 text-blue-800' },
-  UNCLASSIFIED: { label: 'Unclassified', className: 'bg-gray-100 text-gray-600' },
+  PENDING_REVIEW: { label: 'Pending Review', dot: 'bg-amber-400', text: 'text-gray-600' },
+  CONFIRMED: { label: 'Confirmed', dot: 'bg-gray-400', text: 'text-gray-500' },
+  EDITED: { label: 'Edited', dot: 'bg-gray-400', text: 'text-gray-500' },
+  UNCLASSIFIED: { label: 'Unclassified', dot: 'bg-gray-300', text: 'text-gray-400' },
 }
 
 export function EmailStatusBadge({ status }: { status: string }) {
   const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.UNCLASSIFIED
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${config.className}`}>
-      {config.label}
+    <span className="inline-flex items-center gap-1.5">
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${config.dot}`} />
+      <span className={`text-xs ${config.text}`}>{config.label}</span>
     </span>
   )
 }

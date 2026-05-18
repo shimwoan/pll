@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toast 디자인 v2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #f9fafb;
+    color: #111827;
+    padding: 32px;
+    -webkit-font-smoothing: antialiased;
+  }
+  h2 { font-size: 15px; font-weight: 600; color: #111827; margin-bottom: 4px; }
+  .sub { font-size: 12px; color: #9ca3af; margin-bottom: 32px; }
+
+  .app-shell {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    min-height: 420px;
+  }
+  .app-topbar {
+    background: white;
+    border-bottom: 1px solid #f3f4f6;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 6px;
+  }
+  .app-topbar-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .app-topbar-logo { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #374151; text-transform: uppercase; margin-left: 12px; }
+  .app-content {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  .stat-card {
+    background: white;
+    border: 1px solid #f3f4f6;
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .stat-label { font-size: 11px; color: #9ca3af; margin-bottom: 4px; }
+  .stat-value { font-size: 20px; font-weight: 600; color: #111827; }
+
+  .toast-stack {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 6px;
+    width: 288px;
+  }
+
+  .toast {
+    background: white;
+    border-radius: 8px;
+    padding: 11px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .toast-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+  .toast-body { flex: 1; min-width: 0; }
+  .toast-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+  }
+  .toast-action { font-size: 10px; font-weight: 600; letter-spacing: 0.03em; }
+  .toast-time { font-size: 10px; color: #d1d5db; }
+  .toast-subject {
+    font-size: 11px;
+    color: #374151;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+  }
+  .toast-from { font-size: 10px; color: #9ca3af; }
+
+  /* 답변 필요 — red */
+  .t-urgent {
+    border: 1px solid #fca5a5;
+    box-shadow: 0 2px 8px rgba(239,68,68,0.10), 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .t-urgent .toast-dot { background: #fca5a5; }
+  .t-urgent .toast-action { color: #dc2626; }
+
+  /* 서류 제출 — amber */
+  .t-docs {
+    border: 1px solid #fcd34d;
+    box-shadow: 0 2px 8px rgba(245,158,11,0.10), 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .t-docs .toast-dot { background: #fcd34d; }
+  .t-docs .toast-action { color: #b45309; }
+
+  /* 답변 확인 — blue */
+  .t-followup {
+    border: 1px solid #93c5fd;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.10), 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .t-followup .toast-dot { background: #93c5fd; }
+  .t-followup .toast-action { color: #2563eb; }
+
+  /* 검토 필요 — violet */
+  .t-review {
+    border: 1px solid #c4b5fd;
+    box-shadow: 0 2px 8px rgba(139,92,246,0.10), 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .t-review .toast-dot { background: #c4b5fd; }
+  .t-review .toast-action { color: #7c3aed; }
+
+  /* 참고 — gray */
+  .t-ack {
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .t-ack .toast-dot { background: #d1d5db; }
+  .t-ack .toast-action { color: #9ca3af; }
+
+  .legend { display: flex; flex-direction: column; gap: 6px; margin-top: 20px; }
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #f3f4f6;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  .legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .legend-name { font-weight: 600; width: 80px; }
+  .legend-desc { color: #9ca3af; flex: 1; }
+  .sel-indicator { display: none; }
+</style>
+</head>
+<body>
+
+<h2>Toast 알림 v2 — 카테고리별 border + tinted shadow</h2>
+<p class="sub">각 카테고리 색상을 border와 shadow에 은은하게 적용 — 눈에 띄되 과하지 않게</p>
+
+<div class="app-shell">
+  <div class="app-topbar">
+    <div class="app-topbar-dot" style="background:#ef4444;"></div>
+    <div class="app-topbar-dot" style="background:#f59e0b;"></div>
+    <div class="app-topbar-dot" style="background:#22c55e;"></div>
+    <span class="app-topbar-logo">Pacific Liberty Law</span>
+  </div>
+  <div class="app-content">
+    <div class="stat-card"><div class="stat-label">Pending Review</div><div class="stat-value">24</div></div>
+    <div class="stat-card"><div class="stat-label">Unclassified</div><div class="stat-value">7</div></div>
+    <div class="stat-card"><div class="stat-label">Today's Emails</div><div class="stat-value">38</div></div>
+  </div>
+
+  <div class="toast-stack">
+
+    <div class="toast t-urgent">
+      <div class="toast-dot"></div>
+      <div class="toast-body">
+        <div class="toast-top">
+          <span class="toast-action">답변 필요</span>
+          <span class="toast-time">방금</span>
+        </div>
+        <div class="toast-subject">Re: Claim #24-XXXXXXX</div>
+        <div class="toast-from">Miranda B. · Progressive</div>
+      </div>
+    </div>
+
+    <div class="toast t-docs">
+      <div class="toast-dot"></div>
+      <div class="toast-body">
+        <div class="toast-top">
+          <span class="toast-action">서류 제출</span>
+          <span class="toast-time">3분</span>
+        </div>
+        <div class="toast-subject">RE: (24793) P** Hernandez</div>
+        <div class="toast-from">K. Zaug · Pledge Medical</div>
+      </div>
+    </div>
+
+    <div class="toast t-followup">
+      <div class="toast-dot"></div>
+      <div class="toast-body">
+        <div class="toast-top">
+          <span class="toast-action">답변 확인</span>
+          <span class="toast-time">8분</span>
+        </div>
+        <div class="toast-subject">Re: (24793) 3/24/24 | P** Hernandez</div>
+        <div class="toast-from">Pledge Case Managers</div>
+      </div>
+    </div>
+
+    <div class="toast t-ack">
+      <div class="toast-dot"></div>
+      <div class="toast-body">
+        <div class="toast-top">
+          <span class="toast-action">참고</span>
+          <span class="toast-time">12분</span>
+        </div>
+        <div class="toast-subject">DOL 04/20/2025 - J** Bowen</div>
+        <div class="toast-from">Omar H. · PLL</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="legend">
+  <div style="font-size:11px;color:#9ca3af;margin-bottom:2px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">카테고리</div>
+  <div class="legend-row" style="border-color:#fca5a5;">
+    <div class="legend-dot" style="background:#fca5a5;"></div>
+    <span class="legend-name" style="color:#dc2626;">답변 필요</span>
+    <span class="legend-desc">보험사/병원에서 자료·정보 요청</span>
+  </div>
+  <div class="legend-row" style="border-color:#fcd34d;">
+    <div class="legend-dot" style="background:#fcd34d;"></div>
+    <span class="legend-name" style="color:#b45309;">서류 제출</span>
+    <span class="legend-desc">Lien 서명, 자료 반송, 첨부 전달</span>
+  </div>
+  <div class="legend-row" style="border-color:#93c5fd;">
+    <div class="legend-dot" style="background:#93c5fd;"></div>
+    <span class="legend-name" style="color:#2563eb;">답변 확인</span>
+    <span class="legend-desc">내가 보낸 후 회신 대기 — 팔로업</span>
+  </div>
+  <div class="legend-row" style="border-color:#c4b5fd;">
+    <div class="legend-dot" style="background:#c4b5fd;"></div>
+    <span class="legend-name" style="color:#7c3aed;">검토 필요</span>
+    <span class="legend-desc">분류 불명확, 보이스메일, 복합 내용</span>
+  </div>
+  <div class="legend-row">
+    <div class="legend-dot" style="background:#d1d5db;"></div>
+    <span class="legend-name" style="color:#9ca3af;">참고</span>
+    <span class="legend-desc">Thank you, 단순 전달, ACK 불필요</span>
+  </div>
+</div>
+
+<script src="http://localhost:53099/__helper.js"></script>
+</body>
+</html>

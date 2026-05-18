@@ -4,15 +4,9 @@ export function LoginPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="bg-white border border-gray-200 rounded-xl p-10 flex flex-col items-center gap-6 w-full max-w-sm shadow-sm">
-        <div
-          className="w-14 h-14 flex items-center justify-center border-2 font-bold text-lg"
-          style={{ borderColor: '#B8960C', color: '#B8960C' }}
-        >
-          PL
-        </div>
+        <img src="/logo.png" alt="Pacific Liberty Law" className="h-16 object-contain" />
         <div className="text-center">
-          <h1 className="text-xl font-bold text-gray-900">Pacific Liberty Law</h1>
-          <p className="text-sm text-gray-500 mt-1">Email Classification System</p>
+          <p className="text-sm text-gray-500">Email Classification System</p>
         </div>
         <button
           onClick={() => authApi.login()}

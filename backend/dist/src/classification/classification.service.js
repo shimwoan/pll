@@ -8,14 +8,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ClassificationService = void 0;
 const common_1 = require("@nestjs/common");
-const sdk_1 = __importDefault(require("@anthropic-ai/sdk"));
+const genai_1 = require("@google/genai");
 const prisma_service_1 = require("../prisma/prisma.service");
+const phi_masker_1 = require("./phi-masker");
 const INSURANCE_DOMAINS = [
     'statefarm.com', 'allstate.com', 'geico.com', 'progressive.com',
     'farmers.com', 'usaa.com', 'libertymutual.com', 'nationwide.com',
@@ -26,22 +24,26 @@ const MEDICAL_DOMAINS = [
 ];
 let ClassificationService = class ClassificationService {
     prisma;
-    anthropic;
+    genai;
     constructor(prisma) {
         this.prisma = prisma;
-        this.anthropic = new sdk_1.default({ apiKey: process.env.ANTHROPIC_API_KEY });
+        this.genai = new genai_1.GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     }
     async classify(email) {
         const matchResult = await this.matchCase(email);
         const aiResult = await this.classifyWithAI(email);
         return {
-            ...aiResult,
+            category: aiResult.actionCategory,
+            confidence: 1.0,
+            reason: aiResult.aiSummary,
+            actionCategory: aiResult.actionCategory,
+            aiSummary: aiResult.aiSummary,
             matchedCaseId: matchResult.caseId,
             matchMethod: matchResult.method,
         };
     }
     async matchCase(email) {
-        const text = `${email.subject} ${email.bodyPreview}`;
+        const text = `${email.subject} ${email.body}`;
         const caseNumberMatch = text.match(/\b(\d{4}-PI-\d{3,})\b/i);
         if (caseNumberMatch) {
             const found = await this.prisma.case.findUnique({
@@ -60,8 +62,8 @@ let ClassificationService = class ClassificationService {
         }
         const domain = email.fromAddress.split('@')[1]?.toLowerCase();
         if (domain) {
-            const isInsurance = INSURANCE_DOMAINS.some((d) => domain.includes(d));
-            const isMedical = MEDICAL_DOMAINS.some((d) => domain.includes(d));
+            const isInsurance = INSURANCE_DOMAINS.some((d) => domain === d || domain.endsWith('.' + d));
+            const isMedical = MEDICAL_DOMAINS.some((d) => domain === d || domain.endsWith('.' + d));
             if (isInsurance || isMedical) {
                 return { caseId: null, method: 'sender_domain' };
             }
@@ -69,39 +71,44 @@ let ClassificationService = class ClassificationService {
         return { caseId: null, method: null };
     }
     async classifyWithAI(email) {
-        const message = await this.anthropic.messages.create({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 256,
-            messages: [
-                {
-                    role: 'user',
-                    content: `You are an email classifier for a Personal Injury law firm.
-Classify the email into exactly one category:
-- Settlement: settlement offers, negotiation, release documents
-- Medical: medical records, billing, treatment, provider communication
-- Client: client updates, questions, calls, personal communication
-- Insurance: adjuster communication, coverage, liability, LOR
-- Police: police reports, DMV, government agencies
-- Other: anything else
+        const subject = (0, phi_masker_1.maskPhi)(email.subject, email.fromName);
+        const body = (0, phi_masker_1.maskPhi)(email.body, email.fromName);
+        const ACTION_CATEGORIES = ['답변 필요', '서류 제출', '답변 확인', '검토 필요', '참고', '미정'];
+        const response = await this.genai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `당신은 PI(Personal Injury) 법무법인의 이메일 분류 AI입니다.
 
-Email Subject: ${email.subject}
-Email Preview: ${email.bodyPreview}
+아래 이메일을 분석해 다음 6개 중 정확히 하나의 action_category를 선택하세요:
+- "답변 필요": 상대방(보험사, 병원, 고객 등)이 자료·정보·회신을 명시적으로 요청한 경우
+- "서류 제출": Lien 서명, 자료 반송, 첨부파일 전달이 필요한 경우
+- "답변 확인": 우리가 보낸 이메일에 대해 상대방 회신이 왔는지 팔로업이 필요한 경우
+- "검토 필요": 내용이 불명확하거나 복합적이어서 담당자 검토가 필요한 경우
+- "참고": 단순 안내, Thank you, 별도 액션 불필요한 경우
+- "미정": 위 5개 중 명확히 해당하지 않는 경우
 
-Respond with JSON only: {"category": "Settlement|Medical|Client|Insurance|Police|Other", "confidence": 0.0, "reason": "..."}`,
-                },
-            ],
+아울러 이메일 내용을 한국어로 한 줄(30자 이내)로 요약하세요.
+
+[이메일 정보]
+발신자: ${email.fromName ?? ''}
+제목: ${subject}
+본문: ${body}
+
+JSON만 출력하세요:
+{"action_category": "...", "summary": "..."}`,
+            config: { maxOutputTokens: 256 },
         });
         try {
-            const text = message.content[0].text;
-            const parsed = JSON.parse(text);
+            const raw = (response.text ?? '').replace(/```json\s*|\s*```/g, '').trim();
+            const jsonMatch = raw.match(/\{[\s\S]*\}/);
+            const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
+            const actionCategory = ACTION_CATEGORIES.includes(parsed.action_category) ? parsed.action_category : '미정';
             return {
-                category: parsed.category || 'Other',
-                confidence: parsed.confidence || 0.5,
-                reason: parsed.reason || '',
+                actionCategory,
+                aiSummary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 60) : '',
             };
         }
         catch {
-            return { category: 'Other', confidence: 0.3, reason: 'Classification failed' };
+            return { actionCategory: '미정', aiSummary: '' };
         }
     }
 };

@@ -10,15 +10,18 @@ exports.EmailModule = void 0;
 const common_1 = require("@nestjs/common");
 const email_service_1 = require("./email.service");
 const email_controller_1 = require("./email.controller");
+const email_polling_service_1 = require("./email-polling.service");
 const graph_module_1 = require("../graph/graph.module");
 const classification_module_1 = require("../classification/classification.module");
+const prisma_module_1 = require("../prisma/prisma.module");
+const auth_module_1 = require("../auth/auth.module");
 let EmailModule = class EmailModule {
 };
 exports.EmailModule = EmailModule;
 exports.EmailModule = EmailModule = __decorate([
     (0, common_1.Module)({
-        imports: [graph_module_1.GraphModule, classification_module_1.ClassificationModule],
-        providers: [email_service_1.EmailService],
+        imports: [graph_module_1.GraphModule, classification_module_1.ClassificationModule, prisma_module_1.PrismaModule, auth_module_1.AuthModule],
+        providers: [email_service_1.EmailService, email_polling_service_1.EmailPollingService],
         controllers: [email_controller_1.EmailController],
     })
 ], EmailModule);

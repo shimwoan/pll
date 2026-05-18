@@ -9,12 +9,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GraphModule = void 0;
 const common_1 = require("@nestjs/common");
 const graph_service_1 = require("./graph.service");
+const webhook_renewal_service_1 = require("./webhook-renewal.service");
+const prisma_module_1 = require("../prisma/prisma.module");
 let GraphModule = class GraphModule {
 };
 exports.GraphModule = GraphModule;
 exports.GraphModule = GraphModule = __decorate([
     (0, common_1.Module)({
-        providers: [graph_service_1.GraphService],
+        imports: [prisma_module_1.PrismaModule],
+        providers: [graph_service_1.GraphService, webhook_renewal_service_1.WebhookRenewalService],
         exports: [graph_service_1.GraphService],
     })
 ], GraphModule);

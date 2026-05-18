@@ -36,7 +36,7 @@
 
 AI에 전달하는 필드:
 - `subject` — PHI 마스킹 적용
-- `body_preview` — PHI 마스킹 적용 (최대 500자)
+- `body` — PHI 마스킹 적용 (전체 본문)
 - `from_name` — 발신자 이름만 (이메일 주소 제외)
 
 전달하지 않는 필드:
@@ -65,7 +65,7 @@ PHI 마스킹은 기존 `phi-masker.ts`를 그대로 활용한다.
 [이메일 정보]
 발신자: {from_name}
 제목: {subject}
-본문 미리보기: {body_preview}
+본문: {body}
 
 JSON만 출력하세요:
 {"action_category": "...", "summary": "..."}

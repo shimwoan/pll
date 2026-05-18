@@ -28,14 +28,29 @@ export class GraphService {
   async createSubscription(accessToken: string) {
     const client = this.getClient(accessToken);
     const expiryDate = new Date();
-    expiryDate.setHours(expiryDate.getHours() + 23);
+    expiryDate.setDate(expiryDate.getDate() + 2); // max 3 days, use 2 to be safe
 
     return client.api('/subscriptions').post({
       changeType: 'created',
       notificationUrl: process.env.WEBHOOK_NOTIFICATION_URL,
       resource: '/me/mailFolders/inbox/messages',
       expirationDateTime: expiryDate.toISOString(),
-      clientState: 'pll-email-webhook',
+      clientState: process.env.WEBHOOK_CLIENT_STATE || 'pll-email-webhook',
+    });
+  }
+
+  async listSubscriptions(accessToken: string) {
+    const client = this.getClient(accessToken);
+    const result = await client.api('/subscriptions').get();
+    return result.value as any[];
+  }
+
+  async renewSubscription(accessToken: string, subscriptionId: string) {
+    const client = this.getClient(accessToken);
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 2);
+    return client.api(`/subscriptions/${subscriptionId}`).patch({
+      expirationDateTime: expiryDate.toISOString(),
     });
   }
 

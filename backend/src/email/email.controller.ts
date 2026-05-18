@@ -1,17 +1,38 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { EmailService } from './email.service';
+import { AuthService } from '../auth/auth.service';
 import { EditEmailDto } from './dto/edit-email.dto';
 
 @Controller('emails')
 export class EmailController {
-  constructor(private readonly emailService: EmailService) {}
+  constructor(
+    private readonly emailService: EmailService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Post('sync')
   async sync(@Req() req: Request) {
-    const accessToken = (req.session as any).accessToken;
-    if (!accessToken) return { error: 'Not authenticated' };
-    return this.emailService.syncEmails(accessToken);
+    const session = req.session as any;
+
+    if (session.userEmail) {
+      // Silently refresh if token is expired or close to expiry (within 5 min)
+      const expiry: Date | undefined = session.tokenExpiresAt ? new Date(session.tokenExpiresAt) : undefined;
+      const needsRefresh = !expiry || expiry <= new Date(Date.now() + 5 * 60 * 1000);
+      if (needsRefresh) {
+        try {
+          const fresh = await this.authService.acquireSilent(session.userEmail);
+          if (fresh) {
+            session.accessToken = fresh.accessToken;
+            session.tokenExpiresAt = fresh.expiresOn?.toISOString();
+          }
+        } catch {}
+      }
+      return this.emailService.syncEmails(session.accessToken);
+    }
+
+    // No session — fall back to DB-stored token (handles server restarts)
+    return this.emailService.syncEmails();
   }
 
   @Get()
@@ -52,13 +73,12 @@ export class EmailController {
   }
 
   @Post('webhook')
-  async webhook(@Query('validationToken') validationToken: string, @Body() body: any, @Req() req: Request, @Res() res: Response) {
+  async webhook(@Query('validationToken') validationToken: string, @Body() body: any, @Res() res: Response) {
     if (validationToken) {
       res.setHeader('Content-Type', 'text/plain');
       return res.send(validationToken);
     }
-    const accessToken = (req.session as any)?.accessToken;
-    const result = await this.emailService.handleWebhook(body, accessToken);
+    const result = await this.emailService.handleWebhook(body);
     return res.json(result);
   }
 }

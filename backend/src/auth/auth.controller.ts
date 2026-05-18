@@ -23,13 +23,18 @@ export class AuthController {
   @Get('callback')
   async callback(@Query('code') code: string, @Query('error') error: string, @Req() req: Request, @Res() res: Response) {
     if (error) {
-      return res.redirect(`${process.env.FRONTEND_URL}/login?error=${error}`);
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=${encodeURIComponent(error)}`);
+    }
+    if (!code) {
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=missing_code`);
     }
     try {
       const result = await this.authService.exchangeCodeForToken(code);
-      (req.session as any).accessToken = result.accessToken;
+
+(req.session as any).accessToken = result.accessToken;
       (req.session as any).userEmail = result.account?.username;
       (req.session as any).userName = result.account?.name;
+      (req.session as any).tokenExpiresAt = result.expiresOn?.toISOString();
 
       // Persist token for webhook use
       await this.prisma.userToken.upsert({
@@ -37,10 +42,12 @@ export class AuthController {
         create: {
           userEmail: result.account?.username || '',
           accessToken: result.accessToken,
+          refreshToken: (result as any).refreshToken ?? null,
           expiresAt: result.expiresOn || new Date(Date.now() + 3600000),
         },
         update: {
           accessToken: result.accessToken,
+          refreshToken: (result as any).refreshToken ?? null,
           expiresAt: result.expiresOn || new Date(Date.now() + 3600000),
         },
       });
@@ -72,7 +79,9 @@ export class AuthController {
 
   @Get('logout')
   logout(@Req() req: Request, @Res() res: Response) {
-    req.session.destroy(() => {});
-    res.redirect(`${process.env.FRONTEND_URL}`);
+    req.session.destroy(() => {
+      res.clearCookie('connect.sid');
+      res.redirect(`${process.env.FRONTEND_URL}/login`);
+    });
   }
 }

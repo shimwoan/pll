@@ -19,7 +19,7 @@ let GraphService = class GraphService {
         const client = this.getClient(accessToken);
         const result = await client
             .api('/me/messages')
-            .select('id,subject,bodyPreview,from,toRecipients,receivedDateTime,body')
+            .select('id,subject,bodyPreview,from,toRecipients,receivedDateTime,body,webLink')
             .top(top)
             .orderby('receivedDateTime desc')
             .get();
@@ -32,13 +32,26 @@ let GraphService = class GraphService {
     async createSubscription(accessToken) {
         const client = this.getClient(accessToken);
         const expiryDate = new Date();
-        expiryDate.setHours(expiryDate.getHours() + 23);
+        expiryDate.setDate(expiryDate.getDate() + 2);
         return client.api('/subscriptions').post({
             changeType: 'created',
             notificationUrl: process.env.WEBHOOK_NOTIFICATION_URL,
             resource: '/me/mailFolders/inbox/messages',
             expirationDateTime: expiryDate.toISOString(),
-            clientState: 'pll-email-webhook',
+            clientState: process.env.WEBHOOK_CLIENT_STATE || 'pll-email-webhook',
+        });
+    }
+    async listSubscriptions(accessToken) {
+        const client = this.getClient(accessToken);
+        const result = await client.api('/subscriptions').get();
+        return result.value;
+    }
+    async renewSubscription(accessToken, subscriptionId) {
+        const client = this.getClient(accessToken);
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 2);
+        return client.api(`/subscriptions/${subscriptionId}`).patch({
+            expirationDateTime: expiryDate.toISOString(),
         });
     }
     async getUserProfile(accessToken) {

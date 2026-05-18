@@ -15,17 +15,33 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmailController = void 0;
 const common_1 = require("@nestjs/common");
 const email_service_1 = require("./email.service");
+const auth_service_1 = require("../auth/auth.service");
 const edit_email_dto_1 = require("./dto/edit-email.dto");
 let EmailController = class EmailController {
     emailService;
-    constructor(emailService) {
+    authService;
+    constructor(emailService, authService) {
         this.emailService = emailService;
+        this.authService = authService;
     }
     async sync(req) {
-        const accessToken = req.session.accessToken;
-        if (!accessToken)
-            return { error: 'Not authenticated' };
-        return this.emailService.syncEmails(accessToken);
+        const session = req.session;
+        if (session.userEmail) {
+            const expiry = session.tokenExpiresAt ? new Date(session.tokenExpiresAt) : undefined;
+            const needsRefresh = !expiry || expiry <= new Date(Date.now() + 5 * 60 * 1000);
+            if (needsRefresh) {
+                try {
+                    const fresh = await this.authService.acquireSilent(session.userEmail);
+                    if (fresh) {
+                        session.accessToken = fresh.accessToken;
+                        session.tokenExpiresAt = fresh.expiresOn?.toISOString();
+                    }
+                }
+                catch { }
+            }
+            return this.emailService.syncEmails(session.accessToken);
+        }
+        return this.emailService.syncEmails();
     }
     findAll(status, category, search) {
         return this.emailService.findAll({ status, category, search });
@@ -43,6 +59,10 @@ let EmailController = class EmailController {
     edit(id, dto, req) {
         const reviewedBy = req.session.userEmail || 'unknown';
         return this.emailService.edit(id, dto, reviewedBy);
+    }
+    unclassify(id, req) {
+        const reviewedBy = req.session.userEmail || 'unknown';
+        return this.emailService.unclassify(id, reviewedBy);
     }
     async webhook(validationToken, body, res) {
         if (validationToken) {
@@ -101,6 +121,14 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], EmailController.prototype, "edit", null);
 __decorate([
+    (0, common_1.Patch)(':id/unclassify'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], EmailController.prototype, "unclassify", null);
+__decorate([
     (0, common_1.Post)('webhook'),
     __param(0, (0, common_1.Query)('validationToken')),
     __param(1, (0, common_1.Body)()),
@@ -111,6 +139,7 @@ __decorate([
 ], EmailController.prototype, "webhook", null);
 exports.EmailController = EmailController = __decorate([
     (0, common_1.Controller)('emails'),
-    __metadata("design:paramtypes", [email_service_1.EmailService])
+    __metadata("design:paramtypes", [email_service_1.EmailService,
+        auth_service_1.AuthService])
 ], EmailController);
 //# sourceMappingURL=email.controller.js.map

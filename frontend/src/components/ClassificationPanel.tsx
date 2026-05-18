@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { WorkTypeSelect } from './WorkTypeSelect'
 import { CategoryBadge } from './CategoryBadge'
@@ -35,27 +34,30 @@ export function ClassificationPanel({
   const confidencePct = email.aiConfidence ? Math.round(email.aiConfidence * 100) : null
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+    <div className="bg-white border border-gray-100 rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-700">AI Classification</h3>
+        <div>
+          <div className="text-sm font-medium text-gray-700">AI Classification</div>
+          <div className="text-xs text-gray-400">Auto-detected from email content</div>
+        </div>
         {confidencePct && (
-          <span className="text-xs text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded-full">
+          <span className="text-xs text-gray-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-full">
             {confidencePct}% confidence
           </span>
         )}
       </div>
 
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500 w-24">Category</span>
+      <div className="space-y-2.5 mb-4">
+        <div className="flex items-center justify-between py-1 border-b border-gray-50">
+          <span className="text-xs text-gray-400 uppercase tracking-wide font-medium">Category</span>
           {isEditing ? (
             <Select value={category} onValueChange={(val) => { if (val !== null) setCategory(val) }}>
-              <SelectTrigger className="h-7 text-sm flex-1">
+              <SelectTrigger className="h-6 text-xs w-36 border-gray-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {CATEGORIES.map((c) => (
-                  <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>
+                  <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -64,58 +66,95 @@ export function ClassificationPanel({
           )}
         </div>
 
-        {email.aiReason && (
-          <div className="flex items-start gap-2">
-            <span className="text-xs text-gray-500 w-24 pt-0.5">Reason</span>
-            <span className="text-xs text-gray-600 flex-1">{email.aiReason}</span>
-          </div>
-        )}
-
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500 w-24">Work Type</span>
+        <div className="flex items-center justify-between py-1 border-b border-gray-50">
+          <span className="text-xs text-gray-400 uppercase tracking-wide font-medium">Work Type</span>
           {isEditing ? (
-            <div className="flex-1">
+            <div className="w-36">
               <WorkTypeSelect value={workType} onChange={setWorkType} />
             </div>
           ) : (
             <span className="text-xs text-gray-700">
-              {email.workTypeTitle || <span className="text-gray-400">Not set</span>}
+              {email.workTypeTitle || <span className="text-gray-300">Not set</span>}
             </span>
           )}
         </div>
+
+        {email.aiReason && (
+          <div className="py-1">
+            <div className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-1">Reason</div>
+            <div className="text-xs text-gray-600 leading-relaxed">{email.aiReason}</div>
+          </div>
+        )}
       </div>
 
-      <div className="flex gap-2 mt-4">
+      <div className="flex gap-2">
         {!isEditing ? (
           <>
             {email.status === 'PENDING_REVIEW' && (
               <>
-                <Button size="sm" onClick={onConfirm} disabled={isLoading} className="gap-1.5">
-                  <Check size={13} /> Accept
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => setIsEditing(true)} className="gap-1.5">
-                  <Pencil size={13} /> Edit
-                </Button>
-                <Button size="sm" variant="ghost" onClick={onUnclassify} disabled={isLoading} className="gap-1.5 text-gray-500">
-                  <X size={13} /> Unclassify
-                </Button>
+                <button
+                  onClick={onConfirm}
+                  disabled={isLoading}
+                  className="flex items-center gap-1 text-xs font-medium bg-gray-800 text-white px-3 py-1.5 rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50"
+                >
+                  <Check size={11} /> Accept
+                </button>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center gap-1 text-xs font-medium bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <Pencil size={11} /> Edit
+                </button>
+                <button
+                  onClick={onUnclassify}
+                  disabled={isLoading}
+                  className="flex items-center gap-1 text-xs text-gray-400 px-2 py-1.5 rounded-lg hover:bg-gray-50 hover:text-gray-600 transition-colors disabled:opacity-50"
+                >
+                  <X size={11} /> Unclassify
+                </button>
               </>
             )}
             {(email.status === 'CONFIRMED' || email.status === 'EDITED') && (
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setIsEditing(true)} className="gap-1.5">
-                  <Pencil size={13} /> Edit
-                </Button>
-                <Button size="sm" variant="ghost" onClick={onUnclassify} disabled={isLoading} className="gap-1.5 text-gray-500">
-                  <X size={13} /> Unclassify
-                </Button>
-              </div>
+              <>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center gap-1 text-xs font-medium bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <Pencil size={11} /> Edit
+                </button>
+                <button
+                  onClick={onUnclassify}
+                  disabled={isLoading}
+                  className="flex items-center gap-1 text-xs text-gray-400 px-2 py-1.5 rounded-lg hover:bg-gray-50 hover:text-gray-600 transition-colors disabled:opacity-50"
+                >
+                  <X size={11} /> Unclassify
+                </button>
+              </>
+            )}
+            {email.status === 'UNCLASSIFIED' && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="flex items-center gap-1 text-xs font-medium bg-gray-800 text-white px-3 py-1.5 rounded-lg hover:bg-gray-900 transition-colors"
+              >
+                <Pencil size={11} /> Classify
+              </button>
             )}
           </>
         ) : (
           <>
-            <Button size="sm" onClick={handleEdit} disabled={isLoading}>Save</Button>
-            <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)}>Cancel</Button>
+            <button
+              onClick={handleEdit}
+              disabled={isLoading}
+              className="text-xs font-medium bg-gray-800 text-white px-3 py-1.5 rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setIsEditing(false)}
+              className="text-xs text-gray-400 px-3 py-1.5 rounded-lg hover:bg-gray-50 hover:text-gray-600 transition-colors"
+            >
+              Cancel
+            </button>
           </>
         )}
       </div>

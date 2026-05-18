@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Layout } from '@/components/Layout'
 import { EmailTable } from '@/components/EmailTable'
-import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { emailApi } from '@/lib/api'
@@ -17,17 +16,20 @@ export function UnclassifiedPage() {
   }, [])
 
   return (
-    <Layout>
-      <Button variant="ghost" size="sm" onClick={() => navigate('/emails')} className="mb-4 gap-2 text-gray-500">
-        <ArrowLeft size={14} /> Back to Emails
-      </Button>
+    <Layout compact>
+      <button
+        onClick={() => navigate('/emails')}
+        className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700 transition-colors mb-4"
+      >
+        <ArrowLeft size={12} /> Back to Emails
+      </button>
 
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-baseline justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Unclassified Emails</h1>
-          <p className="text-sm text-gray-500 mt-1">Emails with no matching case — manual review required</p>
+          <h1 className="text-base font-semibold text-gray-800">Unclassified Emails</h1>
+          <p className="text-xs text-gray-400 mt-0.5">No matching case found — manual review required</p>
         </div>
-        <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{emails.length} emails</span>
+        <span className="text-xs text-gray-400 bg-white border border-gray-100 rounded-lg px-3 py-1.5">{emails.length} emails</span>
       </div>
 
       <EmailTable emails={emails} isLoading={isLoading} />

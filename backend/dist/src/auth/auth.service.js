@@ -45,6 +45,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const msal = __importStar(require("@azure/msal-node"));
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
+const CACHE_FILE = path.join(process.cwd(), '.msal-cache.json');
+const cachePlugin = {
+    beforeCacheAccess: async (ctx) => {
+        if (fs.existsSync(CACHE_FILE)) {
+            ctx.tokenCache.deserialize(fs.readFileSync(CACHE_FILE, 'utf8'));
+        }
+    },
+    afterCacheAccess: async (ctx) => {
+        if (ctx.cacheHasChanged) {
+            fs.writeFileSync(CACHE_FILE, ctx.tokenCache.serialize());
+        }
+    },
+};
 let AuthService = class AuthService {
     msalClient;
     constructor() {
@@ -52,27 +67,40 @@ let AuthService = class AuthService {
             auth: {
                 clientId: process.env.AZURE_CLIENT_ID,
                 clientSecret: process.env.AZURE_CLIENT_SECRET,
-                authority: `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}`,
+                authority: `https://login.microsoftonline.com/common`,
             },
+            cache: { cachePlugin },
         });
     }
     async getAuthUrl() {
         return this.msalClient.getAuthCodeUrl({
-            scopes: ['Mail.Read', 'Mail.Send', 'User.Read', 'offline_access'],
+            scopes: ['Mail.Read', 'User.Read', 'offline_access'],
             redirectUri: process.env.MICROSOFT_REDIRECT_URI,
+            prompt: 'select_account',
         });
     }
     async exchangeCodeForToken(code) {
         return this.msalClient.acquireTokenByCode({
             code,
-            scopes: ['Mail.Read', 'Mail.Send', 'User.Read', 'offline_access'],
+            scopes: ['Mail.Read', 'User.Read', 'offline_access'],
             redirectUri: process.env.MICROSOFT_REDIRECT_URI,
         });
     }
     async refreshToken(refreshToken) {
         return this.msalClient.acquireTokenByRefreshToken({
             refreshToken,
-            scopes: ['Mail.Read', 'Mail.Send', 'User.Read', 'offline_access'],
+            scopes: ['Mail.Read', 'User.Read', 'offline_access'],
+        });
+    }
+    async acquireSilent(userEmail) {
+        const accounts = await this.msalClient.getTokenCache().getAllAccounts();
+        const account = accounts.find(a => a.username?.toLowerCase() === userEmail.toLowerCase());
+        if (!account)
+            return null;
+        return this.msalClient.acquireTokenSilent({
+            account,
+            scopes: ['Mail.Read', 'User.Read', 'offline_access'],
+            forceRefresh: true,
         });
     }
 };

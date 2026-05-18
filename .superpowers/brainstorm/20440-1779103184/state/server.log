@@ -1,0 +1,9 @@
+{"type":"server-started","port":53099,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:53099","screen_dir":"/Users/jaemu/workspace/pll/.superpowers/brainstorm/20440-1779103184/content","state_dir":"/Users/jaemu/workspace/pll/.superpowers/brainstorm/20440-1779103184/state"}
+{"type":"screen-added","file":"/Users/jaemu/workspace/pll/.superpowers/brainstorm/20440-1779103184/content/toast-style.html"}
+{"source":"user-event","type":"click","text":"보험사 이메일\n            방금 전\n          \n          \n            Re: Claim #24-6123424\n            Miranda Barnett · Progressive\n            부상 정도, 미성년자 여부 문의. 답변 필요.\n            \n              답변 필요\n            \n          \n        \n        \n          \n            의료기관 이메일\n            2분 전\n          \n          \n            RE: (24793) Perez Hernandez\n            Pledge Medical · 병원\n            Lien 서명 및 추가 정보 요청.\n            \n              서류 제출 필요\n            \n          \n        \n      \n    \n    \n      B. 풍부한 정보형\n      카테고리 헤더 + 발신자 + 미리보기 + 다음 액션 태그. 정보가 많아 바로 판단 가능. 공간은 더 차지함.","choice":"b","id":null,"timestamp":1779103267746}
+{"type":"screen-added","file":"/Users/jaemu/workspace/pll/.superpowers/brainstorm/20440-1779103184/content/toast-action.html"}
+{"type":"screen-added","file":"/Users/jaemu/workspace/pll/.superpowers/brainstorm/20440-1779103184/content/action-categories.html"}
+{"type":"screen-added","file":"/Users/jaemu/workspace/pll/.superpowers/brainstorm/20440-1779103184/content/toast-refined.html"}
+{"type":"screen-added","file":"/Users/jaemu/workspace/pll/.superpowers/brainstorm/20440-1779103184/content/toast-refined-v2.html"}
+{"type":"screen-added","file":"/Users/jaemu/workspace/pll/.superpowers/brainstorm/20440-1779103184/content/waiting-1.html"}
+{"type":"server-stopped","reason":"idle timeout"}

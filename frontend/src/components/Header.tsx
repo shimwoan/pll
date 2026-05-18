@@ -1,10 +1,11 @@
-import { Mail, LayoutDashboard, Users, BarChart2, Settings, CheckSquare } from 'lucide-react'
+import { Mail, LayoutDashboard, Users, BarChart2, Settings, CheckSquare, FolderOpen } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { authApi } from '@/lib/api'
 
 const navItems = [
+  { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
   { label: 'Task', icon: CheckSquare, href: '#' },
-  { label: 'Matter', icon: LayoutDashboard, href: '#' },
+  { label: 'Matter', icon: FolderOpen, href: '#' },
   { label: 'Contact', icon: Users, href: '#' },
   { label: 'Emails', icon: Mail, href: '/emails' },
   { label: 'Report', icon: BarChart2, href: '#' },
@@ -15,50 +16,62 @@ export function Header({ userName }: { userName?: string }) {
   const location = useLocation()
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 flex items-center h-14 gap-8">
-        <Link to="/emails" className="flex items-center gap-3 shrink-0">
-          <div
-            className="w-9 h-9 flex items-center justify-center border-2 font-bold text-sm"
-            style={{ borderColor: '#B8960C', color: '#B8960C' }}
-          >
-            PL
-          </div>
-          <span className="font-semibold text-gray-900 text-sm tracking-wide hidden sm:block">
-            PACIFIC LIBERTY LAW
-          </span>
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-6 flex items-center h-12 gap-8">
+        <Link to="/dashboard" className="flex items-center gap-2.5 shrink-0">
+          <img src="/favicon.png" alt="PLL" className="h-7 w-7 object-contain" />
+          <span className="text-sm font-semibold tracking-widest text-gray-800 uppercase">Pacific Liberty Law</span>
         </Link>
 
-        <nav className="flex items-center gap-1 flex-1">
+        <nav className="flex items-center gap-0.5 flex-1">
           {navItems.map(({ label, icon: Icon, href }) => {
-            const active = location.pathname.startsWith(href) && href !== '#'
+            const isDisabled = href === '#'
+            const active = !isDisabled && location.pathname.startsWith(href)
+            if (isDisabled) {
+              return (
+                <span
+                  key={label}
+                  title="Coming soon"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-300 cursor-not-allowed select-none"
+                >
+                  <Icon size={14} />
+                  {label}
+                </span>
+              )
+            }
             return (
               <Link
                 key={label}
                 to={href}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors ${
+                className={`relative flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors ${
                   active
-                    ? 'text-blue-600 font-medium bg-blue-50'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'text-gray-900 font-semibold'
+                    : 'text-gray-600 hover:text-gray-900 font-medium'
                 }`}
               >
-                <Icon size={15} />
+                <Icon size={14} />
                 {label}
+                {active && (
+                  <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-gray-900 rounded-full" />
+                )}
               </Link>
             )
           })}
         </nav>
 
         {userName && (
-          <div className="flex items-center gap-3 text-sm text-gray-600">
-            <span>{userName}</span>
-            <button
-              onClick={authApi.logout}
-              className="text-gray-400 hover:text-gray-600 text-xs"
-            >
-              Logout
-            </button>
-          </div>
+          <button
+            onClick={authApi.logout}
+            className="flex items-center gap-2 group"
+            title="Logout"
+          >
+            <div className="w-7 h-7 rounded-full bg-gray-800 flex items-center justify-center shrink-0">
+              <span className="text-xs font-medium text-white leading-none tracking-tight">
+                JM
+              </span>
+            </div>
+            <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">{userName}</span>
+          </button>
         )}
       </div>
     </header>
