@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Client } from '@microsoft/microsoft-graph-client';
+import { EMAIL_CUTOFF } from '../config';
 
 @Injectable()
 export class GraphService {
@@ -14,6 +15,7 @@ export class GraphService {
     const result = await client
       .api('/me/messages')
       .select('id,subject,bodyPreview,from,toRecipients,receivedDateTime,body,webLink')
+      .filter(`receivedDateTime ge ${EMAIL_CUTOFF.toISOString()}`)
       .top(top)
       .orderby('receivedDateTime desc')
       .get();

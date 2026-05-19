@@ -7,5 +7,6 @@ export interface SseEmailPayload {
     subject: string;
     fromName: string;
     receivedAt: string;
+    matchedCaseId: string | null;
 }
 export declare function broadcastSse(payload: SseEmailPayload): void;

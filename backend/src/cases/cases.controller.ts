@@ -1,5 +1,6 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EMAIL_CUTOFF } from '../config';
 
 @Controller('cases')
 export class CasesController {
@@ -18,5 +19,19 @@ export class CasesController {
       : undefined;
 
     return this.prisma.case.findMany({ where, orderBy: { createdAt: 'desc' } });
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.prisma.case.findUnique({
+      where: { id },
+      include: {
+        emails: {
+          where: { receivedAt: { gte: EMAIL_CUTOFF } },
+          orderBy: { receivedAt: 'desc' },
+          take: 20,
+        },
+      },
+    });
   }
 }

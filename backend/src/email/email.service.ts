@@ -6,10 +6,13 @@ import { GraphService } from '../graph/graph.service';
 import { ClassificationService } from '../classification/classification.service';
 import { AuthService } from '../auth/auth.service';
 import { EditEmailDto } from './dto/edit-email.dto';
+import { EMAIL_CUTOFF } from '../config';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
+  private readonly inFlight = new Set<string>();
+
   constructor(
     private prisma: PrismaService,
     private graph: GraphService,
@@ -63,60 +66,87 @@ export class EmailService {
   }
 
   async ingestMessage(msg: any) {
-    const fromAddress = msg.from?.emailAddress?.address || '';
-    const fromName = msg.from?.emailAddress?.name || '';
-    const toAddress = msg.toRecipients?.[0]?.emailAddress?.address || '';
-    const bodyPreview = msg.bodyPreview?.slice(0, 500) || '';
+    if (this.inFlight.has(msg.id)) return;
+    const existing = await this.prisma.email.findUnique({ where: { messageId: msg.id } });
+    if (existing?.aiSummary) return;
+    this.inFlight.add(msg.id);
 
-    const rawBody = msg.body?.content || '';
-    const convertedBody = rawBody
-      ? convert(rawBody, { wordwrap: false, selectors: [{ selector: 'a', options: { ignoreHref: true } }, { selector: 'img', format: 'skip' }] })
-      : null;
-    const body = convertedBody;
+    try {
+      const fromAddress = msg.from?.emailAddress?.address || '';
+      const fromName = msg.from?.emailAddress?.name || '';
+      const toAddress = msg.toRecipients?.[0]?.emailAddress?.address || '';
+      const bodyPreview = msg.bodyPreview?.slice(0, 500) || '';
 
-    const result = await this.classification.classify({
-      subject: msg.subject || '(no subject)',
-      body: body || bodyPreview,
-      fromAddress,
-      fromName,
-    });
+      const rawBody = msg.body?.content || '';
+      const convertedBody = rawBody
+        ? convert(rawBody, {
+            wordwrap: false,
+            selectors: [
+              { selector: 'a', options: { ignoreHref: true } },
+              { selector: 'img', format: 'skip' },
+            ],
+          })
+        : null;
+      const body = convertedBody;
 
-    const status = (result.matchedCaseId || result.matchMethod === 'sender_domain')
-      ? 'PENDING_REVIEW'
-      : 'UNCLASSIFIED';
-
-    const saved = await this.prisma.email.upsert({
-      where: { messageId: msg.id },
-      create: {
-        messageId: msg.id,
+      const result = await this.classification.classify({
         subject: msg.subject || '(no subject)',
-        bodyPreview,
-        body,
+        body: body || bodyPreview,
         fromAddress,
         fromName,
-        toAddress,
-        receivedAt: new Date(msg.receivedDateTime),
-        aiCategory: result.category,
-        aiConfidence: result.confidence,
-        aiReason: result.reason,
-        actionCategory: result.actionCategory,
-        aiSummary: result.aiSummary,
-        matchedCaseId: result.matchedCaseId,
-        matchMethod: result.matchMethod,
-        webLink: msg.webLink || null,
-        status: status as any,
-      },
-      update: {},
-    });
+      });
 
-    broadcastSse({
-      id: saved.id,
-      actionCategory: result.actionCategory,
-      aiSummary: result.aiSummary,
-      subject: msg.subject || '(no subject)',
-      fromName,
-      receivedAt: saved.receivedAt.toISOString(),
-    });
+      const status =
+        result.matchedCaseId || result.matchMethod === 'sender_domain'
+          ? 'PENDING_REVIEW'
+          : 'UNCLASSIFIED';
+
+      const saved = await this.prisma.email.upsert({
+        where: { messageId: msg.id },
+        create: {
+          messageId: msg.id,
+          subject: msg.subject || '(no subject)',
+          bodyPreview,
+          body,
+          fromAddress,
+          fromName,
+          toAddress,
+          receivedAt: new Date(msg.receivedDateTime),
+          aiCategory: result.category,
+          aiConfidence: result.confidence,
+          aiReason: result.reason,
+          actionCategory: result.actionCategory,
+          aiSummary: result.aiSummary,
+          matchedCaseId: result.matchedCaseId,
+          matchMethod: result.matchMethod,
+          webLink: msg.webLink || null,
+          status: status as any,
+        },
+        update: {
+          aiCategory: result.category,
+          aiConfidence: result.confidence,
+          aiReason: result.reason,
+          actionCategory: result.actionCategory,
+          aiSummary: result.aiSummary,
+          matchedCaseId: result.matchedCaseId,
+          matchMethod: result.matchMethod,
+          status: status as any,
+          body,
+        },
+      });
+
+      broadcastSse({
+        id: saved.id,
+        actionCategory: saved.actionCategory ?? result.actionCategory,
+        aiSummary: saved.aiSummary ?? result.aiSummary,
+        subject: saved.subject,
+        fromName: saved.fromName,
+        receivedAt: saved.receivedAt.toISOString(),
+        matchedCaseId: saved.matchedCaseId ?? null,
+      });
+    } finally {
+      this.inFlight.delete(msg.id);
+    }
   }
 
   async syncEmails(userEmail?: string) {
@@ -139,9 +169,11 @@ export class EmailService {
     }
     let ingested = 0;
 
+    const CUTOFF = EMAIL_CUTOFF;
     for (const msg of messages) {
+      if (new Date(msg.receivedDateTime) < CUTOFF) continue;
       const existing = await this.prisma.email.findUnique({ where: { messageId: msg.id } });
-      if (existing) continue;
+      if (existing && existing.aiSummary) continue;
       await this.ingestMessage(msg);
       ingested++;
     }
@@ -150,7 +182,8 @@ export class EmailService {
   }
 
   async findAll(filters: { status?: string; category?: string; search?: string }) {
-    const where: any = {};
+    const CUTOFF = EMAIL_CUTOFF;
+    const where: any = { receivedAt: { gte: CUTOFF } };
     if (filters.status) where.status = filters.status;
     if (filters.category) where.aiCategory = filters.category;
     if (filters.search) {
@@ -230,8 +263,9 @@ export class EmailService {
   }
 
   async findUnclassified() {
+    const CUTOFF = EMAIL_CUTOFF;
     return this.prisma.email.findMany({
-      where: { status: 'UNCLASSIFIED' as any },
+      where: { status: 'UNCLASSIFIED' as any, receivedAt: { gte: CUTOFF } },
       orderBy: { receivedAt: 'desc' },
     });
   }

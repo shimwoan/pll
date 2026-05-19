@@ -18,6 +18,7 @@ const prisma_service_1 = require("../prisma/prisma.service");
 const graph_service_1 = require("../graph/graph.service");
 const classification_service_1 = require("../classification/classification.service");
 const auth_service_1 = require("../auth/auth.service");
+const config_1 = require("../config");
 let EmailService = EmailService_1 = class EmailService {
     prisma;
     graph;
@@ -115,15 +116,26 @@ let EmailService = EmailService_1 = class EmailService {
                 webLink: msg.webLink || null,
                 status: status,
             },
-            update: {},
+            update: {
+                aiCategory: result.category,
+                aiConfidence: result.confidence,
+                aiReason: result.reason,
+                actionCategory: result.actionCategory,
+                aiSummary: result.aiSummary,
+                matchedCaseId: result.matchedCaseId,
+                matchMethod: result.matchMethod,
+                status: status,
+                body,
+            },
         });
         (0, main_1.broadcastSse)({
             id: saved.id,
-            actionCategory: result.actionCategory,
-            aiSummary: result.aiSummary,
-            subject: msg.subject || '(no subject)',
-            fromName,
+            actionCategory: saved.actionCategory ?? result.actionCategory,
+            aiSummary: saved.aiSummary ?? result.aiSummary,
+            subject: saved.subject,
+            fromName: saved.fromName,
             receivedAt: saved.receivedAt.toISOString(),
+            matchedCaseId: saved.matchedCaseId ?? null,
         });
     }
     async syncEmails(userEmail) {
@@ -146,9 +158,12 @@ let EmailService = EmailService_1 = class EmailService {
             return { synced: 0, error: `Graph API error: ${err?.message ?? 'Unknown error'}` };
         }
         let ingested = 0;
+        const CUTOFF = config_1.EMAIL_CUTOFF;
         for (const msg of messages) {
+            if (new Date(msg.receivedDateTime) < CUTOFF)
+                continue;
             const existing = await this.prisma.email.findUnique({ where: { messageId: msg.id } });
-            if (existing)
+            if (existing && existing.aiCategory)
                 continue;
             await this.ingestMessage(msg);
             ingested++;
@@ -156,7 +171,8 @@ let EmailService = EmailService_1 = class EmailService {
         return { synced: ingested };
     }
     async findAll(filters) {
-        const where = {};
+        const CUTOFF = config_1.EMAIL_CUTOFF;
+        const where = { receivedAt: { gte: CUTOFF } };
         if (filters.status)
             where.status = filters.status;
         if (filters.category)
@@ -233,8 +249,9 @@ let EmailService = EmailService_1 = class EmailService {
         return email;
     }
     async findUnclassified() {
+        const CUTOFF = config_1.EMAIL_CUTOFF;
         return this.prisma.email.findMany({
-            where: { status: 'UNCLASSIFIED' },
+            where: { status: 'UNCLASSIFIED', receivedAt: { gte: CUTOFF } },
             orderBy: { receivedAt: 'desc' },
         });
     }

@@ -1,0 +1,145 @@
+<h2>EmailPanel 최종 디자인 Mockup</h2>
+<p class="subtitle">Toast 클릭 시 → 핀 카드 먼저 표시 + 리스트는 접힌 상태로 아래</p>
+
+<div class="section">
+  <h3>상태 1: 일반 상태 (Toast 클릭 전)</h3>
+  <div class="mockup">
+    <div class="mockup-header">EmailPanel — 기본 상태</div>
+    <div class="mockup-body">
+      <div style="background:#fff; border:1px solid #f1f5f9; border-radius:8px; overflow:hidden; font-size:12px;">
+        <div style="padding:10px 14px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:8px; background:#fff;">
+          <span style="color:#94a3b8;">✉</span>
+          <span style="font-weight:600; color:#1e293b;">Unclassified Emails</span>
+          <span style="margin-left:auto; color:#94a3b8; font-size:11px;">6 pending</span>
+        </div>
+        <div style="divide-y:1px solid #f8fafc;">
+          <div style="padding:10px 14px; border-bottom:1px solid #fafafa; background:#eff6ff;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+              <span style="font-weight:500; color:#1e293b; font-size:11px;">DOL 04/20/2025 - Jos*** John Bowen</span>
+              <span style="color:#94a3b8; font-size:10px;">05/19/2026</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="color:#94a3b8; font-size:10px;">Client welcome email with attached...</span>
+              <span style="background:#fee2e2; color:#dc2626; border-radius:999px; padding:1px 8px; font-size:10px; font-weight:500;">● For Reference</span>
+            </div>
+          </div>
+          <div style="padding:10px 14px; border-bottom:1px solid #fafafa;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+              <span style="font-weight:500; color:#1e293b; font-size:11px;">DOL 04/20/2025 - Jos*** John Bowen</span>
+              <span style="color:#94a3b8; font-size:10px;">05/19/2026</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="color:#94a3b8; font-size:10px;">New client welcome: thanks, attached...</span>
+              <span style="background:#fee2e2; color:#dc2626; border-radius:999px; padding:1px 8px; font-size:10px; font-weight:500;">● For Reference</span>
+            </div>
+          </div>
+          <div style="padding:10px 14px; color:#94a3b8; font-size:10px; text-align:center;">+ 4 more...</div>
+        </div>
+        <!-- 클릭 시 본문 확장 영역 (기본엔 없음) -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>상태 2: Toast 클릭 후 → 핀 카드 표시</h3>
+  <div class="mockup">
+    <div class="mockup-header">EmailPanel — 핀 카드 활성 상태</div>
+    <div class="mockup-body">
+      <div style="background:#fff; border:1px solid #f1f5f9; border-radius:8px; overflow:hidden; font-size:12px;">
+
+        <!-- 핀 고정 본문 카드 (상단 고정) -->
+        <div style="background:#eff6ff; border-bottom:2px solid #3b82f6; padding:12px 14px;">
+          <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:6px;">
+            <div>
+              <div style="font-size:10px; color:#3b82f6; font-weight:600; margin-bottom:2px;">📌 NEW EMAIL</div>
+              <div style="font-weight:600; color:#1e293b; font-size:12px;">DOL 04/20/2025 - Jos*** John Bowen</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="background:#dbeafe; color:#2563eb; border-radius:999px; padding:2px 8px; font-size:10px; font-weight:500;">For Reference</span>
+              <button style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:14px; line-height:1; padding:0 2px;">✕</button>
+            </div>
+          </div>
+          <div style="font-size:11px; color:#475569; line-height:1.7; background:#fff; border-radius:6px; padding:10px; margin-bottom:10px; max-height:100px; overflow:auto;">
+            Good morning,<br/>
+            Thank you for retaining this firm to represent you.<br/><br/>
+            Attached please find a Thank you letter.<br/>
+            Your case manager will contact you soon.
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button style="background:#2563eb; color:#fff; border:none; border-radius:6px; padding:5px 14px; font-size:11px; font-weight:600; cursor:pointer;">✓ Confirm Classification</button>
+            <span style="font-size:10px; color:#94a3b8; font-style:italic;">AI: For Reference</span>
+          </div>
+        </div>
+
+        <!-- 리스트 헤더 (접힌 상태) -->
+        <div style="padding:8px 14px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:8px; background:#fafafa; cursor:pointer;">
+          <span style="color:#94a3b8;">✉</span>
+          <span style="font-weight:600; color:#64748b; font-size:11px;">Unclassified Emails</span>
+          <span style="color:#94a3b8; font-size:10px;">5 pending</span>
+          <span style="margin-left:auto; color:#3b82f6; font-size:10px;">▼ 펼치기</span>
+        </div>
+        <!-- 리스트는 접혀 있음 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>상태 3: 리스트 펼쳤을 때</h3>
+  <div class="mockup">
+    <div class="mockup-header">EmailPanel — 핀 카드 + 리스트 모두 표시</div>
+    <div class="mockup-body">
+      <div style="background:#fff; border:1px solid #f1f5f9; border-radius:8px; overflow:hidden; font-size:12px;">
+
+        <!-- 핀 카드 (유지) -->
+        <div style="background:#eff6ff; border-bottom:2px solid #3b82f6; padding:12px 14px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <div>
+              <div style="font-size:10px; color:#3b82f6; font-weight:600; margin-bottom:2px;">📌 NEW EMAIL</div>
+              <div style="font-weight:600; color:#1e293b; font-size:12px;">DOL 04/20/2025 - Jos*** John Bowen</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="background:#dbeafe; color:#2563eb; border-radius:999px; padding:2px 8px; font-size:10px;">For Reference</span>
+              <span style="color:#94a3b8; cursor:pointer;">✕</span>
+            </div>
+          </div>
+          <div style="font-size:11px; color:#475569; line-height:1.7; background:#fff; border-radius:6px; padding:8px; margin-bottom:8px;">
+            Good morning, Thank you for retaining...
+          </div>
+          <button style="background:#2563eb; color:#fff; border:none; border-radius:6px; padding:5px 14px; font-size:11px; font-weight:600; cursor:pointer;">✓ Confirm Classification</button>
+        </div>
+
+        <!-- 리스트 헤더 (펼쳐진 상태) -->
+        <div style="padding:8px 14px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:8px; background:#fafafa; cursor:pointer;">
+          <span style="color:#94a3b8;">✉</span>
+          <span style="font-weight:600; color:#64748b; font-size:11px;">Unclassified Emails</span>
+          <span style="color:#94a3b8; font-size:10px;">5 pending</span>
+          <span style="margin-left:auto; color:#3b82f6; font-size:10px;">▲ 접기</span>
+        </div>
+        <div>
+          <div style="padding:8px 14px; border-bottom:1px solid #fafafa;">
+            <div style="font-weight:500; color:#1e293b; font-size:11px; margin-bottom:1px;">DOL 04/20/2025 - Jos*** John Bowen</div>
+            <div style="color:#94a3b8; font-size:10px;">New client welcome: thanks, attached...</div>
+          </div>
+          <div style="padding:8px 14px; border-bottom:1px solid #fafafa;">
+            <div style="font-weight:500; color:#1e293b; font-size:11px; margin-bottom:1px;">DOL 04/20/2025 - Jos**h John Bowen</div>
+            <div style="color:#94a3b8; font-size:10px;">Firm thanks client for retention...</div>
+          </div>
+          <div style="padding:8px 14px; color:#94a3b8; font-size:10px; text-align:center;">+ 3 more</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>동작 흐름 요약</h3>
+  <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:16px; font-size:12px; line-height:2;">
+    <div>1. <strong>Toast 클릭</strong> → matter 상세로 이동, 해당 이메일 <strong>핀 카드 자동 표시</strong> + 리스트 자동 접힘</div>
+    <div>2. <strong>핀 카드 내 Confirm</strong> → classification 확정, 핀 카드 사라짐, 리스트 복귀</div>
+    <div>3. <strong>핀 카드 ✕ 닫기</strong> → 핀 카드 사라짐, 리스트 다시 펼쳐짐</div>
+    <div>4. <strong>리스트 "펼치기"</strong> → 핀 카드 유지하면서 리스트도 함께 표시</div>
+    <div>5. <strong>리스트에서 다른 이메일 클릭</strong> → 핀 카드가 해당 이메일로 교체</div>
+  </div>
+</div>

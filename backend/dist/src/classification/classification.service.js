@@ -92,42 +92,42 @@ let ClassificationService = class ClassificationService {
     async classifyWithAI(email) {
         const subject = (0, phi_masker_1.maskPhi)(email.subject, email.fromName);
         const body = (0, phi_masker_1.maskPhi)(email.body, email.fromName);
-        const ACTION_CATEGORIES = ['답변 필요', '서류 제출', '답변 확인', '검토 필요', '참고', '미정'];
+        const ACTION_CATEGORIES = ['Response Required', 'Document Submission', 'Confirm Reply', 'Needs Review', 'For Reference', 'Unclassified'];
         const response = await this.genai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: `당신은 PI(Personal Injury) 법무법인의 이메일 분류 AI입니다.
+            contents: `You are an email classification AI for a Personal Injury law firm.
 
-아래 이메일을 분석해 다음 6개 중 정확히 하나의 action_category를 선택하세요:
-- "답변 필요": 상대방(보험사, 병원, 고객 등)이 자료·정보·회신을 명시적으로 요청한 경우
-- "서류 제출": 상대방이 Lien 서명, 자료 반송, 첨부파일 전달을 **요청**한 경우 (우리가 먼저 보내는 건 해당 없음)
-- "답변 확인": 우리가 보낸 이메일에 대해 상대방 회신이 왔는지 팔로업이 필요한 경우
-- "검토 필요": 내용이 불명확하거나 복합적이어서 담당자 검토가 필요한 경우
-- "참고": 단순 안내, Thank you letter 발송, 우리가 먼저 첨부파일을 보내는 경우, 별도 액션 불필요한 경우
-- "미정": 위 5개 중 명확히 해당하지 않는 경우
+Analyze the email below and select exactly one action_category from the following 6 options:
+- "Response Required": The other party (insurer, hospital, client, etc.) explicitly requests information, documents, or a reply
+- "Document Submission": The other party requests a Lien signature, return of documents, or file delivery (NOT when we initiate sending)
+- "Confirm Reply": A follow-up is needed to check whether the other party has replied to our email
+- "Needs Review": The content is unclear or complex and requires staff review
+- "For Reference": Simple notification, Thank you letter, we initiated sending an attachment, no action needed
+- "Unclassified": Does not clearly fit any of the above 5 categories
 
-아울러 이메일 내용을 한국어로 한 줄(30자 이내)로 요약하세요.
+Also summarize the email content in one line (max 60 characters).
 
-[이메일 정보]
-발신자: ${(0, phi_masker_1.maskPhi)(email.fromName ?? '')}
-제목: ${subject}
-본문: ${body}
+[Email Info]
+From: ${(0, phi_masker_1.maskPhi)(email.fromName ?? '')}
+Subject: ${subject}
+Body: ${body}
 
-JSON만 출력하세요:
+Output JSON only:
 {"action_category": "...", "summary": "..."}`,
-            config: { maxOutputTokens: 256 },
+            config: { maxOutputTokens: 65536 },
         });
         try {
             const raw = (response.text ?? '').replace(/```json\s*|\s*```/g, '').trim();
             const jsonMatch = raw.match(/\{[\s\S]*\}/);
             const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
-            const actionCategory = ACTION_CATEGORIES.includes(parsed.action_category) ? parsed.action_category : '미정';
+            const actionCategory = ACTION_CATEGORIES.includes(parsed.action_category) ? parsed.action_category : 'Unclassified';
             return {
                 actionCategory,
-                aiSummary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 30) : '',
+                aiSummary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 60) : '',
             };
         }
         catch {
-            return { actionCategory: '미정', aiSummary: '' };
+            return { actionCategory: 'Unclassified', aiSummary: '' };
         }
     }
 };

@@ -16,6 +16,7 @@ export interface SseEmailPayload {
   subject: string;
   fromName: string;
   receivedAt: string;
+  matchedCaseId: string | null;
 }
 
 export function broadcastSse(payload: SseEmailPayload) {

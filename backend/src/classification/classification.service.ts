@@ -112,43 +112,48 @@ export class ClassificationService {
     const subject = maskPhi(email.subject, email.fromName);
     const body = maskPhi(email.body, email.fromName);
 
-    const ACTION_CATEGORIES = ['답변 필요', '서류 제출', '답변 확인', '검토 필요', '참고', '미정'] as const;
+    const ACTION_CATEGORIES = ['Response Required', 'Document Submission', 'Confirm Reply', 'Needs Review', 'For Reference', 'Unclassified'] as const;
 
     const response = await this.genai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: `당신은 PI(Personal Injury) 법무법인의 이메일 분류 AI입니다.
+      contents: `You are an email classification AI for a US Personal Injury (PI) law firm.
 
-아래 이메일을 분석해 다음 6개 중 정확히 하나의 action_category를 선택하세요:
-- "답변 필요": 상대방(보험사, 병원, 고객 등)이 자료·정보·회신을 명시적으로 요청한 경우
-- "서류 제출": 상대방이 Lien 서명, 자료 반송, 첨부파일 전달을 **요청**한 경우 (우리가 먼저 보내는 건 해당 없음)
-- "답변 확인": 우리가 보낸 이메일에 대해 상대방 회신이 왔는지 팔로업이 필요한 경우
-- "검토 필요": 내용이 불명확하거나 복합적이어서 담당자 검토가 필요한 경우
-- "참고": 단순 안내, Thank you letter 발송, 우리가 먼저 첨부파일을 보내는 경우, 별도 액션 불필요한 경우
-- "미정": 위 5개 중 명확히 해당하지 않는 경우
+PI domain: auto accident, slip & fall, premises liability, dog bite, city claim.
+Parties: client, adjuster, defense counsel, medical provider, lienholder, CM (Case Manager).
+Terms: LOR, DOL, BI/PD, UM/UIM, Dec Page, Demand, Policy Limit, Lien, SOL, IME, subrogation, disbursement.
+Stages: Intake → Claim → Medical Collection → Demand → Negotiation → Settlement → Litigation.
 
-아울러 이메일 내용을 한국어로 한 줄(30자 이내)로 요약하세요.
+Analyze the email below and select exactly one action_category from the following 6 options:
+- "Response Required": The other party (insurer, hospital, client, etc.) explicitly requests information, documents, or a reply
+- "Document Submission": The other party requests a Lien signature, return of documents, or file delivery (NOT when we initiate sending)
+- "Confirm Reply": A follow-up is needed to check whether the other party has replied to our email
+- "Needs Review": The content is unclear or complex and requires staff review
+- "For Reference": Simple notification, Thank you letter, we initiated sending an attachment, no action needed
+- "Unclassified": Does not clearly fit any of the above 5 categories
 
-[이메일 정보]
-발신자: ${maskPhi(email.fromName ?? '')}
-제목: ${subject}
-본문: ${body}
+Also write a one-line summary (max 60 chars) using standard PI law firm terminology. Describe only WHAT the email is about — do NOT include action guidance, next steps, or phrases like "no action needed", "action required", "for reference", etc.
 
-JSON만 출력하세요:
+[Email Info]
+From: ${maskPhi(email.fromName ?? '')}
+Subject: ${subject}
+Body: ${body}
+
+Output JSON only:
 {"action_category": "...", "summary": "..."}`,
-      config: { maxOutputTokens: 256 },
+      config: { maxOutputTokens: 65536 },
     });
 
     try {
       const raw = (response.text ?? '').replace(/```json\s*|\s*```/g, '').trim();
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
-      const actionCategory = ACTION_CATEGORIES.includes(parsed.action_category) ? parsed.action_category : '미정';
+      const actionCategory = ACTION_CATEGORIES.includes(parsed.action_category) ? parsed.action_category : 'Unclassified';
       return {
         actionCategory,
-        aiSummary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 30) : '',
+        aiSummary: typeof parsed.summary === 'string' ? parsed.summary : '',
       };
     } catch {
-      return { actionCategory: '미정', aiSummary: '' };
+      return { actionCategory: 'Unclassified', aiSummary: '' };
     }
   }
 }

@@ -32,6 +32,17 @@ let CasesController = class CasesController {
             : undefined;
         return this.prisma.case.findMany({ where, orderBy: { createdAt: 'desc' } });
     }
+    findOne(id) {
+        return this.prisma.case.findUnique({
+            where: { id },
+            include: {
+                emails: {
+                    orderBy: { receivedAt: 'desc' },
+                    take: 20,
+                },
+            },
+        });
+    }
 };
 exports.CasesController = CasesController;
 __decorate([
@@ -41,6 +52,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], CasesController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], CasesController.prototype, "findOne", null);
 exports.CasesController = CasesController = __decorate([
     (0, common_1.Controller)('cases'),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])

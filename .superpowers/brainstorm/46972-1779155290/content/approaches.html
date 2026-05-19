@@ -1,0 +1,99 @@
+<h2>Toast 클릭 시 이메일 본문 표시 방법</h2>
+<p class="subtitle">현재: 리스트 → 클릭 → 아래 본문. 문제: 리스트가 공간 차지해서 본문이 안 보임</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>슬라이드오버 드로어 (Slide-over Drawer)</h3>
+      <p>toast 클릭 시 화면 오른쪽에서 드로어가 밀려나오며 이메일 본문을 즉시 표시. 리스트는 뒤에 그대로 유지. 닫기 버튼으로 dismiss.</p>
+      <div style="margin-top:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; font-size:12px;">
+        <div style="display:flex; gap:8px;">
+          <div style="flex:1; background:#f1f5f9; border-radius:6px; padding:8px; font-size:11px; color:#64748b;">
+            <div style="font-weight:600; color:#334155; margin-bottom:4px;">Matter Detail</div>
+            <div style="background:#e2e8f0; border-radius:4px; height:60px; margin-bottom:4px;"></div>
+            <div style="background:#e2e8f0; border-radius:4px; height:80px;"></div>
+          </div>
+          <div style="width:220px; background:#ffffff; border:1.5px solid #3b82f6; border-radius:8px; padding:10px; font-size:11px; box-shadow: -4px 0 16px rgba(0,0,0,0.1);">
+            <div style="font-weight:600; color:#1e40af; margin-bottom:6px; display:flex; justify-content:space-between;">
+              <span>📧 이메일 본문</span>
+              <span style="color:#94a3b8; cursor:pointer;">✕</span>
+            </div>
+            <div style="font-size:10px; color:#64748b; margin-bottom:4px;">DOL 04/20 - John Bowen</div>
+            <div style="background:#f8fafc; border-radius:4px; padding:6px; font-size:10px; color:#374151; line-height:1.5;">
+              Good morning,<br/>Thank you for retaining this firm...
+            </div>
+            <div style="margin-top:8px; display:flex; gap:4px;">
+              <div style="background:#3b82f6; color:white; border-radius:4px; padding:3px 8px; font-size:10px;">Confirm</div>
+              <div style="background:#f1f5f9; color:#64748b; border-radius:4px; padding:3px 8px; font-size:10px;">Detail →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top:10px;">
+        <div class="pros"><h4>장점</h4><ul><li>본문 즉시 노출</li><li>페이지 레이아웃 유지</li><li>confirm 액션 바로 가능</li></ul></div>
+        <div class="cons"><h4>단점</h4><ul><li>드로어 구현 필요</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>리스트 접기 + 본문 자동 확장 (Collapse List)</h3>
+      <p>toast 클릭 시 이메일 리스트를 자동으로 접고 (헤더만 보이는 collapsed 상태), 해당 이메일 본문 영역을 즉시 스크롤 없이 표시.</p>
+      <div style="margin-top:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; font-size:12px;">
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:6px; margin-bottom:6px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:11px; font-weight:600; color:#334155;">📧 Unclassified Emails <span style="color:#94a3b8; font-weight:400;">6 pending</span></span>
+          <span style="font-size:10px; color:#3b82f6; cursor:pointer;">▼ 펼치기</span>
+        </div>
+        <div style="background:#fff; border:1.5px solid #3b82f6; border-radius:6px; padding:10px; font-size:11px;">
+          <div style="font-weight:600; color:#1e40af; margin-bottom:4px;">DOL 04/20 - John Bowen</div>
+          <div style="font-size:10px; color:#374151; line-height:1.6; background:#f8fafc; border-radius:4px; padding:6px;">
+            Good morning,<br/>Thank you for retaining this firm to represent you.<br/><br/>Attached please find a Thank you letter.
+          </div>
+          <div style="margin-top:8px; display:flex; gap:4px;">
+            <div style="background:#3b82f6; color:white; border-radius:4px; padding:3px 8px; font-size:10px;">Confirm</div>
+            <div style="background:#f1f5f9; color:#64748b; border-radius:4px; padding:3px 8px; font-size:10px;">Detail →</div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top:10px;">
+        <div class="pros"><h4>장점</h4><ul><li>같은 영역 활용</li><li>구현 심플</li></ul></div>
+        <div class="cons"><h4>단점</h4><ul><li>리스트 가시성 떨어짐</li><li>UX 다소 어색</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>리스트 위에 고정 본문 패널 (Pinned Preview) ⭐ 추천</h3>
+      <p>toast 클릭 시 리스트 위에 highlight된 본문 카드가 먼저 나타남. 리스트는 그 아래에 축소(compact)된 형태로 유지. 가장 자연스러운 정보 위계.</p>
+      <div style="margin-top:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; font-size:12px;">
+        <div style="background:#eff6ff; border:1.5px solid #3b82f6; border-radius:6px; padding:10px; margin-bottom:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-size:11px; font-weight:700; color:#1e40af;">📧 DOL 04/20 - John Bowen</span>
+            <span style="font-size:10px; color:#3b82f6; background:#dbeafe; border-radius:4px; padding:2px 6px;">For Reference</span>
+          </div>
+          <div style="font-size:10px; color:#374151; line-height:1.6; margin-bottom:8px;">
+            Good morning, Thank you for retaining this firm...
+          </div>
+          <div style="display:flex; gap:4px;">
+            <div style="background:#3b82f6; color:white; border-radius:4px; padding:3px 8px; font-size:10px;">Confirm</div>
+            <div style="background:white; color:#64748b; border:1px solid #e2e8f0; border-radius:4px; padding:3px 8px; font-size:10px;">Detail →</div>
+            <div style="margin-left:auto; color:#94a3b8; font-size:10px; cursor:pointer;">✕</div>
+          </div>
+        </div>
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:6px; padding:6px 10px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:10px; color:#94a3b8;">📋 나머지 5개 미분류 이메일</span>
+          <span style="font-size:10px; color:#3b82f6; cursor:pointer;">▼ 보기</span>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top:10px;">
+        <div class="pros"><h4>장점</h4><ul><li>본문 즉시 노출 (스크롤 불필요)</li><li>리스트 맥락 유지</li><li>정보 위계 명확</li></ul></div>
+        <div class="cons"><h4>단점</h4><ul><li>리스트 상태 관리 추가</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

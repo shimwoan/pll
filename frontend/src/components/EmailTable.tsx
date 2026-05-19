@@ -29,7 +29,7 @@ export function EmailTable({ emails, isLoading }: EmailTableProps) {
     <div className="border border-gray-100 rounded-lg overflow-hidden bg-white">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-gray-100 bg-gray-50">
+          <tr className="border-b border-gray-100">
             <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide w-6"></th>
             <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Category</th>
             <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Subject</th>
@@ -44,7 +44,7 @@ export function EmailTable({ emails, isLoading }: EmailTableProps) {
             <tr
               key={email.id}
               onClick={() => navigate(`/emails/${email.id}`)}
-              className={`border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors ${
+              className={`border-b border-gray-50 last:border-0 cursor-pointer hover:bg-white transition-colors ${
                 email.status === 'PENDING_REVIEW' ? 'bg-amber-50/30' : ''
               }`}
             >

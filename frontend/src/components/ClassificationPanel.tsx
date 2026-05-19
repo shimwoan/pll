@@ -3,15 +3,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { WorkTypeSelect } from './WorkTypeSelect'
 import { CategoryBadge } from './CategoryBadge'
 import type { Email } from '@/lib/api'
-import { Check, Pencil, X } from 'lucide-react'
+import { Check, Pencil } from 'lucide-react'
 
 const CATEGORIES = ['Settlement', 'Medical', 'Client', 'Insurance', 'Police', 'Other']
 
 interface ClassificationPanelProps {
   email: Email
-  onConfirm: () => void
+  onConfirm: (data: { finalCategory: string; workTypeTitle: string }) => void
   onEdit: (data: { finalCategory: string; workTypeTitle: string }) => void
-  onUnclassify: () => void
   isLoading?: boolean
 }
 
@@ -19,11 +18,10 @@ export function ClassificationPanel({
   email,
   onConfirm,
   onEdit,
-  onUnclassify,
   isLoading,
 }: ClassificationPanelProps) {
   const [isEditing, setIsEditing] = useState(false)
-  const [category, setCategory] = useState(email.aiCategory || 'Other')
+  const [category, setCategory] = useState(email.finalCategory || email.aiCategory || 'Other')
   const [workType, setWorkType] = useState(email.workTypeTitle || '')
 
   const handleEdit = () => {
@@ -92,25 +90,23 @@ export function ClassificationPanel({
           <>
             {email.status === 'PENDING_REVIEW' && (
               <>
+                <span className="text-xs text-gray-500 font-medium self-center">Category:</span>
+                <Select value={category} onValueChange={(val) => { if (val) setCategory(val) }}>
+                  <SelectTrigger className="h-7 text-xs w-32 border-gray-200">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <button
-                  onClick={onConfirm}
+                  onClick={() => onConfirm({ finalCategory: category, workTypeTitle: workType })}
                   disabled={isLoading}
                   className="flex items-center gap-1 text-xs font-medium bg-gray-800 text-white px-3 py-1.5 rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50"
                 >
-                  <Check size={11} /> Accept
-                </button>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-1 text-xs font-medium bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <Pencil size={11} /> Edit
-                </button>
-                <button
-                  onClick={onUnclassify}
-                  disabled={isLoading}
-                  className="flex items-center gap-1 text-xs text-gray-400 px-2 py-1.5 rounded-lg hover:bg-gray-50 hover:text-gray-600 transition-colors disabled:opacity-50"
-                >
-                  <X size={11} /> Unclassify
+                  <Check size={11} /> Confirm
                 </button>
               </>
             )}
@@ -122,22 +118,29 @@ export function ClassificationPanel({
                 >
                   <Pencil size={11} /> Edit
                 </button>
-                <button
-                  onClick={onUnclassify}
-                  disabled={isLoading}
-                  className="flex items-center gap-1 text-xs text-gray-400 px-2 py-1.5 rounded-lg hover:bg-gray-50 hover:text-gray-600 transition-colors disabled:opacity-50"
-                >
-                  <X size={11} /> Unclassify
-                </button>
               </>
             )}
             {email.status === 'UNCLASSIFIED' && (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="flex items-center gap-1 text-xs font-medium bg-gray-800 text-white px-3 py-1.5 rounded-lg hover:bg-gray-900 transition-colors"
-              >
-                <Pencil size={11} /> Classify
-              </button>
+              <>
+                <span className="text-xs text-gray-500 font-medium self-center">Category:</span>
+                <Select value={category} onValueChange={(val) => { if (val) setCategory(val) }}>
+                  <SelectTrigger className="h-7 text-xs w-32 border-gray-200">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <button
+                  onClick={() => onConfirm({ finalCategory: category, workTypeTitle: workType })}
+                  disabled={isLoading}
+                  className="flex items-center gap-1 text-xs font-medium bg-gray-800 text-white px-3 py-1.5 rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50"
+                >
+                  <Check size={11} /> Confirm
+                </button>
+              </>
             )}
           </>
         ) : (

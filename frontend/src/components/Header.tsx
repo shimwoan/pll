@@ -1,7 +1,7 @@
 import { Mail, LayoutDashboard, Users, BarChart2, Settings, CheckSquare, FolderOpen, LogOut, ChevronDown } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { authApi } from '@/lib/api'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
@@ -18,9 +18,9 @@ export function Header({ userName }: { userName?: string }) {
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 flex items-center h-12 gap-8">
+      <div className="max-w-7xl mx-auto px-6 flex items-center h-12 gap-20">
         <Link to="/dashboard" className="flex items-center gap-2.5 shrink-0">
-          <img src="/favicon.png" alt="PLL" className="h-7 w-7 object-contain" />
+          <img src="/favicon.png" alt="PLL" className="h-6 w-6 object-contain" />
           <span className="text-sm font-semibold tracking-widest text-gray-800 uppercase">Pacific Liberty Law</span>
         </Link>
 
@@ -72,12 +72,16 @@ export function Header({ userName }: { userName?: string }) {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
-              <DropdownMenuLabel className="text-xs font-normal text-gray-500">{userName}</DropdownMenuLabel>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs font-normal text-gray-500">{userName}</DropdownMenuLabel>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={authApi.logout} className="text-xs gap-2">
-                <LogOut size={12} />
-                Log out
-              </DropdownMenuItem>
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={authApi.logout} className="text-xs gap-2">
+                  <LogOut size={12} />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         )}

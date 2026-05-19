@@ -57,7 +57,7 @@ export class AuthController {
         });
       }
 
-      res.redirect(`${process.env.FRONTEND_URL}/emails`);
+      res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
     } catch (err) {
       this.logger.error('OAuth callback failed', err);
       res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);

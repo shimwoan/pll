@@ -6,6 +6,7 @@ import { UnclassifiedPage } from '@/pages/UnclassifiedPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { MattersPage } from '@/pages/MattersPage'
+import { MatterDetailPage } from '@/pages/MatterDetailPage'
 import { authApi } from '@/lib/api'
 import { ToastPanel } from '@/components/ToastPanel'
 import { useEmailStore } from '@/store/emailStore'
@@ -13,7 +14,11 @@ import { useEmailStore } from '@/store/emailStore'
 export const UserContext = React.createContext<string | undefined>(undefined)
 
 function SseListener() {
-  const { fetchEmails, addToast } = useEmailStore()
+  const { fetchEmails, addToast, restoreToasts } = useEmailStore()
+
+  useEffect(() => {
+    restoreToasts()
+  }, [])
 
   useEffect(() => {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
@@ -78,6 +83,10 @@ export default function App() {
     }).catch(() => setAuthenticated(false))
   }, [])
 
+  if (authenticated === null) {
+    return <div className="min-h-screen bg-gray-50" />
+  }
+
   return (
     <UserContext.Provider value={userName}>
       <BrowserRouter>
@@ -88,6 +97,7 @@ export default function App() {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<ProtectedRoute authenticated={authenticated}><DashboardPage /></ProtectedRoute>} />
           <Route path="/matters" element={<ProtectedRoute authenticated={authenticated}><MattersPage /></ProtectedRoute>} />
+          <Route path="/matters/:id" element={<ProtectedRoute authenticated={authenticated}><MatterDetailPage /></ProtectedRoute>} />
           <Route path="/emails" element={<ProtectedRoute authenticated={authenticated}><EmailsPage /></ProtectedRoute>} />
           <Route path="/emails/unclassified" element={<ProtectedRoute authenticated={authenticated}><UnclassifiedPage /></ProtectedRoute>} />
           <Route path="/emails/:id" element={<ProtectedRoute authenticated={authenticated}><EmailDetailPage /></ProtectedRoute>} />

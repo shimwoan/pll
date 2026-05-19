@@ -61,6 +61,7 @@ export interface ToastItem {
   subject: string
   fromName: string
   receivedAt: string
+  matchedCaseId: string | null
 }
 
 export interface Case {
@@ -75,9 +76,15 @@ export interface Case {
   createdAt: string
 }
 
+export interface CaseDetail extends Case {
+  emails: Email[]
+}
+
 export const caseApi = {
   list: (params?: { search?: string }) =>
     api.get<Case[]>('/cases', { params }).then((r) => r.data),
+  get: (id: string) =>
+    api.get<CaseDetail>(`/cases/${id}`).then((r) => r.data),
 }
 
 export const authApi = {

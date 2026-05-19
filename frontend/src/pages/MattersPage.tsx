@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Layout } from '@/components/Layout'
 import { Input } from '@/components/ui/input'
 import { caseApi, type Case } from '@/lib/api'
 import { Search, SlidersHorizontal, Plus } from 'lucide-react'
 
 const STAGE_STYLES: Record<string, { dot: string; text: string }> = {
-  'Claim':              { dot: 'bg-slate-400',   text: 'text-slate-500'   },
+  'Intake':             { dot: 'bg-slate-400',   text: 'text-slate-500'   },
+  'Pre-Litigation':     { dot: 'bg-indigo-400',  text: 'text-indigo-500'  },
   'Medical Collection': { dot: 'bg-sky-400',     text: 'text-sky-600'     },
   'Demand':             { dot: 'bg-amber-400',   text: 'text-amber-600'   },
   'Negotiation':        { dot: 'bg-violet-400',  text: 'text-violet-600'  },
@@ -24,6 +26,7 @@ function StageBadge({ stage }: { stage: string }) {
 }
 
 export function MattersPage() {
+  const navigate = useNavigate()
   const [cases, setCases] = useState<Case[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -121,9 +124,9 @@ export function MattersPage() {
                 d ? new Date(d).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }) : '—'
               const isOverdue = c.dueDate ? new Date(c.dueDate) < new Date() : false
               return (
-                <tr key={c.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                <tr key={c.id} onClick={() => navigate(`/matters/${c.id}`)} className="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer">
                   <td className="px-4 py-3">
-                    <span className="text-xs font-medium text-gray-700">#{c.caseNumber}</span>
+                    <span className="text-xs font-medium text-gray-700">{c.caseNumber}</span>
                   </td>
                   <td className="px-4 py-3 text-xs text-gray-700">{fmtDate(c.dateOfLoss)}</td>
                   <td className="px-4 py-3 text-xs text-gray-500">Auto v. Auto</td>

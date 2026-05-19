@@ -10,7 +10,7 @@ import { format } from 'date-fns'
 export function EmailDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { selectedEmail, fetchEmail, confirmEmail, editEmail, unclassifyEmail } = useEmailStore()
+  const { selectedEmail, fetchEmail, confirmEmail, editEmail } = useEmailStore()
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -25,21 +25,15 @@ export function EmailDetailPage() {
     )
   }
 
-  const handleConfirm = async () => {
+  const handleConfirm = async (data: { finalCategory: string; workTypeTitle: string }) => {
     setIsLoading(true)
-    try { await confirmEmail(selectedEmail.id) }
+    try { await editEmail(selectedEmail.id, data) }
     finally { setIsLoading(false) }
   }
 
   const handleEdit = async (data: { finalCategory: string; workTypeTitle: string }) => {
     setIsLoading(true)
     try { await editEmail(selectedEmail.id, data) }
-    finally { setIsLoading(false) }
-  }
-
-  const handleUnclassify = async () => {
-    setIsLoading(true)
-    try { await unclassifyEmail(selectedEmail.id) }
     finally { setIsLoading(false) }
   }
 
@@ -97,7 +91,7 @@ export function EmailDetailPage() {
               </button>
             </div>
             {selectedEmail.body
-              ? <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">{selectedEmail.body}</pre>
+              ? <pre className="mt-5 text-gray-700 whitespace-pre-wrap" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', lineHeight: '1.5' }}>{selectedEmail.body.replace(/\n{3,}/g, '\n\n')}</pre>
               : <div className="text-xs text-gray-400 italic py-2">본문 불러오는 중...</div>
             }
           </div>
@@ -109,7 +103,6 @@ export function EmailDetailPage() {
             email={selectedEmail}
             onConfirm={handleConfirm}
             onEdit={handleEdit}
-            onUnclassify={handleUnclassify}
             isLoading={isLoading}
           />
         </div>

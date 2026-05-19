@@ -62,7 +62,7 @@ let AuthController = AuthController_1 = class AuthController {
                     this.logger.warn('Could not create Graph subscription', err?.message);
                 });
             }
-            res.redirect(`${process.env.FRONTEND_URL}/emails`);
+            res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
         }
         catch (err) {
             this.logger.error('OAuth callback failed', err);

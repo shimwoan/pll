@@ -9,6 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GraphService = void 0;
 const common_1 = require("@nestjs/common");
 const microsoft_graph_client_1 = require("@microsoft/microsoft-graph-client");
+const config_1 = require("../config");
 let GraphService = class GraphService {
     getClient(accessToken) {
         return microsoft_graph_client_1.Client.init({
@@ -20,6 +21,7 @@ let GraphService = class GraphService {
         const result = await client
             .api('/me/messages')
             .select('id,subject,bodyPreview,from,toRecipients,receivedDateTime,body,webLink')
+            .filter(`receivedDateTime ge ${config_1.EMAIL_CUTOFF.toISOString()}`)
             .top(top)
             .orderby('receivedDateTime desc')
             .get();
