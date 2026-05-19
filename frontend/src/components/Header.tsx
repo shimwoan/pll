@@ -1,14 +1,12 @@
-import { Mail, LayoutDashboard, Users, BarChart2, Settings, CheckSquare, FolderOpen, LogOut, ChevronDown } from 'lucide-react'
+import { Users, BarChart2, Settings, CheckSquare, FolderOpen, LogOut, ChevronDown } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { authApi } from '@/lib/api'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 const navItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
   { label: 'Task', icon: CheckSquare, href: '#' },
   { label: 'Matter', icon: FolderOpen, href: '/matters' },
   { label: 'Contact', icon: Users, href: '#' },
-  { label: 'Emails', icon: Mail, href: '/emails' },
   { label: 'Report', icon: BarChart2, href: '#' },
   { label: 'Admin', icon: Settings, href: '#' },
 ]

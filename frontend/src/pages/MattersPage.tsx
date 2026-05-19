@@ -103,7 +103,7 @@ export function MattersPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-100">
-              {['Matter', 'Date of Loss', 'Type', 'Status', 'Due Date', 'Client Name', 'Handler'].map((h) => (
+              {['Matter', 'Client Name', 'Date of Loss', 'Type', 'Status', 'Due Date', 'Handler'].map((h) => (
                 <th key={h} className="text-left px-4 py-2.5 text-xs font-medium text-gray-400 uppercase tracking-wide">
                   {h}
                 </th>
@@ -128,6 +128,7 @@ export function MattersPage() {
                   <td className="px-4 py-3">
                     <span className="text-xs font-medium text-gray-700">{c.caseNumber}</span>
                   </td>
+                  <td className="px-4 py-3 text-xs font-medium text-gray-700">{c.clientName}</td>
                   <td className="px-4 py-3 text-xs text-gray-700">{fmtDate(c.dateOfLoss)}</td>
                   <td className="px-4 py-3 text-xs text-gray-500">Auto v. Auto</td>
                   <td className="px-4 py-3">
@@ -138,7 +139,6 @@ export function MattersPage() {
                       {fmtDate(c.dueDate)}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs font-medium text-gray-700">{c.clientName}</td>
                   <td className="px-4 py-3 text-xs text-gray-500">{c.handler}</td>
                 </tr>
               )

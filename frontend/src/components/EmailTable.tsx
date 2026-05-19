@@ -1,4 +1,3 @@
-import { Mail, AlertTriangle } from 'lucide-react'
 import type { Email } from '@/lib/api'
 import { CategoryBadge } from './CategoryBadge'
 import { EmailStatusBadge } from './EmailStatusBadge'
@@ -30,10 +29,10 @@ export function EmailTable({ emails, isLoading }: EmailTableProps) {
       <table className="w-full">
         <thead>
           <tr className="border-b border-gray-100">
-            <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide w-6"></th>
             <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Category</th>
-            <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Subject</th>
             <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Case</th>
+            <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Client</th>
+            <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Subject</th>
             <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">From</th>
             <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Status</th>
             <th className="text-right px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Date</th>
@@ -49,36 +48,38 @@ export function EmailTable({ emails, isLoading }: EmailTableProps) {
               }`}
             >
               <td className="px-4 py-2.5">
-                {email.status === 'UNCLASSIFIED' ? (
-                  <AlertTriangle size={12} className="text-amber-400" />
-                ) : (
-                  <Mail size={12} className="text-gray-300" />
-                )}
-              </td>
-              <td className="px-4 py-2.5">
                 <CategoryBadge category={email.finalCategory || email.aiCategory} />
               </td>
-              <td className="px-4 py-2.5 max-w-xs">
-                <span className="truncate block text-xs font-medium text-gray-800">{email.subject}</span>
-                <span className="truncate block text-xs text-gray-400">
-                  {email.aiSummary || (email.bodyPreview.length > 60 ? email.bodyPreview.slice(0, 60) + '...' : email.bodyPreview)}
-                </span>
-              </td>
-              <td className="px-4 py-2.5 text-xs">
+              <td className="px-4 py-2.5 text-sm">
                 {email.case ? (
                   <span className="text-gray-700 font-medium">{email.case.caseNumber}</span>
                 ) : (
                   <span className="text-gray-300">—</span>
                 )}
               </td>
+              <td className="px-4 py-2.5 text-sm">
+                {email.case ? (
+                  <span className="text-gray-700">{email.case.clientName}</span>
+                ) : (
+                  <span className="text-gray-300">—</span>
+                )}
+              </td>
+              <td className="px-4 py-2.5 max-w-xs">
+                <span className="truncate block text-sm font-bold text-gray-800">{email.subject}</span>
+                {email.aiSummary && (
+                  <span className="block text-[13px] font-medium text-gray-600 line-clamp-2">
+                    <span className="text-gray-400 font-semibold">AI: </span>{email.aiSummary}
+                  </span>
+                )}
+              </td>
               <td className="px-4 py-2.5">
-                <span className="block text-xs text-gray-700">{email.fromName || email.fromAddress}</span>
-                <span className="block text-xs text-gray-400">{email.fromAddress}</span>
+                <span className="block text-sm text-gray-700">{email.fromName || email.fromAddress}</span>
+                <span className="block text-sm text-gray-400">{email.fromAddress}</span>
               </td>
               <td className="px-4 py-2.5">
                 <EmailStatusBadge status={email.status} />
               </td>
-              <td className="px-4 py-2.5 text-right text-xs text-gray-400 whitespace-nowrap">
+              <td className="px-4 py-2.5 text-right text-sm text-gray-400 whitespace-nowrap">
                 {format(new Date(email.receivedAt), 'MMM d, yyyy HH:mm')}
               </td>
             </tr>

@@ -90,7 +90,11 @@ export class AuthController {
   }
 
   @Get('logout')
-  logout(@Req() req: Request, @Res() res: Response) {
+  async logout(@Req() req: Request, @Res() res: Response) {
+    const userEmail = (req.session as any).userEmail;
+    if (userEmail) {
+      await this.prisma.userToken.deleteMany({ where: { userEmail } }).catch(() => {});
+    }
     req.session.destroy(() => {
       res.clearCookie('connect.sid');
       res.redirect(`${process.env.FRONTEND_URL}/login`);

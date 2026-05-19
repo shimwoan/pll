@@ -4,7 +4,7 @@ import { Layout } from '@/components/Layout'
 import { CategoryBadge } from '@/components/CategoryBadge'
 import { caseApi, emailApi, type CaseDetail, type Email } from '@/lib/api'
 import { useEmailStore } from '@/store/emailStore'
-import { ChevronRight, Check, Pin, Mail, CheckCircle2, X } from 'lucide-react'
+import { ChevronRight, Check, Pin, Mail, CheckCircle2, X, Search, Plus } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const EMAIL_CATEGORIES = ['Settlement', 'Medical', 'Client', 'Insurance', 'Police', 'Other']
@@ -167,6 +167,147 @@ function ImportantNotice() {
             <span className="text-xs text-gray-700">{n}</span>
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Memo & Emails Tab ──────────────────────────────────────────────────────
+
+const MEMO_EMAIL_SUB_TABS = ['All', 'Memo', 'Email'] as const
+type MemoEmailSubTab = typeof MEMO_EMAIL_SUB_TABS[number]
+
+const CATEGORY_COLORS: Record<string, string> = {
+  Settlement: 'bg-blue-50 text-blue-600',
+  Medical:    'bg-green-50 text-green-600',
+  Client:     'bg-orange-50 text-orange-500',
+  Insurance:  'bg-purple-50 text-purple-600',
+  Police:     'bg-red-50 text-red-500',
+  Strategy:   'bg-teal-50 text-teal-600',
+  Other:      'bg-gray-100 text-gray-500',
+}
+
+function MemoEmailsTab({ emails }: { emails: Email[] }) {
+  const [subTab, setSubTab] = useState<MemoEmailSubTab>('All')
+  const [search, setSearch] = useState('')
+  const navigate = useNavigate()
+
+  const confirmed = emails.filter((e) => e.status === 'CONFIRMED' || e.status === 'EDITED')
+
+  const filtered = confirmed.filter((e) => {
+    if (subTab === 'Email') return true
+    if (subTab === 'Memo') return false
+    return true
+  }).filter((e) => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return (
+      e.subject.toLowerCase().includes(q) ||
+      (e.fromName || '').toLowerCase().includes(q) ||
+      (e.fromAddress || '').toLowerCase().includes(q) ||
+      (e.finalCategory || e.aiCategory || '').toLowerCase().includes(q)
+    )
+  })
+
+  const category = (e: Email) => e.finalCategory || e.aiCategory || 'Other'
+  const colorClass = (cat: string) => CATEGORY_COLORS[cat] ?? CATEGORY_COLORS.Other
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-base font-semibold text-gray-900">Memo & Emails</div>
+          <div className="text-xs text-gray-400 mt-0.5">All case-related memos and email records</div>
+        </div>
+        <button className="flex items-center gap-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors rounded-lg px-4 py-2">
+          <Plus size={14} />
+          New Memo
+        </button>
+      </div>
+
+      {/* Sub-tabs */}
+      <div className="flex gap-6 border-b border-gray-200 mb-4">
+        {MEMO_EMAIL_SUB_TABS.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setSubTab(tab)}
+            className={`pb-2 text-sm font-medium transition-colors ${
+              subTab === tab
+                ? 'text-blue-600 border-b-2 border-blue-600 -mb-px'
+                : 'text-gray-500 hover:text-gray-800'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search memos and emails..."
+          className="w-full h-8 pl-8 pr-3 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-300"
+        />
+      </div>
+
+      {/* Table */}
+      <div className="border border-gray-100 rounded-lg overflow-hidden bg-white">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-gray-100">
+              <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-400 uppercase tracking-wide w-16">Type</th>
+              <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-400 uppercase tracking-wide w-32">Category</th>
+              <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-400 uppercase tracking-wide">Title</th>
+              <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-400 uppercase tracking-wide w-48">Owner</th>
+              <th className="text-right px-4 py-2.5 text-xs font-medium text-gray-400 uppercase tracking-wide w-28">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="text-center py-10 text-xs text-gray-400">
+                  {subTab === 'Memo' ? 'No memos yet.' : 'No emails found.'}
+                </td>
+              </tr>
+            ) : (
+              filtered.map((e) => {
+                const cat = category(e)
+                return (
+                  <tr
+                    key={e.id}
+                    onClick={() => navigate(`/emails/${e.id}`)}
+                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <Pin size={11} className="text-amber-400 shrink-0" />
+                        <Mail size={13} className="text-blue-400 shrink-0" />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${colorClass(cat)}`}>
+                        {cat}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm font-medium text-gray-800">{e.subject}</span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {e.fromName || e.fromAddress}
+                    </td>
+                    <td className="px-4 py-3 text-right text-xs text-gray-400 whitespace-nowrap">
+                      {new Date(e.receivedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </td>
+                  </tr>
+                )
+              })
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   )
@@ -360,12 +501,24 @@ const STAGE_BADGE: Record<string, string> = {
   'Litigation':         'bg-red-50 text-red-500',
 }
 
+const DETAIL_TABS = [
+  { label: 'Dashboard',      active: true },
+  { label: 'Summary',        active: false },
+  { label: 'Parties',        active: false },
+  { label: 'Documents',      active: false },
+  { label: 'Tasks & Review', active: false },
+  { label: 'Memo & Emails',  active: true },
+  { label: 'Litigation',     active: false },
+  { label: 'Fee',            active: false },
+]
+
 export function MatterDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [c, setC] = useState<CaseDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null)
+  const [activeTab, setActiveTab] = useState('Dashboard')
   const toasts = useEmailStore((s) => s.toasts)
   const sseToastId = useRef<string | null>(null)
 
@@ -450,27 +603,58 @@ export function MatterDetailPage() {
         </div>
       </div>
 
-      {/* Body: left / right split */}
-      <div className="grid grid-cols-[1fr_560px] gap-4">
-        {/* Left: Timeline */}
-        <div className="flex flex-col gap-4">
-          <Timeline />
-        </div>
+      {/* Tab menu */}
+      <div className="flex border-b border-gray-200 mb-4">
+        {DETAIL_TABS.map(({ label, active }) =>
+          active ? (
+            <button
+              key={label}
+              onClick={() => setActiveTab(label)}
+              className={`px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
+                activeTab === label
+                  ? 'text-blue-600 border-b-2 border-blue-600 -mb-px'
+                  : 'text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              {label}
+            </button>
+          ) : (
+            <span
+              key={label}
+              title="Coming soon"
+              className="px-4 py-2 text-sm font-medium text-gray-300 cursor-not-allowed select-none whitespace-nowrap"
+            >
+              {label}
+            </span>
+          )
+        )}
+      </div>
 
-        {/* Right: Emails + Important Notice + Case Summary */}
-        <div className="flex flex-col">
-          <EmailPanel
-            emails={c.emails}
-            selected={selectedEmail}
-            onSelect={setSelectedEmail}
-            onConfirmed={(id) => setC((prev) => prev ? { ...prev, emails: prev.emails.filter((e) => e.id !== id) } : prev)}
-          />
-          <ImportantNotice />
-          <div className="mt-3">
-            <CaseSummary c={c} />
+      {/* Tab body */}
+      {activeTab === 'Memo & Emails' ? (
+        <MemoEmailsTab emails={c.emails} />
+      ) : (
+        <div className="grid grid-cols-[1fr_560px] gap-4">
+          {/* Left: Timeline */}
+          <div className="flex flex-col gap-4">
+            <Timeline />
+          </div>
+
+          {/* Right: Emails + Important Notice + Case Summary */}
+          <div className="flex flex-col">
+            <EmailPanel
+              emails={c.emails}
+              selected={selectedEmail}
+              onSelect={setSelectedEmail}
+              onConfirmed={(id) => setC((prev) => prev ? { ...prev, emails: prev.emails.filter((e) => e.id !== id) } : prev)}
+            />
+            <ImportantNotice />
+            <div className="mt-3">
+              <CaseSummary c={c} />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </Layout>
   )
 }
