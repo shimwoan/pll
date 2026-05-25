@@ -4,10 +4,10 @@ import { Layout } from '@/components/Layout'
 import { CategoryBadge } from '@/components/CategoryBadge'
 import { caseApi, emailApi, type CaseDetail, type Email } from '@/lib/api'
 import { useEmailStore } from '@/store/emailStore'
-import { ChevronRight, Check, Pin, Mail, CheckCircle2, X, Search, Plus } from 'lucide-react'
+import { ChevronRight, Check, Pin, Mail, CheckCircle2, X, Search, Plus, FileText, Phone, ArrowRightLeft, AlertTriangle, Paperclip } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-const EMAIL_CATEGORIES = ['Settlement', 'Medical', 'Client', 'Insurance', 'Police', 'Other']
+const EMAIL_CATEGORIES = ['Response Required', 'Document Submission', 'Confirm Reply', 'Needs Review', 'For Reference', 'Unclassified']
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -84,61 +84,329 @@ function StageTracker({ stage }: { stage: string }) {
   )
 }
 
+// ── Stage Checklist ────────────────────────────────────────────────────────
+
+const ACTION_CATEGORIES_FOR_CHECKLIST = new Set(['Response Required', 'Document Submission', 'Confirm Reply'])
+
+type DynamicCheckItem = { id: string; label: string; isNew: boolean }
+
+const STAGE_CHECKLISTS: Record<string, { id: string; label: string }[]> = {
+  'Negotiation': [
+    { id: 'neg-counter', label: 'Counter-offer sent to insurance adjuster' },
+    { id: 'neg-response', label: 'Insurance response received & reviewed' },
+    { id: 'neg-client', label: 'Client updated on negotiation status' },
+    { id: 'neg-strategy', label: 'Litigation decision made if no resolution' },
+  ],
+  'Demand': [
+    { id: 'dem-package', label: 'Demand package compiled & sent' },
+    { id: 'dem-ack', label: 'Adjuster acknowledgment confirmed' },
+    { id: 'dem-deadline', label: '30-day response deadline calendared' },
+    { id: 'dem-client', label: 'Client notified of demand amount' },
+  ],
+  'Medical Collection': [
+    { id: 'med-records', label: 'All medical records collected from providers' },
+    { id: 'med-billing', label: 'Final billing summary compiled' },
+    { id: 'med-lien', label: 'Medicare/Medi-Cal lien status confirmed' },
+    { id: 'med-summary', label: 'Medical summary prepared for demand' },
+  ],
+  'Litigation': [
+    { id: 'lit-complaint', label: 'File Complaint with court' },
+    { id: 'lit-served', label: 'Serve Summons & Complaint via Process Server' },
+  ],
+  'Settlement': [
+    { id: 'set-release', label: 'Release agreement signed by client' },
+    { id: 'set-check', label: 'Settlement check received & deposited to trust' },
+    { id: 'set-lien', label: 'Lien negotiation completed' },
+    { id: 'set-disburse', label: 'Client disbursement processed' },
+  ],
+}
+
+function StageChecklist({ stage, dynamicItems = [] }: { stage: string; dynamicItems?: DynamicCheckItem[] }) {
+  const [checked, setChecked] = useState<Record<string, boolean>>({})
+  const staticItems = STAGE_CHECKLISTS[stage]
+  if (!staticItems && dynamicItems.length === 0) return null
+
+  const toggle = (id: string) => setChecked((prev) => ({ ...prev, [id]: !prev[id] }))
+
+  return (
+    <div className="bg-white border border-gray-100 rounded-lg px-5 py-4 mb-0">
+      <div className="font-semibold text-sm text-gray-800 mb-0.5">Status Checklist</div>
+      <div className="text-xs text-gray-400 mb-3">{stage} — required actions</div>
+      <div className="flex flex-col gap-2">
+        {dynamicItems.map(({ id, label, isNew }) => (
+          <button
+            key={id}
+            onClick={() => toggle(id)}
+            className={`flex items-center gap-3 text-left group ${isNew ? 'checklist-item-new' : ''}`}
+          >
+            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+              checked[id] ? 'bg-red-500 border-red-500' : 'border-red-300 bg-white group-hover:border-red-400'
+            }`}>
+              {checked[id] && <Check size={9} strokeWidth={3} className="text-white" />}
+            </div>
+            <span className={`text-sm transition-colors ${checked[id] ? 'line-through text-gray-400' : 'text-gray-800 font-medium'}`}>
+              {label}
+            </span>
+          </button>
+        ))}
+        {staticItems?.map(({ id, label }) => (
+          <button
+            key={id}
+            onClick={() => toggle(id)}
+            className="flex items-center gap-3 text-left group"
+          >
+            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+              checked[id] ? 'bg-blue-600 border-blue-600' : 'border-gray-300 bg-white group-hover:border-blue-400'
+            }`}>
+              {checked[id] && <Check size={9} strokeWidth={3} className="text-white" />}
+            </div>
+            <span className={`text-sm transition-colors ${checked[id] ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+              {label}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ── Timeline ───────────────────────────────────────────────────────────────
 
-const DEMO_TIMELINE = [
-  { dayCount: 0,  dateIn: '2026-01-15', transferredTo: 'Intake',       transferredDate: '2026-01-23', handler: 'John Doe' },
-  { dayCount: 45, dateIn: '2026-03-01', transferredTo: 'Demand',       transferredDate: '2026-03-10', handler: 'Sarah Klein' },
-  { dayCount: 90, dateIn: '2026-04-15', transferredTo: 'Negotiation',  transferredDate: '2026-04-20', handler: 'Emily Davis' },
+type TimelineFile = { name: string; size: string }
+type TimelineEntry =
+  | { type: 'stage';    day: number; date: string; stage: string; handler: string; note?: string; files?: TimelineFile[] }
+  | { type: 'call';     day: number; date: string; handler: string; duration: string; with: string; summary: string }
+  | { type: 'document'; day: number; date: string; handler: string; files: TimelineFile[]; note: string }
+  | { type: 'alert';    day: number; date: string; handler: string; message: string }
+
+const DEMO_TIMELINE: TimelineEntry[] = [
+  {
+    type: 'stage',
+    day: 0,
+    date: '2026-01-15',
+    stage: 'Intake',
+    handler: 'Sarah Klein',
+    note: 'Client walked in — rear-end collision on I-405. Retainer signed. Police report requested.',
+    files: [
+      { name: 'Retainer_Agreement_Kim.pdf', size: '284 KB' },
+      { name: 'Accident_Photo_001.jpg', size: '1.2 MB' },
+    ],
+  },
+  {
+    type: 'call',
+    day: 3,
+    date: '2026-01-18',
+    handler: 'Sarah Klein',
+    duration: '12 min',
+    with: 'Client (James Kim)',
+    summary: 'Client confirmed ER visit at Cedars-Sinai on 1/15. Complaining of neck and lower back pain. Has not yet received police report. Advised to follow up with primary care and begin chiropractic treatment. Will send LOR to State Farm today.',
+  },
+  {
+    type: 'stage',
+    day: 8,
+    date: '2026-01-23',
+    stage: 'Claim Open',
+    handler: 'Sarah Klein',
+    note: 'LOR sent to State Farm. Claim # SF-2026-04471 confirmed. Adjuster: Mike Torres. Liability appears clear — at-fault driver cited.',
+    files: [
+      { name: 'LOR_StateFarm_SF-2026-04471.pdf', size: '118 KB' },
+    ],
+  },
+  {
+    type: 'call',
+    day: 21,
+    date: '2026-02-05',
+    handler: 'Sarah Klein',
+    duration: '8 min',
+    with: 'Adjuster Mike Torres (State Farm)',
+    summary: 'State Farm acknowledged LOR. Liability accepted at 100%. PD claim already opened by client. BI claim under review — adjuster requested medical records upon treatment completion. Noted policy limit $50K/$100K.',
+  },
+  {
+    type: 'document',
+    day: 34,
+    date: '2026-02-18',
+    handler: 'Sarah Klein',
+    note: 'Received ER records from Cedars-Sinai and initial chiro billing. Uploaded to file.',
+    files: [
+      { name: 'CedarsSinai_ER_Records.pdf', size: '2.4 MB' },
+      { name: 'CedarsSinai_Billing_01.pdf', size: '340 KB' },
+      { name: 'ChiroCare_Initial_Treatment.pdf', size: '512 KB' },
+    ],
+  },
+  {
+    type: 'alert',
+    day: 45,
+    date: '2026-03-01',
+    handler: 'System',
+    message: "Follow-up overdue: No response from Dr. Patel's office re: medical records request sent 2/10. Reminder sent automatically.",
+  },
+  {
+    type: 'call',
+    day: 52,
+    date: '2026-03-08',
+    handler: 'Emily Davis',
+    duration: '6 min',
+    with: 'Client (James Kim)',
+    summary: 'Client completed chiropractic care (20 sessions). Still experiencing intermittent neck pain. Referred to orthopedic specialist Dr. Reyes for final evaluation. Client approved demand amount range discussion.',
+  },
+  {
+    type: 'stage',
+    day: 89,
+    date: '2026-04-14',
+    stage: 'Medical Collection',
+    handler: 'Emily Davis',
+    note: 'All records collected. Total medical specials: $28,450. Final ortho report received — 8% permanent impairment rating.',
+    files: [
+      { name: 'DrReyes_Ortho_FinalReport.pdf', size: '890 KB' },
+      { name: 'ChiroCare_Final_Billing.pdf', size: '620 KB' },
+      { name: 'Medical_Summary_Kim_v1.pdf', size: '1.1 MB' },
+    ],
+  },
+  {
+    type: 'stage',
+    day: 101,
+    date: '2026-04-26',
+    stage: 'Demand',
+    handler: 'Emily Davis',
+    note: 'Demand package sent to State Farm. Demand amount: $150,000 (policy limit). 30-day response window.',
+    files: [
+      { name: 'Demand_Package_Kim_v1.pdf', size: '3.8 MB' },
+    ],
+  },
+  {
+    type: 'call',
+    day: 118,
+    date: '2026-05-13',
+    handler: 'Emily Davis',
+    duration: '15 min',
+    with: 'Adjuster Mike Torres (State Farm)',
+    summary: 'State Farm counter-offer: $42,000. Adjuster cited gap in treatment (Feb–Mar) and disputed permanency. Rejected — below acceptable range. Advised will proceed to litigation if no improvement. Next call scheduled in 2 weeks.',
+  },
+  {
+    type: 'stage',
+    day: 125,
+    date: '2026-05-20',
+    stage: 'Negotiation',
+    handler: 'Emily Davis',
+    note: 'Counter at $120,000. Attached updated pain & suffering analysis and orthopedic permanency report.',
+    files: [
+      { name: 'Counter_Demand_Kim_120k.pdf', size: '1.4 MB' },
+    ],
+  },
 ]
+
+const TIMELINE_ICON: Record<TimelineEntry['type'], { icon: React.ReactNode; dot: string }> = {
+  stage:    { icon: <ArrowRightLeft size={10} />, dot: 'bg-blue-500 ring-blue-200' },
+  call:     { icon: <Phone size={10} />,          dot: 'bg-emerald-500 ring-emerald-200' },
+  document: { icon: <Paperclip size={10} />,      dot: 'bg-violet-500 ring-violet-200' },
+  alert:    { icon: <AlertTriangle size={10} />,  dot: 'bg-amber-400 ring-amber-200' },
+}
+
+const STAGE_COLOR: Record<string, string> = {
+  'Intake':             'text-slate-600 bg-slate-50 border-slate-200',
+  'Claim Open':         'text-indigo-600 bg-indigo-50 border-indigo-200',
+  'Medical Collection': 'text-sky-600 bg-sky-50 border-sky-200',
+  'Demand':             'text-yellow-700 bg-yellow-50 border-yellow-200',
+  'Negotiation':        'text-teal-600 bg-teal-50 border-teal-200',
+  'Settlement':         'text-green-600 bg-green-50 border-green-200',
+  'Litigation':         'text-red-500 bg-red-50 border-red-200',
+}
+
+function TimelineFiles({ files }: { files: TimelineFile[] }) {
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-2">
+      {files.map((f) => (
+        <div key={f.name} className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-md px-2 py-1 cursor-pointer hover:bg-gray-100 transition-colors">
+          <FileText size={10} className="text-gray-400 shrink-0" />
+          <span className="text-[11px] text-gray-700 max-w-[160px] truncate">{f.name}</span>
+          <span className="text-[10px] text-gray-400">{f.size}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 function Timeline() {
   return (
-    <div className="bg-white border border-gray-100 rounded-lg p-5">
-      <div className="font-semibold text-sm text-gray-800 mb-0.5">Timeline</div>
-      <div className="text-xs text-gray-400 mb-4">Case progress history</div>
+    <div className="bg-white border border-gray-100 rounded-lg flex flex-col">
+      <div className="sticky top-0 bg-white z-10 px-5 pt-5 pb-3 border-b border-gray-100">
+        <div className="font-semibold text-sm text-gray-800 mb-0.5">Timeline</div>
+        <div className="text-xs text-gray-400">Case activity — stage transitions, calls, documents, alerts</div>
+      </div>
+      <div className="overflow-y-auto px-5 py-4">
       <div className="relative">
-        <div className="absolute left-1.5 top-2 bottom-2 w-px bg-blue-100" />
+        <div className="absolute left-[6px] top-2 bottom-2 w-px bg-gray-100" />
         <div className="flex flex-col gap-3">
-          {DEMO_TIMELINE.map((t, i) => (
-            <div key={i} className="relative flex gap-4">
-              <div className="w-3.5 h-3.5 rounded-full bg-blue-500 border-2 border-white ring-1 ring-blue-200 shrink-0 mt-1 z-10" />
-              <div className="flex-1 border border-gray-100 rounded-lg p-3">
-                <div className="grid grid-cols-4 gap-4 mb-2">
-                  <div>
-                    <div className="text-[10px] text-gray-400 mb-0.5">Day Count</div>
-                    <div className="text-xs font-semibold text-gray-800">Day {t.dayCount}</div>
-                  </div>
-                  <div>
-                    <div className="text-[10px] text-gray-400 mb-0.5">Date In</div>
-                    <div className="text-xs text-gray-700">
-                      {new Date(t.dateIn).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', weekday: 'short' })}
+          {[...DEMO_TIMELINE].reverse().map((t, i) => {
+            const { dot } = TIMELINE_ICON[t.type]
+            const dateStr = new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            return (
+              <div key={i} className="relative flex gap-3">
+                <div className={`w-3.5 h-3.5 rounded-full border-2 border-white ring-1 shrink-0 mt-1 z-10 ${dot}`} />
+                <div className="flex-1 border border-gray-100 rounded-lg p-3 min-w-0">
+                  {/* Header row */}
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {t.type === 'stage' && (
+                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${STAGE_COLOR[t.stage] ?? 'text-gray-600 bg-gray-50 border-gray-200'}`}>
+                          → {t.stage}
+                        </span>
+                      )}
+                      {t.type === 'call' && (
+                        <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                          Call · {t.duration}
+                        </span>
+                      )}
+                      {t.type === 'document' && (
+                        <span className="text-[11px] font-semibold text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-full">
+                          Documents Received
+                        </span>
+                      )}
+                      {t.type === 'alert' && (
+                        <span className="text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                          Alert
+                        </span>
+                      )}
+                      {t.type === 'call' && (
+                        <span className="text-[11px] text-gray-500">w/ {t.with}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[10px] text-gray-400">Day {t.day}</span>
+                      <span className="text-[10px] text-gray-400">{dateStr}</span>
                     </div>
                   </div>
-                  <div>
-                    <div className="text-[10px] text-gray-400 mb-0.5">Transferred To</div>
-                    <div className="text-xs text-orange-500 font-medium">{t.transferredTo}</div>
-                  </div>
-                  <div>
-                    <div className="text-[10px] text-gray-400 mb-0.5">Transferred Date</div>
-                    <div className="text-xs text-gray-700">
-                      {new Date(t.transferredDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', weekday: 'short' })}
+
+                  {/* Content */}
+                  {(t.type === 'stage' || t.type === 'document') && t.note && (
+                    <p className="text-xs text-gray-600 leading-relaxed">{t.note}</p>
+                  )}
+                  {t.type === 'call' && (
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-md px-3 py-2">
+                      <div className="text-[10px] font-semibold text-emerald-500 uppercase tracking-wide mb-1">Call Summary</div>
+                      <p className="text-xs text-gray-700 leading-relaxed">{t.summary}</p>
                     </div>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[10px] text-gray-400 mb-1">Handler</div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-[9px] font-semibold text-blue-600">
-                      {initials(t.handler)}
+                  )}
+                  {t.type === 'alert' && (
+                    <p className="text-xs text-amber-700 leading-relaxed">{t.message}</p>
+                  )}
+
+                  {/* Files */}
+                  {'files' in t && t.files && t.files.length > 0 && <TimelineFiles files={t.files} />}
+
+                  {/* Handler */}
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center text-[9px] font-semibold text-blue-600 shrink-0">
+                      {t.handler === 'System' ? '⚙' : initials(t.handler)}
                     </div>
-                    <span className="text-xs text-gray-700">{t.handler}</span>
+                    <span className="text-[11px] text-gray-400">{t.handler}</span>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
+      </div>
       </div>
     </div>
   )
@@ -174,7 +442,7 @@ function ImportantNotice() {
 
 // ── Memo & Emails Tab ──────────────────────────────────────────────────────
 
-const MEMO_EMAIL_SUB_TABS = ['All', 'Memo', 'Email'] as const
+const MEMO_EMAIL_SUB_TABS = ['All', 'Response Required', 'Document Submission', 'Confirm Reply', 'Needs Review', 'For Reference', 'Unclassified'] as const
 type MemoEmailSubTab = typeof MEMO_EMAIL_SUB_TABS[number]
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -195,9 +463,8 @@ function MemoEmailsTab({ emails }: { emails: Email[] }) {
   const confirmed = emails.filter((e) => e.status === 'CONFIRMED' || e.status === 'EDITED')
 
   const filtered = confirmed.filter((e) => {
-    if (subTab === 'Email') return true
-    if (subTab === 'Memo') return false
-    return true
+    if (subTab === 'All') return true
+    return (e.actionCategory || 'Unclassified') === subTab
   }).filter((e) => {
     if (!search) return true
     const q = search.toLowerCase()
@@ -227,7 +494,7 @@ function MemoEmailsTab({ emails }: { emails: Email[] }) {
       </div>
 
       {/* Sub-tabs */}
-      <div className="flex gap-6 border-b border-gray-200 mb-4">
+      <div className="flex gap-6 border-b border-gray-200 mb-4 overflow-x-auto scrollbar-none">
         {MEMO_EMAIL_SUB_TABS.map((tab) => (
           <button
             key={tab}
@@ -260,7 +527,7 @@ function MemoEmailsTab({ emails }: { emails: Email[] }) {
           <thead>
             <tr className="border-b border-gray-100">
               <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-400 uppercase tracking-wide w-16">Type</th>
-              <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-400 uppercase tracking-wide w-32">Category</th>
+              <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-400 uppercase tracking-wide w-48">Category</th>
               <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-400 uppercase tracking-wide">Title</th>
               <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-400 uppercase tracking-wide w-48">Owner</th>
               <th className="text-right px-4 py-2.5 text-xs font-medium text-gray-400 uppercase tracking-wide w-28">Date</th>
@@ -270,7 +537,7 @@ function MemoEmailsTab({ emails }: { emails: Email[] }) {
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={5} className="text-center py-10 text-xs text-gray-400">
-                  {subTab === 'Memo' ? 'No memos yet.' : 'No emails found.'}
+                  {subTab === 'All' ? 'No emails found.' : `No "${subTab}" emails.`}
                 </td>
               </tr>
             ) : (
@@ -319,7 +586,7 @@ function EmailPanel({ emails, selected, onSelect, onConfirmed }: {
   emails: Email[]
   selected: Email | null
   onSelect: (e: Email | null) => void
-  onConfirmed: (id: string) => void
+  onConfirmed: (email: Email) => void
 }) {
   const { removeToast } = useEmailStore()
   const [confirming, setConfirming] = useState(false)
@@ -344,7 +611,7 @@ function EmailPanel({ emails, selected, onSelect, onConfirmed }: {
     try {
       await emailApi.edit(selected.id, { finalCategory: category })
       removeToast(selected.id)
-      onConfirmed(selected.id)
+      onConfirmed({ ...selected, finalCategory: category, actionCategory: selected.actionCategory ?? category })
       onSelect(null)
     } finally { setConfirming(false) }
   }
@@ -519,6 +786,7 @@ export function MatterDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null)
   const [activeTab, setActiveTab] = useState('Dashboard')
+  const [dynamicCheckItems, setDynamicCheckItems] = useState<DynamicCheckItem[]>([])
   const toasts = useEmailStore((s) => s.toasts)
   const sseToastId = useRef<string | null>(null)
 
@@ -541,6 +809,22 @@ export function MatterDetailPage() {
     })
   }, [toasts, id])
 
+  const handleEmailConfirmed = (email: Email) => {
+    setC((prev) => prev ? { ...prev, emails: prev.emails.filter((e) => e.id !== email.id) } : prev)
+    const cat = email.finalCategory || email.actionCategory || ''
+    if (ACTION_CATEGORIES_FOR_CHECKLIST.has(cat)) {
+      const label = email.aiSummary || email.subject
+      const newItem: DynamicCheckItem = { id: email.id, label, isNew: true }
+      setDynamicCheckItems((prev) => {
+        if (prev.some((it) => it.id === email.id)) return prev
+        return [newItem, ...prev]
+      })
+      setTimeout(() => {
+        setDynamicCheckItems((prev) => prev.map((it) => it.id === email.id ? { ...it, isNew: false } : it))
+      }, 5000)
+    }
+  }
+
   if (isLoading) return <Layout><div className="text-xs text-gray-400 py-10 text-center">Loading...</div></Layout>
   if (!c) return <Layout><div className="text-xs text-gray-400 py-10 text-center">Matter not found</div></Layout>
 
@@ -553,14 +837,14 @@ export function MatterDetailPage() {
   return (
     <Layout>
       {/* Breadcrumb */}
-      <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
+      <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-2">
         <button onClick={() => navigate('/matters')} className="hover:text-gray-600 transition-colors">Matters</button>
         <ChevronRight size={12} />
         <span className="text-gray-600">{c.caseNumber}</span>
       </div>
 
       {/* Header + Stage tracker */}
-      <div className="bg-white border border-gray-100 rounded-lg px-6 py-4 mb-4">
+      <div className="bg-white border border-gray-100 rounded-lg px-6 py-4 mb-2">
         <div className="flex items-start justify-between gap-6 mb-4">
           <div className="flex-1">
             <div className="text-xl font-bold text-gray-900 mb-1.5">{caseTitle}</div>
@@ -640,13 +924,16 @@ export function MatterDetailPage() {
             <Timeline />
           </div>
 
-          {/* Right: Emails + Important Notice + Case Summary */}
-          <div className="flex flex-col">
+          {/* Right: Checklist + Emails + Important Notice + Case Summary */}
+          <div className="flex flex-col sticky top-[56px] self-start">
+            <div className="mb-3">
+              <StageChecklist stage={c.stage} dynamicItems={dynamicCheckItems} />
+            </div>
             <EmailPanel
               emails={c.emails}
               selected={selectedEmail}
               onSelect={setSelectedEmail}
-              onConfirmed={(id) => setC((prev) => prev ? { ...prev, emails: prev.emails.filter((e) => e.id !== id) } : prev)}
+              onConfirmed={handleEmailConfirmed}
             />
             <ImportantNotice />
             <div className="mt-3">

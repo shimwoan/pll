@@ -15,12 +15,12 @@ const TABS = [
 ]
 
 const CATEGORIES: { label: string; value: string }[] = [
-  { label: 'Reply Required', value: '답변 필요' },
-  { label: 'Submit Docs', value: '서류 제출' },
-  { label: 'Awaiting Reply', value: '답변 확인' },
-  { label: 'Needs Review', value: '검토 필요' },
-  { label: 'FYI', value: '참고' },
-  { label: 'Unresolved', value: '미정' },
+  { label: 'Response Required', value: 'Response Required' },
+  { label: 'Document Submission', value: 'Document Submission' },
+  { label: 'Confirm Reply', value: 'Confirm Reply' },
+  { label: 'Needs Review', value: 'Needs Review' },
+  { label: 'For Reference', value: 'For Reference' },
+  { label: 'Unclassified', value: 'Unclassified' },
 ]
 
 export function EmailsPage() {

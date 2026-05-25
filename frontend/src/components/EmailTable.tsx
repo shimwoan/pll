@@ -29,7 +29,7 @@ export function EmailTable({ emails, isLoading }: EmailTableProps) {
       <table className="w-full">
         <thead>
           <tr className="border-b border-gray-100">
-            <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Category</th>
+            <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide w-48">Category</th>
             <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Case</th>
             <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Client</th>
             <th className="text-left px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">Subject</th>
@@ -47,7 +47,7 @@ export function EmailTable({ emails, isLoading }: EmailTableProps) {
                 email.status === 'PENDING_REVIEW' ? 'bg-amber-50/30' : ''
               }`}
             >
-              <td className="px-4 py-2.5">
+              <td className="px-4 py-2.5 whitespace-nowrap">
                 <CategoryBadge category={email.finalCategory || email.aiCategory} />
               </td>
               <td className="px-4 py-2.5 text-sm">

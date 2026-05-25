@@ -95,7 +95,12 @@ let ClassificationService = class ClassificationService {
         const ACTION_CATEGORIES = ['Response Required', 'Document Submission', 'Confirm Reply', 'Needs Review', 'For Reference', 'Unclassified'];
         const response = await this.genai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: `You are an email classification AI for a Personal Injury law firm.
+            contents: `You are an email classification AI for a US Personal Injury (PI) law firm.
+
+PI domain: auto accident, slip & fall, premises liability, dog bite, city claim.
+Parties: client, adjuster, defense counsel, medical provider, lienholder, CM (Case Manager).
+Terms: LOR, DOL, BI/PD, UM/UIM, Dec Page, Demand, Policy Limit, Lien, SOL, IME, subrogation, disbursement.
+Stages: Intake → Claim → Medical Collection → Demand → Negotiation → Settlement → Litigation.
 
 Analyze the email below and select exactly one action_category from the following 6 options:
 - "Response Required": The other party (insurer, hospital, client, etc.) explicitly requests information, documents, or a reply
@@ -105,7 +110,7 @@ Analyze the email below and select exactly one action_category from the followin
 - "For Reference": Simple notification, Thank you letter, we initiated sending an attachment, no action needed
 - "Unclassified": Does not clearly fit any of the above 5 categories
 
-Also summarize the email content in one line (max 60 characters).
+Also write a one-line summary (max 60 chars) using standard PI law firm terminology. Describe only WHAT the email is about — do NOT include action guidance, next steps, or phrases like "no action needed", "action required", "for reference", etc.
 
 [Email Info]
 From: ${(0, phi_masker_1.maskPhi)(email.fromName ?? '')}
@@ -123,7 +128,7 @@ Output JSON only:
             const actionCategory = ACTION_CATEGORIES.includes(parsed.action_category) ? parsed.action_category : 'Unclassified';
             return {
                 actionCategory,
-                aiSummary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 60) : '',
+                aiSummary: typeof parsed.summary === 'string' ? parsed.summary : '',
             };
         }
         catch {

@@ -9,8 +9,9 @@ export declare class EmailService {
     private classification;
     private auth;
     private readonly logger;
+    private readonly inFlight;
     constructor(prisma: PrismaService, graph: GraphService, classification: ClassificationService, auth: AuthService);
-    private getFreshToken;
+    getFreshToken(userEmail: string): Promise<string | null>;
     ingestMessage(msg: any): Promise<void>;
     syncEmails(userEmail?: string): Promise<{
         synced: number;
@@ -31,11 +32,6 @@ export declare class EmailService {
     } & {
         id: string;
         createdAt: Date;
-        updatedAt: Date;
-        actionCategory: string | null;
-        aiSummary: string | null;
-        matchedCaseId: string | null;
-        matchMethod: string | null;
         messageId: string;
         subject: string;
         bodyPreview: string;
@@ -47,17 +43,21 @@ export declare class EmailService {
         aiCategory: string | null;
         aiConfidence: number | null;
         aiReason: string | null;
+        actionCategory: string | null;
+        aiSummary: string | null;
         finalCategory: string | null;
         workTypeTitle: string | null;
+        matchedCaseId: string | null;
+        matchMethod: string | null;
         status: import("@prisma/client").$Enums.EmailStatus;
         reviewedBy: string | null;
         reviewedAt: Date | null;
         webLink: string | null;
+        updatedAt: Date;
     })[]>;
     findOne(id: string, _sessionToken?: string, userEmail?: string): Promise<({
         case: {
             id: string;
-            createdAt: Date;
             caseNumber: string;
             claimNumbers: string[];
             clientName: string;
@@ -65,15 +65,11 @@ export declare class EmailService {
             stage: string;
             dateOfLoss: Date | null;
             dueDate: Date | null;
+            createdAt: Date;
         } | null;
     } & {
         id: string;
         createdAt: Date;
-        updatedAt: Date;
-        actionCategory: string | null;
-        aiSummary: string | null;
-        matchedCaseId: string | null;
-        matchMethod: string | null;
         messageId: string;
         subject: string;
         bodyPreview: string;
@@ -85,21 +81,21 @@ export declare class EmailService {
         aiCategory: string | null;
         aiConfidence: number | null;
         aiReason: string | null;
+        actionCategory: string | null;
+        aiSummary: string | null;
         finalCategory: string | null;
         workTypeTitle: string | null;
+        matchedCaseId: string | null;
+        matchMethod: string | null;
         status: import("@prisma/client").$Enums.EmailStatus;
         reviewedBy: string | null;
         reviewedAt: Date | null;
         webLink: string | null;
+        updatedAt: Date;
     }) | null>;
     findUnclassified(): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
-        actionCategory: string | null;
-        aiSummary: string | null;
-        matchedCaseId: string | null;
-        matchMethod: string | null;
         messageId: string;
         subject: string;
         bodyPreview: string;
@@ -111,21 +107,21 @@ export declare class EmailService {
         aiCategory: string | null;
         aiConfidence: number | null;
         aiReason: string | null;
+        actionCategory: string | null;
+        aiSummary: string | null;
         finalCategory: string | null;
         workTypeTitle: string | null;
+        matchedCaseId: string | null;
+        matchMethod: string | null;
         status: import("@prisma/client").$Enums.EmailStatus;
         reviewedBy: string | null;
         reviewedAt: Date | null;
         webLink: string | null;
+        updatedAt: Date;
     }[]>;
     confirm(id: string, reviewedBy: string): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
-        actionCategory: string | null;
-        aiSummary: string | null;
-        matchedCaseId: string | null;
-        matchMethod: string | null;
         messageId: string;
         subject: string;
         bodyPreview: string;
@@ -137,21 +133,21 @@ export declare class EmailService {
         aiCategory: string | null;
         aiConfidence: number | null;
         aiReason: string | null;
+        actionCategory: string | null;
+        aiSummary: string | null;
         finalCategory: string | null;
         workTypeTitle: string | null;
+        matchedCaseId: string | null;
+        matchMethod: string | null;
         status: import("@prisma/client").$Enums.EmailStatus;
         reviewedBy: string | null;
         reviewedAt: Date | null;
         webLink: string | null;
+        updatedAt: Date;
     }>;
     edit(id: string, dto: EditEmailDto, reviewedBy: string): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
-        actionCategory: string | null;
-        aiSummary: string | null;
-        matchedCaseId: string | null;
-        matchMethod: string | null;
         messageId: string;
         subject: string;
         bodyPreview: string;
@@ -163,21 +159,21 @@ export declare class EmailService {
         aiCategory: string | null;
         aiConfidence: number | null;
         aiReason: string | null;
+        actionCategory: string | null;
+        aiSummary: string | null;
         finalCategory: string | null;
         workTypeTitle: string | null;
+        matchedCaseId: string | null;
+        matchMethod: string | null;
         status: import("@prisma/client").$Enums.EmailStatus;
         reviewedBy: string | null;
         reviewedAt: Date | null;
         webLink: string | null;
+        updatedAt: Date;
     }>;
     unclassify(id: string, reviewedBy: string): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
-        actionCategory: string | null;
-        aiSummary: string | null;
-        matchedCaseId: string | null;
-        matchMethod: string | null;
         messageId: string;
         subject: string;
         bodyPreview: string;
@@ -189,12 +185,17 @@ export declare class EmailService {
         aiCategory: string | null;
         aiConfidence: number | null;
         aiReason: string | null;
+        actionCategory: string | null;
+        aiSummary: string | null;
         finalCategory: string | null;
         workTypeTitle: string | null;
+        matchedCaseId: string | null;
+        matchMethod: string | null;
         status: import("@prisma/client").$Enums.EmailStatus;
         reviewedBy: string | null;
         reviewedAt: Date | null;
         webLink: string | null;
+        updatedAt: Date;
     }>;
     handleWebhook(body: any): Promise<{
         received: boolean;

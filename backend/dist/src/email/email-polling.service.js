@@ -16,33 +16,36 @@ const schedule_1 = require("@nestjs/schedule");
 const email_service_1 = require("./email.service");
 const prisma_service_1 = require("../prisma/prisma.service");
 const graph_service_1 = require("../graph/graph.service");
+const auth_service_1 = require("../auth/auth.service");
 let EmailPollingService = EmailPollingService_1 = class EmailPollingService {
     emailService;
     prisma;
     graph;
+    auth;
     logger = new common_1.Logger(EmailPollingService_1.name);
     isPolling = false;
-    constructor(emailService, prisma, graph) {
+    constructor(emailService, prisma, graph, auth) {
         this.emailService = emailService;
         this.prisma = prisma;
         this.graph = graph;
+        this.auth = auth;
     }
     async pollNewEmails() {
         if (this.isPolling)
             return;
         this.isPolling = true;
         try {
-            const token = await this.prisma.userToken.findFirst({
+            const stored = await this.prisma.userToken.findFirst({
                 orderBy: { updatedAt: 'desc' },
-                where: { expiresAt: { gt: new Date() } },
             });
-            if (!token)
+            if (!stored)
                 return;
-            const fiveMinutes = 5 * 60 * 1000;
-            if (token.expiresAt.getTime() - Date.now() < fiveMinutes) {
-                this.logger.warn('Access token expires within 5 minutes — polling may stop working soon');
+            const accessToken = await this.emailService.getFreshToken(stored.userEmail);
+            if (!accessToken) {
+                this.logger.warn('No valid access token — re-login required');
+                return;
             }
-            const messages = await this.graph.getMessages(token.accessToken, 50);
+            const messages = await this.graph.getMessages(accessToken, 50);
             for (const msg of messages) {
                 const existing = await this.prisma.email.findUnique({ where: { messageId: msg.id } });
                 if (existing)
@@ -61,7 +64,7 @@ let EmailPollingService = EmailPollingService_1 = class EmailPollingService {
 };
 exports.EmailPollingService = EmailPollingService;
 __decorate([
-    (0, schedule_1.Cron)('0 */5 * * * *'),
+    (0, schedule_1.Cron)('*/10 * * * * *'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
@@ -70,6 +73,7 @@ exports.EmailPollingService = EmailPollingService = EmailPollingService_1 = __de
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [email_service_1.EmailService,
         prisma_service_1.PrismaService,
-        graph_service_1.GraphService])
+        graph_service_1.GraphService,
+        auth_service_1.AuthService])
 ], EmailPollingService);
 //# sourceMappingURL=email-polling.service.js.map

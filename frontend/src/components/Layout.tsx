@@ -8,7 +8,7 @@ export function Layout({ children, compact }: { children: React.ReactNode; compa
   return (
     <div className="min-h-screen bg-gray-50">
       <Header userName={userName} />
-      <main className={`max-w-7xl mx-auto px-6 ${compact ? 'py-3' : 'py-4'}`}>{children}</main>
+      <main className={`max-w-7xl mx-auto px-6 ${compact ? 'py-2' : 'py-2'}`}>{children}</main>
     </div>
   )
 }

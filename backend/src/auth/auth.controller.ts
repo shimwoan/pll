@@ -41,12 +41,12 @@ export class AuthController {
           userEmail: result.account?.username || '',
           accessToken: result.accessToken,
           refreshToken: (result as any).refreshToken ?? null,
-          expiresAt: result.expiresOn || new Date(Date.now() + 3600000),
+          expiresAt: result.expiresOn || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         },
         update: {
           accessToken: result.accessToken,
           refreshToken: (result as any).refreshToken ?? null,
-          expiresAt: result.expiresOn || new Date(Date.now() + 3600000),
+          expiresAt: result.expiresOn || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         },
       });
 

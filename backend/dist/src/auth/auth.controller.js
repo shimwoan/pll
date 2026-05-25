@@ -49,12 +49,12 @@ let AuthController = AuthController_1 = class AuthController {
                     userEmail: result.account?.username || '',
                     accessToken: result.accessToken,
                     refreshToken: result.refreshToken ?? null,
-                    expiresAt: result.expiresOn || new Date(Date.now() + 3600000),
+                    expiresAt: result.expiresOn || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
                 },
                 update: {
                     accessToken: result.accessToken,
                     refreshToken: result.refreshToken ?? null,
-                    expiresAt: result.expiresOn || new Date(Date.now() + 3600000),
+                    expiresAt: result.expiresOn || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
                 },
             });
             if (process.env.WEBHOOK_NOTIFICATION_URL && !process.env.WEBHOOK_NOTIFICATION_URL.includes('replace-with-ngrok')) {
@@ -86,7 +86,11 @@ let AuthController = AuthController_1 = class AuthController {
         session.userName = freshToken.account?.name ?? token.userEmail;
         return { authenticated: true, email: session.userEmail, name: session.userName };
     }
-    logout(req, res) {
+    async logout(req, res) {
+        const userEmail = req.session.userEmail;
+        if (userEmail) {
+            await this.prisma.userToken.deleteMany({ where: { userEmail } }).catch(() => { });
+        }
         req.session.destroy(() => {
             res.clearCookie('connect.sid');
             res.redirect(`${process.env.FRONTEND_URL}/login`);
@@ -124,7 +128,7 @@ __decorate([
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], AuthController.prototype, "logout", null);
 exports.AuthController = AuthController = AuthController_1 = __decorate([
     (0, common_1.Controller)('auth'),

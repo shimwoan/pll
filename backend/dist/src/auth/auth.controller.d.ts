@@ -19,5 +19,5 @@ export declare class AuthController {
         email?: undefined;
         name?: undefined;
     }>;
-    logout(req: Request, res: Response): void;
+    logout(req: Request, res: Response): Promise<void>;
 }

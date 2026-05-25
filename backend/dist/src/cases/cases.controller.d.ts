@@ -4,7 +4,6 @@ export declare class CasesController {
     constructor(prisma: PrismaService);
     findAll(search?: string): import("@prisma/client").Prisma.PrismaPromise<{
         id: string;
-        createdAt: Date;
         caseNumber: string;
         claimNumbers: string[];
         clientName: string;
@@ -12,16 +11,12 @@ export declare class CasesController {
         stage: string;
         dateOfLoss: Date | null;
         dueDate: Date | null;
+        createdAt: Date;
     }[]>;
     findOne(id: string): import("@prisma/client").Prisma.Prisma__CaseClient<({
         emails: {
             id: string;
             createdAt: Date;
-            updatedAt: Date;
-            actionCategory: string | null;
-            aiSummary: string | null;
-            matchedCaseId: string | null;
-            matchMethod: string | null;
             messageId: string;
             subject: string;
             bodyPreview: string;
@@ -33,16 +28,20 @@ export declare class CasesController {
             aiCategory: string | null;
             aiConfidence: number | null;
             aiReason: string | null;
+            actionCategory: string | null;
+            aiSummary: string | null;
             finalCategory: string | null;
             workTypeTitle: string | null;
+            matchedCaseId: string | null;
+            matchMethod: string | null;
             status: import("@prisma/client").$Enums.EmailStatus;
             reviewedBy: string | null;
             reviewedAt: Date | null;
             webLink: string | null;
+            updatedAt: Date;
         }[];
     } & {
         id: string;
-        createdAt: Date;
         caseNumber: string;
         claimNumbers: string[];
         clientName: string;
@@ -50,5 +49,6 @@ export declare class CasesController {
         stage: string;
         dateOfLoss: Date | null;
         dueDate: Date | null;
+        createdAt: Date;
     }) | null, null, import("@prisma/client/runtime/client").DefaultArgs, import("@prisma/client").Prisma.PrismaClientOptions>;
 }

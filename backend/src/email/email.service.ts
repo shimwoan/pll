@@ -20,7 +20,7 @@ export class EmailService {
     private auth: AuthService,
   ) {}
 
-  private async getFreshToken(userEmail: string): Promise<string | null> {
+  async getFreshToken(userEmail: string): Promise<string | null> {
     const stored = await this.prisma.userToken.findUnique({ where: { userEmail } });
     if (!stored) return null;
     if (stored.expiresAt > new Date()) return stored.accessToken;

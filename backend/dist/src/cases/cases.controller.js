@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CasesController = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const config_1 = require("../config");
 let CasesController = class CasesController {
     prisma;
     constructor(prisma) {
@@ -37,6 +38,7 @@ let CasesController = class CasesController {
             where: { id },
             include: {
                 emails: {
+                    where: { receivedAt: { gte: config_1.EMAIL_CUTOFF } },
                     orderBy: { receivedAt: 'desc' },
                     take: 20,
                 },

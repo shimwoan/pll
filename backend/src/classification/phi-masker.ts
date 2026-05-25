@@ -39,10 +39,14 @@ const PHI_PATTERNS: Array<{ pattern: RegExp; replacement: string }> = [
 // Salutation + name: requires at least one additional word after first name (first+last minimum)
 // Supports both "Dear John Smith" and "Dear John," (single first name with optional comma)
 const SALUTATION_PATTERN = /\b(?:Dear|Hi|Hello)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3}),?/g;
-const FORMAL_LABEL_PATTERN = /\b(?:Patient|Client|Claimant)[:,\s]+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})/g;
+const FORMAL_LABEL_PATTERN = /\b(?:Patient|Client|Claimant|Name)[:,\s]+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})/g;
 
 // Titles that precede a full name — dot is optional ("Dr Williams" vs "Dr. Williams")
 const TITLED_NAME_PATTERN = /\b(?:Mr\.?|Mrs\.?|Ms\.?|Dr\.?|Prof\.?)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\b/g;
+
+// PI law firm subject format: "Last, First" (e.g. "Perez Hernandez, Roberto")
+// Requires single-word first name after comma to avoid matching "State Farm, Los Angeles" etc.
+const LAST_FIRST_NAME_PATTERN = /\b([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,}){0,2}),\s+([A-Z][a-z]{2,})\b(?!\s+[A-Z])/g;
 
 /**
  * Builds a regex that matches a person's full name (from email From header).
@@ -89,6 +93,8 @@ export function maskPhi(text: string, fromName?: string): string {
   masked = masked.replace(SALUTATION_PATTERN, (match, name) => match.replace(name, '[NAME]'));
   masked = masked.replace(FORMAL_LABEL_PATTERN, (match, name) => match.replace(name, '[NAME]'));
   masked = masked.replace(TITLED_NAME_PATTERN, (match, name) => match.replace(name, '[NAME]'));
+  // Mask "Last, First" format common in PI law firm subjects (e.g. "Perez Hernandez, Roberto")
+  masked = masked.replace(LAST_FIRST_NAME_PATTERN, '[NAME]');
 
   // Apply all structural PHI patterns
   for (const { pattern, replacement } of PHI_PATTERNS) {

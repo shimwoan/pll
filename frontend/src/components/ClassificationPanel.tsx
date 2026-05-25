@@ -5,7 +5,7 @@ import { CategoryBadge } from './CategoryBadge'
 import type { Email } from '@/lib/api'
 import { Check, Pencil } from 'lucide-react'
 
-const CATEGORIES = ['Settlement', 'Medical', 'Client', 'Insurance', 'Police', 'Other']
+const CATEGORIES = ['Response Required', 'Document Submission', 'Confirm Reply', 'Needs Review', 'For Reference', 'Unclassified']
 
 interface ClassificationPanelProps {
   email: Email

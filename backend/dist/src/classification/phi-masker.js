@@ -16,8 +16,9 @@ const PHI_PATTERNS = [
     { pattern: /\b(?:DOL|Date\s+of\s+Loss)[:\s]+\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/gi, replacement: '[DOL]' },
 ];
 const SALUTATION_PATTERN = /\b(?:Dear|Hi|Hello)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3}),?/g;
-const FORMAL_LABEL_PATTERN = /\b(?:Patient|Client|Claimant)[:,\s]+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})/g;
+const FORMAL_LABEL_PATTERN = /\b(?:Patient|Client|Claimant|Name)[:,\s]+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})/g;
 const TITLED_NAME_PATTERN = /\b(?:Mr\.?|Mrs\.?|Ms\.?|Dr\.?|Prof\.?)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\b/g;
+const LAST_FIRST_NAME_PATTERN = /\b([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,}){0,2}),\s+([A-Z][a-z]{2,})\b(?!\s+[A-Z])/g;
 function buildNamePattern(name) {
     const parts = name
         .replace(/[^a-zA-Z\s]/g, ' ')
@@ -45,6 +46,7 @@ function maskPhi(text, fromName) {
     masked = masked.replace(SALUTATION_PATTERN, (match, name) => match.replace(name, '[NAME]'));
     masked = masked.replace(FORMAL_LABEL_PATTERN, (match, name) => match.replace(name, '[NAME]'));
     masked = masked.replace(TITLED_NAME_PATTERN, (match, name) => match.replace(name, '[NAME]'));
+    masked = masked.replace(LAST_FIRST_NAME_PATTERN, '[NAME]');
     for (const { pattern, replacement } of PHI_PATTERNS) {
         pattern.lastIndex = 0;
         masked = masked.replace(pattern, replacement);

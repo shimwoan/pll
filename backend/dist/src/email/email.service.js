@@ -25,6 +25,7 @@ let EmailService = EmailService_1 = class EmailService {
     classification;
     auth;
     logger = new common_1.Logger(EmailService_1.name);
+    inFlight = new Set();
     constructor(prisma, graph, classification, auth) {
         this.prisma = prisma;
         this.graph = graph;
@@ -77,66 +78,83 @@ let EmailService = EmailService_1 = class EmailService {
         }
     }
     async ingestMessage(msg) {
-        const fromAddress = msg.from?.emailAddress?.address || '';
-        const fromName = msg.from?.emailAddress?.name || '';
-        const toAddress = msg.toRecipients?.[0]?.emailAddress?.address || '';
-        const bodyPreview = msg.bodyPreview?.slice(0, 500) || '';
-        const rawBody = msg.body?.content || '';
-        const convertedBody = rawBody
-            ? (0, html_to_text_1.convert)(rawBody, { wordwrap: false, selectors: [{ selector: 'a', options: { ignoreHref: true } }, { selector: 'img', format: 'skip' }] })
-            : null;
-        const body = convertedBody;
-        const result = await this.classification.classify({
-            subject: msg.subject || '(no subject)',
-            body: body || bodyPreview,
-            fromAddress,
-            fromName,
-        });
-        const status = (result.matchedCaseId || result.matchMethod === 'sender_domain')
-            ? 'PENDING_REVIEW'
-            : 'UNCLASSIFIED';
-        const saved = await this.prisma.email.upsert({
-            where: { messageId: msg.id },
-            create: {
-                messageId: msg.id,
+        if (this.inFlight.has(msg.id))
+            return;
+        const existing = await this.prisma.email.findUnique({ where: { messageId: msg.id } });
+        if (existing?.aiSummary)
+            return;
+        this.inFlight.add(msg.id);
+        try {
+            const fromAddress = msg.from?.emailAddress?.address || '';
+            const fromName = msg.from?.emailAddress?.name || '';
+            const toAddress = msg.toRecipients?.[0]?.emailAddress?.address || '';
+            const bodyPreview = msg.bodyPreview?.slice(0, 500) || '';
+            const rawBody = msg.body?.content || '';
+            const convertedBody = rawBody
+                ? (0, html_to_text_1.convert)(rawBody, {
+                    wordwrap: false,
+                    selectors: [
+                        { selector: 'a', options: { ignoreHref: true } },
+                        { selector: 'img', format: 'skip' },
+                    ],
+                })
+                : null;
+            const body = convertedBody;
+            const result = await this.classification.classify({
                 subject: msg.subject || '(no subject)',
-                bodyPreview,
-                body,
+                body: body || bodyPreview,
                 fromAddress,
                 fromName,
-                toAddress,
-                receivedAt: new Date(msg.receivedDateTime),
-                aiCategory: result.category,
-                aiConfidence: result.confidence,
-                aiReason: result.reason,
-                actionCategory: result.actionCategory,
-                aiSummary: result.aiSummary,
-                matchedCaseId: result.matchedCaseId,
-                matchMethod: result.matchMethod,
-                webLink: msg.webLink || null,
-                status: status,
-            },
-            update: {
-                aiCategory: result.category,
-                aiConfidence: result.confidence,
-                aiReason: result.reason,
-                actionCategory: result.actionCategory,
-                aiSummary: result.aiSummary,
-                matchedCaseId: result.matchedCaseId,
-                matchMethod: result.matchMethod,
-                status: status,
-                body,
-            },
-        });
-        (0, main_1.broadcastSse)({
-            id: saved.id,
-            actionCategory: saved.actionCategory ?? result.actionCategory,
-            aiSummary: saved.aiSummary ?? result.aiSummary,
-            subject: saved.subject,
-            fromName: saved.fromName,
-            receivedAt: saved.receivedAt.toISOString(),
-            matchedCaseId: saved.matchedCaseId ?? null,
-        });
+            });
+            const status = result.matchedCaseId || result.matchMethod === 'sender_domain'
+                ? 'PENDING_REVIEW'
+                : 'UNCLASSIFIED';
+            const saved = await this.prisma.email.upsert({
+                where: { messageId: msg.id },
+                create: {
+                    messageId: msg.id,
+                    subject: msg.subject || '(no subject)',
+                    bodyPreview,
+                    body,
+                    fromAddress,
+                    fromName,
+                    toAddress,
+                    receivedAt: new Date(msg.receivedDateTime),
+                    aiCategory: result.category,
+                    aiConfidence: result.confidence,
+                    aiReason: result.reason,
+                    actionCategory: result.actionCategory,
+                    aiSummary: result.aiSummary,
+                    matchedCaseId: result.matchedCaseId,
+                    matchMethod: result.matchMethod,
+                    webLink: msg.webLink || null,
+                    status: status,
+                },
+                update: {
+                    aiCategory: result.category,
+                    aiConfidence: result.confidence,
+                    aiReason: result.reason,
+                    actionCategory: result.actionCategory,
+                    aiSummary: result.aiSummary,
+                    matchedCaseId: result.matchedCaseId,
+                    matchMethod: result.matchMethod,
+                    status: status,
+                    body,
+                },
+            });
+            (0, main_1.broadcastSse)({
+                id: saved.id,
+                actionCategory: saved.actionCategory ?? result.actionCategory,
+                aiSummary: saved.aiSummary ?? result.aiSummary,
+                subject: saved.subject,
+                fromName: saved.fromName,
+                receivedAt: saved.receivedAt.toISOString(),
+                matchedCaseId: saved.matchedCaseId ?? null,
+            });
+        }
+        finally {
+            this.inFlight.delete(msg.id);
+        }
     }
     async syncEmails(userEmail) {
         const email = userEmail
@@ -163,7 +181,7 @@ let EmailService = EmailService_1 = class EmailService {
             if (new Date(msg.receivedDateTime) < CUTOFF)
                 continue;
             const existing = await this.prisma.email.findUnique({ where: { messageId: msg.id } });
-            if (existing && existing.aiCategory)
+            if (existing && existing.aiSummary)
                 continue;
             await this.ingestMessage(msg);
             ingested++;

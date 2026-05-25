@@ -12,7 +12,7 @@ export function CategoryBadge({ category }: { category: string | null }) {
   const known = CATEGORY_DOT[category]
   if (!known || category === 'Unclassified') {
     return (
-      <span className="inline-flex items-center gap-1.5 bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
+      <span className="inline-flex items-center gap-1.5 bg-red-50 border border-red-200 rounded-full px-2 py-0.5 whitespace-nowrap">
         <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-red-400 animate-pulse" />
         <span className="text-xs font-medium text-red-600">{category}</span>
       </span>
