@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>FM Intake</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #F0F2F5;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+      border: 1px solid #ddd;
+    }
+
+    /* NAV */
+    .nav {
+      background: #fff;
+      padding: 18px 20px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid #EAECF0;
+    }
+    .nav-left {}
+    .nav-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #101828;
+      letter-spacing: -0.01em;
+    }
+    .add-btn {
+      background: #4B5B8C;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 8px 15px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      letter-spacing: 0em;
+    }
+
+
+    /* LIST */
+    .intake-list {
+      padding: 10px 8px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .intake-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #EAECF0;
+      padding: 14px 16px 14px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: box-shadow 0.12s, border-color 0.12s;
+      position: relative;
+      overflow: hidden;
+    }
+    .intake-card:hover  { border-color: #BEC5DC; box-shadow: 0 1px 6px rgba(29,63,171,0.07); }
+    .intake-card:active { background: #F9FAFB; }
+
+    .intake-body { flex: 1; min-width: 0; }
+    .intake-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #101828;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .intake-meta {
+      font-size: 12px;
+      color: #667085;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .intake-meta .dot { color: #D0D5DD; margin: 0 4px; }
+    .intake-meta .ref { color: #98A2B3; }
+
+    .intake-right { flex-shrink: 0; }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .badge-pending   { background: #FFFAEB; color: #B54708; }
+    .badge-scheduled { background: #ECEEF5; color: #3D4E7A; }
+
+    /* EMPTY */
+    .empty-state {
+      text-align: center;
+      padding: 72px 24px;
+    }
+    .empty-icon {
+      width: 52px; height: 52px;
+      background: #ECEEF5;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      margin: 0 auto 16px;
+    }
+    .empty-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #101828;
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+    .empty-sub {
+      font-size: 13px;
+      color: #667085;
+      line-height: 1.6;
+    }
+    .empty-add-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 20px;
+      background: #4B5B8C;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 10px 22px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="nav">
+    <div class="nav-left">
+      <div class="nav-title">My Intakes</div>
+    </div>
+    <a class="add-btn" href="intake-form.html?step=1">+ New Intake</a>
+  </div>
+
+  <div class="intake-list" id="intake-list"></div>
+
+  <script>
+    const SAMPLE = [
+      {
+        id: 'sample-2',
+        name: 'Maria Gonzalez',
+        phone: '(310) 555-0847',
+        matter: 'Slip & Fall',
+        dol: '05/20/26',
+        fm: 'Sarah Klein',
+        time: '9:15 AM',
+        status: 'scheduled',
+        meetingDate: 'Jun 3',
+        source: 'referral',
+        referredBy: 'Kim, John',
+      },
+      {
+        id: 'sample-3',
+        name: 'Kevin Torres',
+        phone: '(818) 555-0273',
+        matter: 'Auto Accident',
+        dol: '05/25/26',
+        fm: 'David Park',
+        time: 'Yesterday',
+        status: 'pending',
+        source: 'call',
+      },
+      {
+        id: 'sample-4',
+        name: 'Sofia Reyes',
+        phone: '(323) 555-0614',
+        matter: 'Auto Accident',
+        dol: '05/28/26',
+        fm: 'Sarah Klein',
+        time: '10:45 AM',
+        status: 'pending',
+        source: 'referral',
+        referredBy: 'Park, Susan',
+      },
+    ];
+
+function getIntakes() {
+      const stored = JSON.parse(localStorage.getItem('fm_intakes') || '[]');
+      const samplePhones = SAMPLE.map(s => s.phone);
+      return [...stored.filter(i => !samplePhones.includes(i.phone)), ...SAMPLE];
+    }
+
+    const STATUS = {
+      pending:    { label: 'Unscheduled', badge: 'badge-pending' },
+      scheduled:  { label: 'Meeting Set', badge: 'badge-scheduled' },
+      preintake:  { label: 'Unscheduled', badge: 'badge-pending' },
+      inprogress: { label: 'Meeting Set', badge: 'badge-scheduled' },
+    };
+    const SOURCE_TAG = {
+      referral: { label: 'Referral', cls: 'source-referral' },
+      call:     { label: 'Call',     cls: 'source-call' },
+      walkin:   { label: 'Walk-in',  cls: 'source-walkin' },
+    };
+
+    function statusLabel(s, meetingDate) {
+      if (s === 'scheduled' && meetingDate) return meetingDate;
+      return STATUS[s]?.label || 'Unscheduled';
+    }
+    function badgeClass(s) { return STATUS[s]?.badge || 'badge-pending'; }
+
+    function initials(name) {
+      const parts = name.trim().split(' ');
+      return parts.length >= 2
+        ? parts[0][0] + parts[parts.length - 1][0]
+        : parts[0][0];
+    }
+
+    function sourceTagHtml(source) {
+      const t = SOURCE_TAG[source];
+      return t ? `<span class="source-tag ${t.cls}">${t.label}</span>` : '';
+    }
+
+    function render(filter) {
+      const all = getIntakes();
+      const filtered = filter === 'all' ? all : all.filter(i => i.status === filter);
+      const list = document.getElementById('intake-list');
+
+      if (!filtered.length) {
+        list.innerHTML = `<div class="empty-state">
+          <div class="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4B5B8C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1.5"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></div>
+          <div class="empty-title">No intakes yet</div>
+          <div class="empty-sub">Tap New Intake to register<br>your first case.</div>
+          <a class="empty-add-btn" href="intake-form.html?step=1">+ New Intake</a>
+        </div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(i => {
+        const refBy = i.referredBy ? `<span class="dot">·</span><span class="ref">↩ ${i.referredBy}</span>` : '';
+        const srcCls = `src-${i.source || 'call'}`;
+        return `<a class="intake-card ${srcCls}" href="intake-form.html?id=${encodeURIComponent(i.id)}&step=1">
+          <div class="intake-body">
+            <div class="intake-name">${i.name}</div>
+            <div class="intake-meta">${i.matter}<span class="dot">·</span>DOL ${i.dol}<span class="dot">·</span>${i.fm}${refBy}</div>
+          </div>
+          <div class="intake-right">
+            <span class="badge ${badgeClass(i.status)}">${statusLabel(i.status, i.meetingDate)}</span>
+          </div>
+        </a>`;
+      }).join('');
+    }
+
+    render('all');
+  </script>
+</body>
+</html>

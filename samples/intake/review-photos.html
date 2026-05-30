@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Review + Photos</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F5F6F8;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+    }
+
+    .nav {
+      background: #fff;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .nav-back { font-size: 20px; text-decoration: none; color: #4B6CB7; }
+    .nav-title { font-size: 16px; font-weight: 600; color: #111827; }
+    .nav-sub   { font-size: 11px; color: #9CA3AF; margin-top: 1px; }
+
+    .steps {
+      background: #fff;
+      padding: 10px 16px 12px;
+      border-bottom: 1px solid #E5E7EB;
+      display: flex; align-items: center;
+    }
+    .step { display: flex; align-items: center; gap: 5px; flex: 1; }
+    .step-circle {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; flex-shrink: 0;
+    }
+    .step-done    .step-circle { background: #0D9488; color: #fff; }
+    .step-active  .step-circle { background: #4B6CB7; color: #fff; }
+    .step-pending .step-circle { background: #E5E7EB; color: #9CA3AF; }
+    .step-label { font-size: 10px; font-weight: 600; }
+    .step-done    .step-label { color: #0D9488; }
+    .step-active  .step-label { color: #4B6CB7; }
+    .step-pending .step-label { color: #9CA3AF; }
+    .step-line { flex: 1; height: 1px; background: #E5E7EB; margin: 0 4px; }
+    .step-line.done { background: #0D9488; }
+    .step-done { cursor: pointer; }
+    .step-done:hover .step-circle { opacity: 0.8; }
+    .step-active { cursor: default; }
+    .step-pending { cursor: not-allowed; opacity: 0.6; }
+
+    .content { padding: 12px 12px 100px; display: flex; flex-direction: column; gap: 10px; }
+
+    .section-label {
+      font-size: 10px; font-weight: 600; color: #9CA3AF;
+      letter-spacing: 0.07em; text-transform: uppercase; padding: 4px 2px 0;
+    }
+
+    .summary-card {
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #E5E7EB;
+      overflow: hidden;
+    }
+    .summary-row {
+      display: flex;
+      padding: 10px 14px;
+      border-bottom: 1px solid #F3F4F6;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-label {
+      font-size: 11px; color: #9CA3AF;
+      width: 110px; flex-shrink: 0;
+    }
+    .summary-value {
+      font-size: 12px; font-weight: 500; color: #111827; flex: 1;
+    }
+    .edit-link {
+      font-size: 11px; color: #4B6CB7; text-decoration: none;
+      margin-left: auto; flex-shrink: 0;
+    }
+
+    .photo-section {
+      background: #fff;
+      border-radius: 8px;
+      padding: 14px;
+      border: 1px solid #E5E7EB;
+    }
+    .photo-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .photo-section-title { font-size: 12px; font-weight: 600; color: #374151; }
+    .photo-add-btn {
+      font-size: 12px; color: #4B6CB7; font-weight: 600;
+      background: none; border: none; cursor: pointer;
+    }
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .photo-item {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+    .photo-bg {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+    .photo-remove {
+      position: absolute;
+      top: 3px; right: 3px;
+      width: 18px; height: 18px;
+      background: rgba(0,0,0,0.45);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 10px; cursor: pointer;
+    }
+    .photo-add-item {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      border: 1.5px dashed #D1D5DB;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; color: #9CA3AF; cursor: pointer;
+    }
+    .photo-count { font-size: 11px; color: #9CA3AF; margin-top: 8px; }
+
+    .notes-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 14px;
+      border: 1px solid #E5E7EB;
+    }
+    .notes-label { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; }
+    .notes-textarea {
+      width: 100%;
+      border: 1px solid #E5E7EB;
+      border-radius: 6px;
+      padding: 9px 10px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #111827;
+      outline: none;
+      resize: none;
+      line-height: 1.5;
+    }
+    .notes-textarea:focus { border-color: #4B6CB7; }
+
+    .bottom-actions {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      background: #fff;
+      border-top: 1px solid #E5E7EB;
+      padding: 10px 12px 28px;
+      display: flex; gap: 8px;
+    }
+    .btn {
+      flex: 1; padding: 12px; border-radius: 6px;
+      font-size: 14px; font-weight: 600; border: none;
+      cursor: pointer; text-align: center; text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.8; }
+    .btn-cancel   { background: #F3F4F6; color: #374151; flex: 0.7; }
+    .btn-continue { background: #4B6CB7; color: #fff; }
+  </style>
+</head>
+<body>
+
+  <div class="nav">
+    <a class="nav-back" href="retainer.html">‹</a>
+    <div>
+      <div class="nav-title">Review + Photos</div>
+      <div class="nav-sub">Daniel Park · Step 3 of 4</div>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step step-done" onclick="window.location.href='intake-form.html?step=1'">
+      <div class="step-circle">✓</div>
+      <span class="step-label">Intake Form</span>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step step-done" onclick="window.location.href='intake-form.html?step=2'">
+      <div class="step-circle">✓</div>
+      <span class="step-label">Retainer</span>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step step-active">
+      <div class="step-circle">3</div>
+      <span class="step-label">Review</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step step-pending">
+      <div class="step-circle">4</div>
+      <span class="step-label">Handoff</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="section-label">Intake Summary</div>
+
+    <div class="summary-card">
+      <div class="summary-row">
+        <span class="summary-label">Client</span>
+        <span class="summary-value">Daniel Park · (555) 311-2244</span>
+        <a class="edit-link" href="intake-form.html">Edit</a>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Matter</span>
+        <span class="summary-value">Auto Accident · DOL 05/10/2026</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Location</span>
+        <span class="summary-value">Wilshire Blvd &amp; La Brea Ave, LA</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Police Report</span>
+        <span class="summary-value">Filed</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Treatment</span>
+        <span class="summary-value">Scheduled — Chiro 5/15</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Signed Retainer</span>
+        <span class="summary-value">Attached · 1.8 MB · 2 pages</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Source</span>
+        <span class="summary-value">Marketing · IG Ad</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Field Manager</span>
+        <span class="summary-value">Sarah Klein</span>
+      </div>
+    </div>
+
+    <div class="section-label">Accident Photos</div>
+
+    <div class="photo-section">
+      <div class="photo-section-header">
+        <span class="photo-section-title">Photos</span>
+        <button class="photo-add-btn">+ Add More</button>
+      </div>
+      <div class="photo-grid">
+        <div class="photo-item">
+          <div class="photo-bg" style="background:#FDE68A;">🚗</div>
+          <div class="photo-remove">✕</div>
+        </div>
+        <div class="photo-item">
+          <div class="photo-bg" style="background:#BBF7D0;">🚙</div>
+          <div class="photo-remove">✕</div>
+        </div>
+        <div class="photo-item">
+          <div class="photo-bg" style="background:#BFDBFE;">🛣️</div>
+          <div class="photo-remove">✕</div>
+        </div>
+        <div class="photo-item">
+          <div class="photo-bg" style="background:#FCA5A5;">📍</div>
+          <div class="photo-remove">✕</div>
+        </div>
+        <div class="photo-add-item">+</div>
+      </div>
+      <div class="photo-count">4 photos · 2.1 MB</div>
+    </div>
+
+    <div class="notes-card">
+      <div class="notes-label">FM Notes (Optional)</div>
+      <textarea class="notes-textarea" rows="3" placeholder="Add any additional notes for the Claim department..."></textarea>
+    </div>
+
+  </div>
+
+  <div class="bottom-actions">
+    <a class="btn btn-cancel" href="retainer.html">Back</a>
+    <a class="btn btn-continue" href="handoff.html">Continue to Handoff →</a>
+  </div>
+
+</body>
+</html>

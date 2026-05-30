@@ -1,0 +1,2578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Intake Form</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    html, body {
+      overscroll-behavior: none;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #F5F6F8;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+      border: 1px solid #ddd;
+    }
+
+    /* NAV */
+    .nav {
+      background: #fff;
+      padding: 10px 16px 12px;
+      border-bottom: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .nav-back { font-size: 20px; text-decoration: none; color: #4B5B8C; flex-shrink: 0; }
+    .nav-title { font-size: 16px; font-weight: 600; color: #111827; }
+    .nav-title-wrap { display:flex; align-items:center; flex:1; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+    .nav-import-btns { display: flex; gap: 5px; flex-shrink: 0; }
+    .import-btn {
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 8px;
+      border: 1px solid #E5E7EB;
+      background: #F9FAFB; color: #4B5B8C;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.12s, border-color 0.12s;
+      position: relative;
+    }
+    .import-btn:active { background: #ECEEF5; border-color: #C7D2FE; }
+    .import-btn-icon { line-height: 1; }
+
+    /* SECTION NAV */
+    .section-nav-wrap {
+      background: #fff;
+      border-bottom: 1px solid #E5E7EB;
+      position: sticky;
+      top: 57px;
+      z-index: 15;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .section-nav-wrap::-webkit-scrollbar { display: none; }
+    .section-nav {
+      display: flex;
+      gap: 0;
+      padding: 0 12px;
+      min-width: max-content;
+    }
+    .sec-tab {
+      padding: 10px 14px;
+      font-size: 12px; font-weight: 600;
+      color: #9CA3AF;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+    .sec-tab:hover { color: #4B5B8C; }
+    .sec-tab.active { color: #4B5B8C; border-bottom-color: #4B5B8C; }
+
+    /* CONTENT */
+    .form-page { display: none; padding: 12px 12px 100px; flex-direction: column; gap: 10px; }
+    .form-page.active { display: flex; }
+
+    /* Section card */
+    .form-section {
+      background: #fff;
+      border-radius: 10px;
+      padding: 16px;
+      border: 1px solid #E5E7EB;
+    }
+    .form-section-title {
+      font-size: 10px; font-weight: 700; color: #9CA3AF;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 14px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .section-title-btn {
+      font-size: 12px; font-weight: 700; color: #4B5B8C;
+      background: #EEF0F8; border: none; border-radius: 5px;
+      padding: 5px 12px; cursor: pointer; letter-spacing: 0; text-transform: none;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .section-title-btn:active { opacity: 0.7; }
+    .field-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .field-row:last-child { margin-bottom: 0; }
+    /* Standard column ratios — use these, no inline flex values */
+    .field      { flex: 1; min-width: 0; }
+    .field-2    { flex: 2; min-width: 0; }
+    .field-half { flex: 0 0 calc(50% - 4px); min-width: 0; }
+    .field-full { width: 100%; margin-bottom: 12px; }
+    .field-full:last-child { margin-bottom: 0; }
+    .field-label {
+      font-size: 11px; font-weight: 600; color: #374151;
+      margin-bottom: 5px;
+      display: flex; align-items: center; gap: 4px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .field-label .req { color: #B91C1C; }
+    .ai-tag {
+      background: #EEF2FF; color: #4B6CB7;
+      font-size: 9px; font-weight: 600;
+      padding: 1px 5px; border-radius: 3px;
+    }
+    .field-input {
+      width: 100%; border: 1px solid #E5E7EB; border-radius: 6px;
+      padding: 9px 10px; font-size: 13px; font-family: inherit;
+      color: #111827; outline: none; background: #fff;
+      transition: border-color 0.15s;
+    }
+    .field-input:focus { border-color: #4B6CB7; }
+    .field-input.ai-filled { border-color: #C7D2FE; background: #F8F9FF; }
+
+    /* Address autocomplete */
+    .addr-wrap { position: relative; width: 100%; }
+    .addr-dropdown {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: #fff; border: 1px solid #E5E7EB; border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10); z-index: 200;
+      overflow: hidden; display: none;
+    }
+    .addr-dropdown.open { display: block; }
+    .addr-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #F3F4F6;
+      transition: background 0.1s;
+    }
+    .addr-item:last-child { border-bottom: none; }
+    .addr-item:hover { background: #F9FAFB; }
+    .addr-item-icon {
+      margin-top: 1px; flex-shrink: 0; color: #9CA3AF;
+    }
+    .addr-item-main { font-size: 13px; font-weight: 500; color: #111827; }
+    .addr-item-sub  { font-size: 11px; color: #9CA3AF; margin-top: 1px; }
+    .field-select {
+      width: 100%; border: 1px solid #E5E7EB; border-radius: 6px;
+      padding: 9px 10px; font-size: 13px; font-family: inherit;
+      color: #111827; outline: none; background: #fff;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%236B7280' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+    .field-select.ai-filled { border-color: #C7D2FE; background-color: #F8F9FF; }
+    .field-textarea {
+      width: 100%; border: 1px solid #E5E7EB; border-radius: 6px;
+      padding: 9px 10px; font-size: 13px; font-family: inherit;
+      color: #111827; outline: none; resize: none; line-height: 1.5;
+    }
+    .field-textarea:focus { border-color: #4B6CB7; }
+    .field-textarea.ai-filled { border-color: #C7D2FE; background: #F8F9FF; }
+
+    /* Sub-section label inside a card */
+    .subsection-label {
+      font-size: 10px; font-weight: 700; color: #6B7280;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      margin-bottom: 10px; margin-top: 4px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #F3F4F6;
+    }
+
+    /* Radio */
+    .radio-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .radio-opt {
+      display: flex; align-items: center; gap: 5px;
+      padding: 6px 10px; border-radius: 5px;
+      border: 1px solid #E5E7EB; cursor: pointer;
+      font-size: 12px; font-weight: 500; color: #374151;
+      transition: all 0.15s;
+    }
+    .radio-opt input { accent-color: #4B6CB7; }
+    .radio-opt.checked { border-color: #4B6CB7; background: #EEF2FF; color: #3d5a9e; }
+
+    /* Retainer */
+    .info-card {
+      background: #EEF2FF; border: 1px solid #C7D2FE;
+      border-radius: 8px; padding: 14px;
+      font-size: 12px; color: #3730A3; line-height: 1.6;
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+    .info-card strong { color: #1E3A8A; }
+    .ret-method-cards { display: flex; flex-direction: row; gap: 8px; }
+    .ret-method-card {
+      background: #fff; border: 2px solid #E5E7EB; border-radius: 10px;
+      padding: 14px; display: flex; align-items: center; gap: 12px;
+      cursor: pointer; transition: all 0.15s; flex: 1; text-align: center; font-family: inherit; flex-direction: column; justify-content: center;
+    }
+    .ret-method-card:hover { border-color: #4B6CB7; background: #F8FAFF; }
+    .ret-method-card.selected { border-color: #4B6CB7; background: #EEF2FF; }
+    .ret-method-icon {
+      width: 38px; height: 38px; border-radius: 8px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: #F3F4F6; color: #6B7280; transition: all 0.15s;
+    }
+    .ret-method-card.selected .ret-method-icon { background: #4B6CB7; color: #fff; }
+    .ret-method-label { font-size: 13px; font-weight: 600; color: #111827; }
+    .ret-method-sub   { font-size: 11px; color: #9CA3AF; margin-top: 2px; }
+    .ret-panel {
+      border: 1px solid #E5E7EB; border-radius: 10px; padding: 16px;
+      background: #FAFAFA; display: none;
+    }
+    .ret-panel.open { display: block; animation: slideDown 0.2s ease; }
+    @keyframes slideDown { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+    .ret-panel-title { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .ret-delivery-toggle { display: flex; gap: 6px; margin-bottom: 12px; }
+    .ret-toggle-btn {
+      display: flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 500;
+      border: 1px solid #E5E7EB; background: #fff; color: #6B7280; cursor: pointer; font-family: inherit;
+    }
+    .ret-toggle-btn.active { background: #4B6CB7; color: #fff; border-color: #4B6CB7; }
+    .ret-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+    .ret-label { font-size: 11px; color: #6B7280; font-weight: 500; }
+    .ret-input {
+      height: 36px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px;
+      font-size: 12px; color: #111827; background: #fff; outline: none; font-family: inherit; width: 100%;
+    }
+    .ret-input:focus { border-color: #4B6CB7; box-shadow: 0 0 0 2px rgba(75,108,183,0.15); }
+    .ret-input::placeholder { color: #D1D5DB; }
+    .ret-input[readonly] { background: #fff; color: #6B7280; }
+    .upload-area {
+      background: #fff; border-radius: 8px; padding: 24px 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      border: 1.5px dashed #D1D5DB; cursor: pointer; transition: all 0.15s;
+    }
+    .upload-area:hover { border-color: #4B6CB7; background: #F8FAFF; }
+    .upload-title { font-size: 14px; font-weight: 600; color: #374151; }
+    .upload-sub   { font-size: 11px; color: #9CA3AF; text-align: center; }
+    .ret-btn-row { display: flex; gap: 8px; margin-top: 4px; }
+    .btn-send {
+      display: flex; align-items: center; gap: 6px;
+      padding: 9px 16px; background: #4B6CB7; color: #fff;
+      border-radius: 7px; font-size: 12px; font-weight: 600;
+      border: none; cursor: pointer; font-family: inherit; transition: background 0.15s;
+    }
+    .btn-send:hover { background: #3D5A9E; }
+    .btn-cancel-ret {
+      display: flex; align-items: center; gap: 6px;
+      padding: 9px 14px; background: #fff; color: #374151;
+      border-radius: 7px; font-size: 12px; font-weight: 500;
+      border: 1px solid #E5E7EB; cursor: pointer; font-family: inherit;
+    }
+
+    /* Review */
+    .review-section-label {
+      font-size: 10px; font-weight: 600; color: #9CA3AF;
+      letter-spacing: 0.07em; text-transform: uppercase; padding: 4px 2px 0;
+    }
+    .summary-card {
+      background: #fff; border-radius: 10px;
+      border: 1px solid #E5E7EB; overflow: hidden;
+    }
+    .summary-row {
+      display: flex; padding: 10px 14px;
+      border-bottom: 1px solid #F3F4F6;
+      gap: 8px; align-items: flex-start;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-label { font-size: 11px; color: #9CA3AF; width: 110px; flex-shrink: 0; }
+    .summary-value { font-size: 12px; font-weight: 500; color: #111827; flex: 1; }
+    .edit-link {
+      font-size: 11px; color: #4B6CB7; text-decoration: none;
+      margin-left: auto; flex-shrink: 0; cursor: pointer;
+    }
+    .photo-section {
+      background: #fff; border-radius: 10px; padding: 14px;
+      border: 1px solid #E5E7EB;
+    }
+    .photo-section-header {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 10px;
+    }
+    .photo-section-title { font-size: 12px; font-weight: 600; color: #374151; }
+    .photo-add-btn { font-size: 12px; color: #4B6CB7; font-weight: 600; background: none; border: none; cursor: pointer; }
+    .photo-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .photo-item { aspect-ratio: 1; border-radius: 6px; position: relative; overflow: hidden; }
+    .photo-bg { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .photo-remove {
+      position: absolute; top: 3px; right: 3px;
+      width: 18px; height: 18px;
+      background: rgba(0,0,0,0.45); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 10px; cursor: pointer;
+    }
+    .photo-count { font-size: 11px; color: #9CA3AF; margin-top: 8px; }
+    .notes-card { background: #fff; border-radius: 10px; padding: 14px; border: 1px solid #E5E7EB; }
+    .notes-label { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; }
+    .notes-textarea {
+      width: 100%; border: 1px solid #E5E7EB; border-radius: 6px;
+      padding: 9px 10px; font-size: 13px; font-family: inherit;
+      color: #111827; outline: none; resize: none; line-height: 1.5;
+    }
+    .notes-textarea:focus { border-color: #4B6CB7; }
+
+    /* Handoff */
+    .info-box {
+      background: #EEF2FF; border: 1px solid #C7D2FE;
+      border-radius: 8px; padding: 12px 14px;
+      font-size: 12px; color: #3730A3; line-height: 1.6;
+    }
+    .info-box strong { color: #1E3A8A; }
+    .checklist-card { background: #fff; border-radius: 10px; padding: 14px; border: 1px solid #E5E7EB; }
+    .checklist-title { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 10px; }
+    .check-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 0; border-bottom: 1px solid #F3F4F6;
+      font-size: 12px; color: #374151;
+    }
+    .check-item:last-child { border-bottom: none; }
+    .check-ok   { width: 16px; height: 16px; border-radius: 50%; background: #3B8C7E; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 700; flex-shrink: 0; }
+    .check-warn { width: 16px; height: 16px; border-radius: 50%; background: #FEF3C7; display: flex; align-items: center; justify-content: center; color: #92400E; font-size: 9px; font-weight: 700; flex-shrink: 0; }
+
+    /* Case Notes */
+    .note-item {
+      background: #F9FAFB;
+      border: 1px solid #E5E7EB;
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+    .note-meta {
+      font-size: 10px; color: #9CA3AF; margin-bottom: 5px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .note-body { font-size: 13px; color: #111827; line-height: 1.5; white-space: pre-wrap; }
+    .note-delete { background: none; border: none; color: #D1D5DB; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+    .note-delete:hover { color: #EF4444; }
+
+    /* Photo attachments */
+    .photo-attach-section { display: flex; flex-direction: column; gap: 10px; }
+    .photo-category-block { }
+    .photo-category-header {
+      font-size: 10px; font-weight: 700; color: #6B7280;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      padding-bottom: 6px; border-bottom: 1px solid #F3F4F6;
+      margin-bottom: 10px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .photo-category-count {
+      font-size: 10px; font-weight: 600; color: #9CA3AF;
+      background: #F3F4F6; border-radius: 10px; padding: 1px 7px;
+    }
+    .photo-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+    }
+    .photo-thumb {
+      aspect-ratio: 1; border-radius: 6px; overflow: hidden;
+      position: relative; cursor: pointer;
+      background: #F3F4F6;
+    }
+    .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo-thumb-uncat { border: 1.5px dashed #D1D5DB; }
+    .photo-thumb-badge {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.52);
+      font-size: 10px; font-weight: 600; color: #fff;
+      padding: 3px 4px; text-align: center;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      line-height: 1.3;
+    }
+    .photo-thumb-badge-uncat {
+      background: rgba(185,28,28,0.72);
+    }
+    .photo-add-tile {
+      aspect-ratio: 1; border-radius: 6px;
+      border: 1.5px dashed #D1D5DB;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; color: #9CA3AF; cursor: pointer;
+      background: #fff;
+    }
+    .photo-add-tile:active { background: #F9FAFB; }
+
+    /* Photo unclassified banner */
+    .photo-uncat-banner {
+      display: flex; align-items: center; gap: 10px;
+      background: #FFF7ED; border: 1px solid #FED7AA;
+      border-radius: 8px; padding: 10px 12px;
+      margin-bottom: 10px; cursor: pointer;
+    }
+    .photo-uncat-banner-icon { font-size: 16px; flex-shrink: 0; }
+    .photo-uncat-banner-text { flex: 1; min-width: 0; }
+    .photo-uncat-banner-title { font-size: 12px; font-weight: 700; color: #92400E; }
+    .photo-uncat-banner-sub   { font-size: 11px; color: #B45309; margin-top: 1px; }
+    .photo-uncat-banner-btn {
+      font-size: 11px; font-weight: 700; color: #fff;
+      background: #F59E0B; border: none; border-radius: 5px;
+      padding: 5px 10px; cursor: pointer; flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .photo-done-banner {
+      display: flex; align-items: center; gap: 10px;
+      background: #F0FDF4; border: 1px solid #86EFAC;
+      border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;
+      font-size: 12px; font-weight: 600; color: #15803D;
+    }
+    /* thumb classified overlay */
+    .photo-thumb-check {
+      position: absolute; top: 4px; right: 4px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #22C55E; border: 1.5px solid #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 8px; font-weight: 700; color: #fff;
+    }
+
+    /* Photo classify sheet */
+    .classify-sheet-thumb {
+      width: 72px; height: 72px; border-radius: 8px; object-fit: cover;
+      border: 1px solid #E5E7EB; flex-shrink: 0;
+    }
+    .classify-progress {
+      font-size: 11px; font-weight: 600; color: #9CA3AF;
+    }
+    .classify-prompt {
+      font-size: 13px; font-weight: 700; color: #111827;
+      margin-bottom: 14px; line-height: 1.4;
+    }
+    .classify-option {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 14px; border-radius: 8px;
+      border: 1.5px solid #E5E7EB; cursor: pointer;
+      transition: all 0.12s; margin-bottom: 6px;
+    }
+    .classify-option:last-child { margin-bottom: 0; }
+    .classify-option.selected { border-color: #4B6CB7; background: #EEF2FF; }
+    .classify-option-icon { flex-shrink: 0; width: 28px; display: flex; align-items: center; justify-content: center; color: #6B7280; }
+    .classify-option.selected .classify-option-icon { color: #4B6CB7; }
+    .classify-option-label { font-size: 13px; font-weight: 600; color: #111827; }
+    .classify-option-sub   { font-size: 11px; color: #6B7280; margin-top: 1px; }
+    .classify-check {
+      margin-left: auto; width: 18px; height: 18px; border-radius: 50%;
+      border: 1.5px solid #D1D5DB; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .classify-option.selected .classify-check {
+      background: #4B6CB7; border-color: #4B6CB7; color: #fff;
+      font-size: 10px; font-weight: 700;
+    }
+
+    /* Bottom Actions */
+    .bottom-actions {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 432px;
+      background: #fff;
+      border-top: 1px solid #E5E7EB;
+      padding: 10px 12px 16px;
+      display: flex; gap: 8px;
+    }
+    .btn {
+      flex: 0 0 calc(50% - 4px); height: 40px; padding: 0 12px; border-radius: 6px;
+      font-size: 14px; font-weight: 600; border: none;
+      cursor: pointer; text-align: center; text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.8; }
+    .btn-cancel   { background: #F3F4F6; color: #374151; }
+    .btn-continue { background: #4B5B8C; color: #fff; }
+    .btn-handoff  { background: #4B5B8C; color: #fff; }
+
+    /* Success Overlay */
+    .success-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4); z-index: 100;
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .success-overlay.show { display: flex; }
+    .success-modal {
+      background: #fff; border-radius: 12px; padding: 28px 20px;
+      width: 100%; max-width: 360px; text-align: center;
+    }
+    .success-check {
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+    }
+    .success-title { font-size: 18px; font-weight: 700; color: #111827; margin-bottom: 8px; }
+    .success-sub   { font-size: 13px; color: #6B7280; line-height: 1.6; margin-bottom: 20px; }
+    .success-id {
+      background: #F3F4F6; border-radius: 6px; padding: 10px 14px;
+      font-size: 12px; color: #374151; margin-bottom: 18px; text-align: left;
+    }
+    .success-id strong { color: #111827; }
+    .btn-done {
+      width: 100%; padding: 12px; border-radius: 6px;
+      font-size: 14px; font-weight: 600;
+      background: #4B5B8C; color: #fff; border: none; cursor: pointer;
+    }
+
+    /* Transcript accordion inside AI confirm sheet */
+    .transcript-accordion {
+      margin-top: 14px;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .transcript-accordion-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      cursor: pointer;
+      background: #F9FAFB;
+      user-select: none;
+    }
+    .transcript-accordion-toggle:active { background: #F3F4F6; }
+    .transcript-accordion-label {
+      font-size: 12px; font-weight: 600; color: #374151;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .transcript-accordion-label .src-badge {
+      font-size: 10px; font-weight: 600;
+      padding: 1px 6px; border-radius: 3px;
+      background: #EEF2FF; color: #4B5B8C;
+    }
+    .transcript-accordion-icon { font-size: 10px; color: #9CA3AF; }
+    .transcript-accordion-body {
+      display: none;
+      padding: 10px 12px 12px;
+      border-top: 1px solid #E5E7EB;
+    }
+    .transcript-accordion-body.open { display: block; }
+    .t-bubble { margin-bottom: 8px; }
+    .t-bubble-label { font-size: 10px; font-weight: 600; color: #9CA3AF; margin-bottom: 2px; }
+    .t-bubble-fm     { background: #EEF2FF; border-radius: 0 8px 8px 8px; padding: 7px 10px; font-size: 12px; color: #374151; line-height: 1.5; }
+    .t-bubble-client { background: #F3F4F6; border-radius: 8px 0 8px 8px; padding: 7px 10px; font-size: 12px; color: #374151; line-height: 1.5; text-align: right; }
+    .t-summary { font-size: 12px; color: #4B5563; line-height: 1.7; }
+
+    /* Overlay / Sheet */
+    .overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 200;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .overlay.show { display: flex; }
+    .sheet {
+      background: #fff;
+      border-radius: 16px 16px 0 0;
+      width: 100%;
+      max-width: 430px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sheet-header {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .sheet-title { font-size: 15px; font-weight: 700; color: #111827; }
+    .sheet-close {
+      width: 28px; height: 28px;
+      background: #F3F4F6; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: #6B7280;
+      cursor: pointer; border: none;
+      flex-shrink: 0;
+    }
+    .sheet-body { overflow-y: auto; padding: 10px 12px 20px; flex: 1; }
+
+    .call-pick-card {
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 11px 14px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .call-pick-card:hover  { background: #F9FAFB; }
+    .call-pick-card.selected { border-color: #4B6CB7; background: #EEF2FF; }
+    .call-pick-dot { width: 8px; height: 8px; border-radius: 50%; background: #0D9488; flex-shrink: 0; }
+    .call-pick-body { flex: 1; min-width: 0; }
+    .call-pick-num  { font-size: 13px; font-weight: 600; color: #111827; }
+    .call-pick-meta { font-size: 11px; color: #6B7280; margin-top: 2px; }
+    .call-pick-preview { font-size: 11px; color: #9CA3AF; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .call-pick-time { font-size: 11px; color: #9CA3AF; flex-shrink: 0; }
+
+    /* Recording upload drop zone */
+    .rec-upload-drop {
+      border: 1.5px dashed #D1D5DB;
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      margin-bottom: 4px;
+    }
+    .rec-upload-drop:hover, .rec-upload-drop.drag-over {
+      border-color: #4B6CB7;
+      background: #EEF2FF;
+    }
+
+    /* Recording picker */
+    .rec-pick-card {
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 11px 14px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .rec-pick-card:hover { background: #F9FAFB; }
+    .rec-pick-card.selected { border-color: #4B6CB7; background: #EEF2FF; }
+    .rec-pick-icon { font-size: 20px; flex-shrink: 0; }
+    .rec-pick-body { flex: 1; min-width: 0; }
+    .rec-pick-name { font-size: 13px; font-weight: 600; color: #111827; }
+    .rec-pick-meta { font-size: 11px; color: #6B7280; margin-top: 2px; }
+    .rec-pick-time { font-size: 11px; color: #9CA3AF; flex-shrink: 0; }
+
+    /* AI confirm */
+    .confirm-sheet .sheet-body { padding: 12px 14px 24px; }
+    .ai-preview-title {
+      font-size: 12px; font-weight: 700; color: #374151;
+      margin-bottom: 10px;
+    }
+    .ai-field-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+    .ai-field-row:last-child { border-bottom: none; }
+    .ai-field-check {
+      width: 18px; height: 18px;
+      border: 1.5px solid #4B6CB7;
+      border-radius: 4px;
+      background: #4B6CB7;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 10px; font-weight: 700;
+      flex-shrink: 0; margin-top: 1px;
+      cursor: pointer;
+    }
+    .ai-field-check.unchecked { background: #fff; color: transparent; }
+    .ai-field-label { font-size: 11px; color: #9CA3AF; width: 90px; flex-shrink: 0; }
+    .ai-field-value { font-size: 12px; font-weight: 500; color: #111827; flex: 1; }
+    .sheet-footer {
+      padding: 12px 14px 20px;
+      border-top: 1px solid #E5E7EB;
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .sheet-btn {
+      flex: 1; padding: 11px; border-radius: 6px;
+      font-size: 13px; font-weight: 600; border: none; cursor: pointer;
+    }
+    .sheet-btn-cancel  { background: #F3F4F6; color: #374151; flex: 0.6; }
+    .sheet-btn-apply   { background: #4B5B8C; color: #fff; }
+
+    /* Import applied banner */
+    .import-applied {
+      background: #F0FDF4; border: 1px solid #86EFAC;
+      border-radius: 8px; padding: 10px 14px;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12px;
+    }
+    .import-applied-icon { font-size: 16px; flex-shrink: 0; }
+    .import-applied-title { font-size: 13px; font-weight: 600; color: #15803D; }
+    .import-applied-sub   { font-size: 11px; color: #16A34A; margin-top: 1px; }
+  </style>
+</head>
+<body>
+
+  <div class="nav">
+    <a class="nav-back" href="index.html">‹</a>
+    <div class="nav-title-wrap">
+      <div class="nav-title" id="nav-title">New Intake</div>
+      <div id="autosave-indicator" style="display:flex; align-items:center; gap:4px; font-size:10px; color:#9CA3AF; white-space:nowrap; margin-left:10px;">
+      <svg id="autosave-spinner" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round" style="animation:spin 1s linear infinite;">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+      </svg>
+      <span id="autosave-text">자동저장 중</span>
+    </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <div class="nav-import-btns">
+        <button class="import-btn" onclick="openCallPicker()" title="Import from Call">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.03 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+        </button>
+        <button class="import-btn" onclick="openRecPicker()" title="Import from Recording">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-nav-wrap">
+    <div class="section-nav" id="section-nav">
+      <div class="sec-tab active" data-page="client" onclick="goToPage('client')">Client</div>
+      <div class="sec-tab" data-page="case" onclick="goToPage('case')">Case</div>
+      <div class="sec-tab" data-page="retainer" onclick="goToPage('retainer')">Retainer</div>
+      <div class="sec-tab" data-page="handoff" onclick="goToPage('handoff')">Handoff</div>
+    </div>
+  </div>
+
+  <!-- PAGE: Client (Client Information only) -->
+  <div class="form-page active" id="page-client">
+
+    <div id="import-applied-banner" style="display:none;"></div>
+
+    <!-- Client Information -->
+    <div class="form-section">
+      <div class="form-section-title">Client Information</div>
+
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">Language</div>
+          <select class="field-select" id="f-language">
+            <option>English</option>
+            <option>Spanish</option>
+            <option>Korean</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Role</div>
+          <select class="field-select" id="f-role">
+            <option value="">Select</option>
+            <option>Driver</option>
+            <option>Passenger</option>
+            <option>Pedestrian</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">Last Name <span class="req">*</span> <span class="ai-tag">AI</span></div>
+          <input class="field-input ai-filled" id="f-lastname" type="text" placeholder="Last" />
+        </div>
+        <div class="field">
+          <div class="field-label">First Name <span class="req">*</span> <span class="ai-tag">AI</span></div>
+          <input class="field-input ai-filled" id="f-firstname" type="text" placeholder="First" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">DOB</div>
+          <input class="field-input" id="f-dob" type="text" placeholder="MM/DD/YYYY" oninput="calcAge(this.value)" onchange="calcAge(this.value)" />
+        </div>
+        <div class="field">
+          <div class="field-label">Age</div>
+          <input class="field-input" id="f-age" type="text" placeholder="—" readonly />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">Sex</div>
+          <select class="field-select" id="f-sex">
+            <option value="">—</option>
+            <option>M</option>
+            <option>F</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Marital Status</div>
+          <select class="field-select" id="f-marital">
+            <option value="">—</option>
+            <option>Single</option>
+            <option>Married</option>
+            <option>Divorced</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-full">
+        <div class="field-label"><svg style="display:inline-block;width:13px;height:13px;margin-right:4px;vertical-align:middle;" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Address</div>
+        <div class="addr-wrap">
+          <input class="field-input" id="f-address" type="text" placeholder="e.g. San Pedro" autocomplete="off"
+            oninput="addrInput(this,'addr-drop-client')" onfocus="addrInput(this,'addr-drop-client')" onblur="addrBlur('addr-drop-client')" />
+          <div class="addr-dropdown" id="addr-drop-client"></div>
+        </div>
+      </div>
+      <div class="field-row addr-sub-row" id="addr-sub-client" style="display:none;">
+        <div class="field-2">
+          <div class="field-label">City</div>
+          <input class="field-input" id="f-client-city" type="text" placeholder="City" />
+        </div>
+        <div class="field">
+          <div class="field-label">State</div>
+          <input class="field-input" id="f-client-state" type="text" placeholder="CA" />
+        </div>
+        <div class="field">
+          <div class="field-label">Zip</div>
+          <input class="field-input" id="f-client-zip" type="text" placeholder="00000" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">ID Type</div>
+          <select class="field-select" id="f-idtype">
+            <option value="">—</option>
+            <option>Driver's License</option>
+            <option>State ID</option>
+            <option>Passport</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Issued State</div>
+          <input class="field-input" id="f-idstate" type="text" placeholder="CA" />
+        </div>
+      </div>
+      <div class="field-full">
+        <div class="field-label">ID #</div>
+        <input class="field-input" id="f-idnum" type="text" placeholder="ID number" />
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">SSN #</div>
+          <input class="field-input" id="f-ssn" type="text" placeholder="XXX-XX-XXXX" />
+        </div>
+        <div class="field">
+          <div class="field-label">Phone # <span class="req">*</span> <span class="ai-tag">AI</span></div>
+          <input class="field-input ai-filled" id="f-phone" type="text" placeholder="(000) 000-0000" oninput="fmtPhone(this)" maxlength="14" />
+        </div>
+      </div>
+
+      <div class="field-full">
+        <div class="field-label">Email</div>
+        <input class="field-input" id="f-email" type="text" placeholder="email@example.com" />
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">Employer</div>
+          <input class="field-input" id="f-employer" type="text" placeholder="Company / student" />
+        </div>
+        <div class="field">
+          <div class="field-label">Occupation</div>
+          <input class="field-input" id="f-occupation" type="text" placeholder="Job title" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">Prior Accident</div>
+          <input class="field-input" id="f-prior-accident" type="text" placeholder="None" />
+        </div>
+        <div class="field">
+          <div class="field-label">Prior Injuries</div>
+          <select class="field-select" id="f-prior-injuries">
+            <option value="">—</option>
+            <option>Yes</option>
+            <option>No</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-full">
+        <div class="field-label">Emergency Contact</div>
+        <input class="field-input" id="f-emergency" type="text" placeholder="Name (relationship) 000-000-0000" />
+      </div>
+      <div class="field-full">
+        <div class="field-label">Memo</div>
+        <textarea class="field-textarea" id="f-memo" rows="3" placeholder="Additional notes..."></textarea>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PAGE: Case (Intake Info + Incident + Property Damage + Injury + Field Manager + Case Notes) -->
+  <div class="form-page" id="page-case">
+
+    <!-- Intake Info -->
+    <div class="form-section">
+      <div class="form-section-title">Intake Info</div>
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">Sign Up Date</div>
+          <input class="field-input" id="f-signup" type="text" placeholder="MM/DD/YYYY" />
+        </div>
+        <div class="field">
+          <div class="field-label">Source <span class="ai-tag">AI</span></div>
+          <select class="field-select ai-filled" id="f-source">
+            <option value="">Select</option>
+            <option>Referral</option>
+            <option>Call</option>
+            <option>Walk-in</option>
+            <option>Web / Ad</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Incident -->
+    <div class="form-section">
+      <div class="form-section-title">Incident</div>
+
+      <!-- Sub: When & Where -->
+      <div class="subsection-label">When &amp; Where</div>
+      <div class="field-row">
+        <div class="field-2">
+          <div class="field-label">Date of Loss <span class="req">*</span> <span class="ai-tag">AI</span></div>
+          <input class="field-input ai-filled" id="f-dol" type="text" placeholder="MM/DD/YYYY" />
+        </div>
+        <div class="field">
+          <div class="field-label">Time</div>
+          <input class="field-input" id="f-time" type="text" placeholder="0:00" />
+        </div>
+        <div class="field">
+          <div class="field-label">AM / PM</div>
+          <select class="field-select" id="f-ampm">
+            <option>AM</option>
+            <option>PM</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-full">
+        <div class="field-label">Location of Loss <span class="ai-tag">AI</span></div>
+        <div class="addr-wrap">
+          <input class="field-input ai-filled" id="f-location" type="text" placeholder="e.g. Sunset Blvd & Vermont Ave, Los Angeles" autocomplete="off"
+            oninput="addrInput(this,'addr-drop-loss')" onfocus="addrInput(this,'addr-drop-loss')" onblur="addrBlur('addr-drop-loss')" />
+          <div class="addr-dropdown" id="addr-drop-loss"></div>
+        </div>
+      </div>
+      <div class="field-row addr-sub-row" id="addr-sub-loss" style="display:none; margin-bottom:16px;">
+        <div class="field-2">
+          <div class="field-label">City <span class="ai-tag">AI</span></div>
+          <input class="field-input ai-filled" id="f-city" type="text" placeholder="City" />
+        </div>
+        <div class="field">
+          <div class="field-label">State</div>
+          <input class="field-input" id="f-state" type="text" placeholder="CA" />
+        </div>
+        <div class="field">
+          <div class="field-label">Zip</div>
+          <input class="field-input" id="f-zip" type="text" placeholder="00000" />
+        </div>
+      </div>
+
+      <!-- Sub: Scene -->
+      <div class="subsection-label">Scene</div>
+      <div class="field-row" style="margin-bottom:16px;">
+        <div class="field">
+          <div class="field-label">Total Vehicles</div>
+          <input class="field-input" id="f-vehicles" type="text" placeholder="#" />
+        </div>
+        <div class="field">
+          <div class="field-label">Total Injured</div>
+          <input class="field-input" id="f-injured" type="text" placeholder="#" />
+        </div>
+      </div>
+
+      <!-- Sub: Documentation -->
+      <div class="subsection-label">Documentation</div>
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">Police Dept</div>
+          <input class="field-input" id="f-police-dept" type="text" placeholder="e.g. LAPD" />
+        </div>
+        <div class="field">
+          <div class="field-label">Police Report #</div>
+          <input class="field-input" id="f-police-report" type="text" placeholder="Pending" />
+        </div>
+      </div>
+      <div class="field-full">
+        <div class="field-label">Witnesses</div>
+        <input class="field-input" id="f-witnesses" type="text" placeholder="e.g. Video Footage, name..." />
+      </div>
+    </div>
+
+    <!-- Insurance -->
+    <div class="form-section">
+      <div class="form-section-title">
+        <span>Insurance</span>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <button class="section-title-btn" onclick="openCanopy()">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Canopy
+          </button>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-2">
+          <div class="field-label">Auto Insurance Co.</div>
+          <input class="field-input" id="f-insco" type="text" placeholder="Company name" />
+        </div>
+        <div class="field">
+          <div class="field-label">Policy #</div>
+          <input class="field-input" id="f-policy" type="text" placeholder="Policy #" />
+        </div>
+        <div class="field">
+          <div class="field-label">Claim #</div>
+          <input class="field-input" id="f-claim" type="text" placeholder="After filing" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">Policyholder Name</div>
+          <input class="field-input" id="f-policyholder" type="text" placeholder="Full name" />
+        </div>
+        <div class="field">
+          <div class="field-label">Driver Name</div>
+          <input class="field-input" id="f-drivername" type="text" placeholder="If different" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Vehicle -->
+    <div class="form-section">
+      <div class="form-section-title">Vehicle</div>
+
+      <!-- Plate Lookup -->
+      <div class="field-row" style="align-items:flex-end; margin-bottom:10px;">
+        <div class="field-2">
+          <div class="field-label"><svg style="display:inline-block;width:13px;height:13px;margin-right:4px;vertical-align:middle;" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Lic. Plate #</div>
+          <input class="field-input" id="f-plate" type="text" placeholder="e.g. 8ABC123" oninput="this.value=this.value.toUpperCase()" />
+        </div>
+        <div class="field" style="flex:0 0 auto;">
+          <button type="button" id="btn-plate-lookup" onclick="lookupPlate()" style="height:36px; padding:0 16px; background:#4B6CB7; color:#fff; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Lookup
+          </button>
+        </div>
+      </div>
+
+      <!-- VIN + status -->
+      <div class="field-row" style="margin-bottom:10px;">
+        <div class="field-full" style="flex:1;">
+          <div class="field-label">VIN</div>
+          <input class="field-input" id="f-vin" type="text" placeholder="Auto-filled after lookup" readonly style="background:#F9FAFB; color:#374151; font-family:monospace; letter-spacing:0.05em;" />
+        </div>
+      </div>
+
+      <!-- Auto-filled vehicle fields -->
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">Year</div>
+          <input class="field-input ai-filled" id="f-year" type="text" placeholder="YYYY" readonly />
+        </div>
+        <div class="field">
+          <div class="field-label">Make</div>
+          <input class="field-input ai-filled" id="f-make" type="text" placeholder="Make" readonly />
+        </div>
+        <div class="field-2">
+          <div class="field-label">Model</div>
+          <input class="field-input ai-filled" id="f-model" type="text" placeholder="Model" readonly />
+        </div>
+        <div class="field">
+          <div class="field-label">Color</div>
+          <input class="field-input" id="f-color" type="text" placeholder="Color" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">Registered Owner</div>
+          <input class="field-input" id="f-regowner" type="text" placeholder="Full name" />
+        </div>
+        <div class="field">
+          <div class="field-label">Rel. to Driver</div>
+          <input class="field-input" id="f-regrel" type="text" placeholder="e.g. Father" />
+        </div>
+        <div class="field">
+          <div class="field-label">Phone #</div>
+          <input class="field-input" id="f-regphone" type="text" placeholder="(000) 000-0000" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">Veh. Location</div>
+          <select class="field-select" id="f-veh-loc">
+            <option value="">Select</option>
+            <option>C's Home</option>
+            <option>Shop</option>
+            <option>Storage</option>
+            <option>Salvage (SAD)</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Address</div>
+          <input class="field-input" id="f-veh-addr" type="text" placeholder="Address" />
+        </div>
+        <div class="field">
+          <div class="field-label">Phone #</div>
+          <input class="field-input" id="f-veh-phone" type="text" placeholder="(000) 000-0000" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Injury -->
+    <div class="form-section">
+      <div class="form-section-title">Injury</div>
+      <div class="field-full">
+        <div class="field-label">Injuries <span class="ai-tag">AI</span></div>
+        <input class="field-input ai-filled" id="f-injuries" type="text" placeholder="e.g. Neck, lower back..." />
+      </div>
+      <div class="field-full">
+        <div class="field-label">Medical Histories</div>
+        <input class="field-input" id="f-medhist" type="text" placeholder="None" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">Ambulance</div>
+          <select class="field-select" id="f-ambulance">
+            <option value="">—</option>
+            <option>Yes</option>
+            <option>No</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Hospital Visit</div>
+          <select class="field-select" id="f-hospital">
+            <option value="">—</option>
+            <option>Yes</option>
+            <option>No</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Hospital Name</div>
+          <input class="field-input" id="f-hosp-name" type="text" placeholder="Hospital name" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label"><svg style="display:inline-block;width:13px;height:13px;margin-right:4px;vertical-align:middle;" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Clinic / Hospital</div>
+          <div class="addr-wrap">
+            <input class="field-input" id="f-doctor" type="text" placeholder="e.g. Cedars" autocomplete="off"
+              oninput="clinicInput(this.value)" onblur="addrBlur('clinic-drop')" />
+            <div class="addr-dropdown" id="clinic-drop"></div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Phone #</div>
+          <input class="field-input" id="f-doc-phone" type="text" placeholder="(000) 000-0000" />
+        </div>
+      </div>
+      <div class="field-full">
+        <div class="field-label">Address</div>
+        <input class="field-input" id="f-doc-addr" type="text" placeholder="Auto-filled" readonly style="background:#F9FAFB;" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <div class="field-label">City</div>
+          <input class="field-input" id="f-doc-city" type="text" placeholder="Auto-filled" readonly style="background:#F9FAFB;" />
+        </div>
+        <div class="field">
+          <div class="field-label">State</div>
+          <input class="field-input" id="f-doc-state" type="text" placeholder="CA" readonly style="background:#F9FAFB;" />
+        </div>
+        <div class="field">
+          <div class="field-label">Zip</div>
+          <input class="field-input" id="f-doc-zip" type="text" placeholder="Auto-filled" readonly style="background:#F9FAFB;" />
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Case Notes -->
+    <div class="form-section">
+      <div class="form-section-title">Case Notes</div>
+      <div style="font-size:11px; color:#6B7280; margin-bottom:10px;">Timestamp and author recorded automatically on save.</div>
+      <div id="notes-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;"></div>
+      <textarea class="field-textarea" id="f-note-input" rows="3" placeholder="e.g. Per C's father — denied coverage. D ins adjuster: 562-331-7742 Elizabeth"></textarea>
+    </div>
+
+    <!-- Photos -->
+    <div class="form-section">
+      <div class="form-section-title">
+        Photos
+        <div style="display:flex; align-items:center; gap:4px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <button class="section-title-btn" onclick="openPhotoPortalModal()">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Request Photos
+          </button>
+        </div>
+      </div>
+      <div class="photo-attach-section" id="photo-attach-section"></div>
+    </div>
+
+  </div>
+
+  <!-- PAGE: Retainer -->
+  <div class="form-page" id="page-retainer">
+    <div class="ret-method-cards">
+      <button class="ret-method-card" id="ret-card-send" onclick="retSelectMethod('send')">
+        <div class="ret-method-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </div>
+        <div>
+          <div class="ret-method-label">Send to Client</div>
+          <div class="ret-method-sub" id="retainer-sms-sub">Email or SMS via DocuSeal</div>
+        </div>
+      </button>
+      <button class="ret-method-card" id="ret-card-upload" onclick="retSelectMethod('upload')">
+        <div class="ret-method-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div>
+          <div class="ret-method-label">Already Signed</div>
+          <div class="ret-method-sub">Upload signed PDF from in-person meeting</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- Send panel -->
+    <div class="ret-panel" id="ret-panel-send">
+      <div class="ret-panel-title">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Send Retainer for Signature
+      </div>
+      <div class="ret-delivery-toggle">
+        <button class="ret-toggle-btn active" id="ret-del-sms" onclick="retSetDelivery('sms')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          SMS
+        </button>
+        <button class="ret-toggle-btn" id="ret-del-email" onclick="retSetDelivery('email')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Email
+        </button>
+      </div>
+      <div class="ret-field">
+        <label class="ret-label" id="ret-contact-label">SMS</label>
+        <input class="ret-input" id="ret-contact-input" placeholder="+1 (213) 555-0100" oninput="fmtPhone(this)" maxlength="14">
+      </div>
+      <div class="ret-field">
+        <label class="ret-label">Template</label>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input class="ret-input" value="Standard PI Retainer Agreement" readonly style="flex:1;">
+          <button type="button" onclick="openRetainerPreviewAndMark()" style="height:36px; padding:0 12px; background:#F3F4F6; border:1px solid #E5E7EB; border-radius:6px; font-size:12px; color:#374151; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:5px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Preview
+          </button>
+        </div>
+      </div>
+
+      <div class="ret-btn-row">
+        <button class="btn-send" id="btn-send-docuseal" onclick="sendRetainerGuard()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Send via DocuSeal
+        </button>
+      </div>
+    </div>
+
+    <!-- Upload panel -->
+    <div class="ret-panel" id="ret-panel-upload">
+      <div class="ret-panel-title">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Signed Retainer
+      </div>
+      <div class="upload-area" onclick="document.getElementById('ret-file-input').click()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        <div class="upload-title">Drop signed PDF here</div>
+        <div class="upload-sub">Tap to select PDF from your device · Max 20MB</div>
+        <input type="file" id="ret-file-input" accept=".pdf" style="display:none">
+      </div>
+      <div class="ret-field" style="margin-top:12px;">
+        <label class="ret-label">Date Signed</label>
+        <input class="ret-input" type="text" id="ret-date-signed" placeholder="MM/DD/YYYY">
+      </div>
+      <div class="ret-btn-row">
+        <button class="btn-send">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload & Save
+        </button>
+      </div>
+    </div>
+
+    <!-- Send History -->
+    <div id="ret-history" style="display:none; margin-top:16px;">
+      <div style="font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">Sent History</div>
+      <div id="ret-history-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+    </div>
+  </div>
+
+
+  <!-- PAGE: Handoff -->
+  <div class="form-page" id="page-handoff">
+    <div class="checklist-card">
+      <div class="checklist-title">Pre-Handoff Checklist</div>
+      <div class="check-item"><div class="check-ok">✓</div> Intake form completed</div>
+      <div class="check-item"><div class="check-warn" style="background:#E05555; color:#fff; font-weight:700;">✕</div> Signed retainer attached</div>
+      <div class="check-item"><div class="check-ok">✓</div> Accident photos uploaded (4)</div>
+      <div class="check-item"><div class="check-ok">✓</div> Date of Loss confirmed</div>
+      <div class="check-item"><div class="check-warn">!</div> Treatment not yet received (Scheduled)</div>
+    </div>
+    <div class="info-box">
+      Clicking <strong>Hand Off to Claim</strong> sends this intake to the Claim queue. A CM will be assigned and the entry flips to <strong>Ready to Convert</strong> in the Pre-Intake list.
+    </div>
+  </div>
+
+  <div class="bottom-actions" id="bottom-actions"></div>
+
+  <!-- Call Picker Sheet -->
+  <div class="overlay" id="callPickerOverlay">
+    <div class="sheet">
+      <div class="sheet-header">
+        <span class="sheet-title">Select Call Record</span>
+        <button class="sheet-close" onclick="closeCallPicker()">✕</button>
+      </div>
+      <div class="sheet-body" id="call-picker-list"></div>
+    </div>
+  </div>
+
+  <!-- Recording Picker Sheet -->
+  <div class="overlay" id="recPickerOverlay">
+    <div class="sheet">
+      <div class="sheet-header">
+        <span class="sheet-title">Select Recording</span>
+        <button class="sheet-close" onclick="closeRecPicker()">✕</button>
+      </div>
+      <div class="sheet-body">
+        <div class="rec-upload-drop" onclick="alert('파일 선택창 열기')" ondragover="event.preventDefault(); this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="event.preventDefault(); this.classList.remove('drag-over')">
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4B6CB7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div style="text-align:center;">
+              <div style="font-size:13px; font-weight:600; color:#374151;">Upload Recording</div>
+              <div style="font-size:11px; color:#9CA3AF; margin-top:2px;">m4a, mp3, wav · drag or tap to select</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px; font-weight:700; color:#6B7280; margin:12px 0 8px;">Recent Recordings</div>
+        <div id="rec-picker-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Confirm Sheet -->
+  <div class="overlay" id="aiConfirmOverlay">
+    <div class="sheet confirm-sheet">
+      <div class="sheet-header">
+        <span class="sheet-title">Confirm AI-Extracted Fields</span>
+        <button class="sheet-close" onclick="closeAiConfirm()">✕</button>
+      </div>
+      <div class="sheet-body">
+        <div style="font-size:12px; color:#6B7280; margin-bottom:12px; line-height:1.5;">
+          These fields will be filled in. Uncheck any you want to skip.
+        </div>
+        <div class="ai-preview-title">Extracted Fields</div>
+        <div id="ai-fields-list"></div>
+        <div class="transcript-accordion" id="ai-transcript-accordion" style="display:none;"></div>
+      </div>
+      <div class="sheet-footer">
+        <button class="sheet-btn sheet-btn-cancel" onclick="closeAiConfirm()">Cancel</button>
+        <button class="sheet-btn sheet-btn-apply" onclick="applyAiFields()">Apply Selected</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Photo Classify Sheet -->
+  <div class="overlay" id="classifyOverlay">
+    <div class="sheet">
+      <div class="sheet-header">
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <span class="sheet-title" id="classify-sheet-title">사진 분류</span>
+          <span class="classify-progress" id="classify-progress"></span>
+        </div>
+        <button class="sheet-close" onclick="closeClassify()">✕</button>
+      </div>
+      <div class="sheet-body">
+        <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+          <img id="classify-preview" class="classify-sheet-thumb" src="" alt="" />
+          <div>
+            <div style="font-size:12px; font-weight:600; color:#374151;" id="classify-filename">photo.jpg</div>
+          </div>
+        </div>
+        <div class="classify-prompt" id="classify-prompt">이 사진의 종류를 선택해주세요</div>
+        <div id="classify-options-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Overlay -->
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-modal">
+      <div class="success-check"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#0D9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="success-title">CM Assignment Requested</div>
+      <div class="success-sub">A Case Manager assignment request has been sent to the director. You will be notified once a CM is assigned.</div>
+      <div class="success-id">
+        Pre-Intake ID: <strong>#PI-2026-0529-042</strong><br/>
+        Status: <strong>Pending CM Assignment</strong>
+      </div>
+      <button class="btn-done" onclick="window.location.href='index.html'">Back to Intakes</button>
+    </div>
+  </div>
+
+  <script>
+    /* ── Call Import ── */
+    const CALL_SAMPLES = [
+      {
+        id: 'call-2',
+        phone: '(310) 555-0847',
+        meta: 'Inbound · 2m 11s · Maria Gonzalez',
+        preview: 'Slip & Fall · DOL 05/20 · Supermarket, knee injury',
+        time: '9:15 AM',
+        ai: {
+          firstname: 'Maria', lastname: 'Gonzalez',
+          phone: '(310) 555-0847',
+          dol: '05/20/2026',
+          matter: 'Slip & Fall',
+          location: 'Ralphs, 3rd St, Santa Monica',
+          city: 'Santa Monica', state: 'CA',
+          injuries: 'Left knee, hip contusion',
+          description: 'Client slipped on wet floor near produce section. No wet floor sign present. Security camera footage may be available. Treated at urgent care.',
+          source: 'Referral',
+        },
+        transcript: [
+          ['FM', 'Hi, this is Alex from the law office. Can I get your name?'],
+          ['Client', 'Yeah, hi. My name is Maria Gonzalez.'],
+          ['FM', 'And what happened, Maria?'],
+          ['Client', 'I slipped at Ralphs on 3rd Street in Santa Monica. There was a wet floor but no sign. I fell on my left knee and hip.'],
+          ['FM', 'When did this happen?'],
+          ['Client', 'May 20th, around noon.'],
+          ['FM', 'Did you get any medical treatment?'],
+          ['Client', 'I went to urgent care the same day. My knee is still swollen.'],
+          ['FM', 'Okay, we can help with this. How did you hear about us?'],
+          ['Client', 'A friend referred me.'],
+        ],
+      },
+      {
+        id: 'call-3',
+        phone: '(818) 555-0273',
+        meta: 'Inbound · 6m 04s · Kevin Torres',
+        preview: 'Auto Accident · DOL 05/25 · Fault admitted, treatment scheduled',
+        time: 'Yesterday 3:58 PM',
+        ai: {
+          firstname: 'Kevin', lastname: 'Torres',
+          phone: '(818) 555-0273',
+          dol: '05/25/2026',
+          matter: 'Auto Accident',
+          location: 'I-405 N, Van Nuys',
+          city: 'Van Nuys', state: 'CA',
+          injuries: 'Shoulder, neck',
+          description: 'Sideswipe on I-405. Other driver changed lanes without signaling. Police report filed. Fault admitted at scene. Ortho appointment 5/30.',
+          source: 'Google Search',
+        },
+        transcript: [
+          ['FM', 'Thank you for calling. Can I get your name?'],
+          ['Client', 'Kevin Torres.'],
+          ['FM', 'What happened, Kevin?'],
+          ['Client', 'I was on the 405 northbound in Van Nuys and someone sideswiped me. They changed lanes without signaling. May 25th.'],
+          ['FM', 'Was there a police report?'],
+          ['Client', 'Yes, officer came and filed a report. The other driver admitted fault at the scene.'],
+          ['FM', 'Any injuries?'],
+          ['Client', 'My shoulder and neck are pretty bad. I have an ortho appointment on the 30th.'],
+          ['FM', 'How did you find us?'],
+          ['Client', 'Google search.'],
+        ],
+      },
+    ];
+
+    const REC_SAMPLES = [
+      {
+        id: 'rec-1',
+        name: 'Recording_0529_104512.m4a',
+        meta: '8m 14s · Today 10:45 AM',
+        ai: {
+          firstname: 'Sofia', lastname: 'Reyes',
+          phone: '(323) 555-0614',
+          dol: '05/28/2026',
+          matter: 'Auto Accident',
+          location: 'Sunset Blvd & Vermont Ave, Los Angeles',
+          city: 'Los Angeles', state: 'CA',
+          injuries: 'Lower back, whiplash',
+          description: 'Client was stopped at red light on Sunset Blvd. Rear-ended by pickup truck. Police called but left before report. Client went to urgent care same evening.',
+          source: 'Referral',
+        },
+        transcript: [
+          ['FM', 'This is Alex. Who am I speaking with?'],
+          ['Client', 'Sofia Reyes. I was in a car accident yesterday on Sunset.'],
+          ['FM', 'Are you okay? What exactly happened?'],
+          ['Client', 'I was stopped at a red light at Sunset and Vermont. A pickup truck rear-ended me. My lower back and neck hurt a lot.'],
+          ['FM', 'Did police come?'],
+          ['Client', 'They came but left before filing a report. I went to urgent care that evening.'],
+          ['FM', 'How did you hear about us?'],
+          ['Client', 'A friend referred me.'],
+        ],
+      },
+    ];
+
+    const AI_FIELD_MAP = [
+      { key: 'firstname',   label: 'First Name',   fieldId: 'f-firstname' },
+      { key: 'lastname',    label: 'Last Name',     fieldId: 'f-lastname' },
+      { key: 'phone',       label: 'Phone',         fieldId: 'f-phone' },
+      { key: 'dol',         label: 'Date of Loss',  fieldId: 'f-dol' },
+      { key: 'matter',      label: 'Matter Type',   fieldId: 'f-matter', isSelect: true },
+      { key: 'location',    label: 'Location',      fieldId: 'f-location' },
+      { key: 'city',        label: 'City',          fieldId: 'f-city' },
+      { key: 'state',       label: 'State',         fieldId: 'f-state' },
+      { key: 'injuries',    label: 'Injuries',      fieldId: 'f-injuries' },
+      { key: 'description', label: 'Description',   fieldId: 'f-desc' },
+      { key: 'source',      label: 'Source',        fieldId: 'f-source' },
+    ];
+
+    let selectedAi = null;
+    let checkedFields = {};
+    let importSource = null; // 'call' | 'recording'
+
+    /* ── Call picker ── */
+    function openCallPicker() {
+      const list = document.getElementById('call-picker-list');
+      list.innerHTML = CALL_SAMPLES.map(c => `
+        <div class="call-pick-card" onclick="selectCall('${c.id}')">
+          <div class="call-pick-dot"></div>
+          <div class="call-pick-body">
+            <div class="call-pick-num">${c.phone}</div>
+            <div class="call-pick-meta">${c.meta}</div>
+            <div class="call-pick-preview">${c.preview}</div>
+          </div>
+          <div class="call-pick-time">${c.time}</div>
+        </div>`).join('');
+      document.getElementById('callPickerOverlay').classList.add('show');
+    }
+    function closeCallPicker() {
+      document.getElementById('callPickerOverlay').classList.remove('show');
+    }
+    function selectCall(callId) {
+      const call = CALL_SAMPLES.find(c => c.id === callId);
+      if (!call) return;
+      importSource = 'call';
+      selectedAi = call.ai;
+      closeCallPicker();
+      openAiConfirm(call.ai, call.phone + ' · ' + call.meta, call.transcript || null, 'call');
+    }
+
+    /* ── Recording picker ── */
+    function openRecPicker() {
+      const list = document.getElementById('rec-picker-list');
+      list.innerHTML = REC_SAMPLES.map(r => `
+        <div class="rec-pick-card" onclick="selectRec('${r.id}')">
+          <div class="rec-pick-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="2" y2="12"/><line x1="5" y1="8" x2="5" y2="16"/><line x1="8" y1="5" x2="8" y2="19"/><line x1="11" y1="9" x2="11" y2="15"/><line x1="14" y1="6" x2="14" y2="18"/><line x1="17" y1="9" x2="17" y2="15"/><line x1="20" y1="8" x2="20" y2="16"/><line x1="23" y1="12" x2="23" y2="12"/></svg></div>
+          <div class="rec-pick-body">
+            <div class="rec-pick-name">${r.name}</div>
+            <div class="rec-pick-meta">${r.meta}</div>
+          </div>
+        </div>`).join('');
+      document.getElementById('recPickerOverlay').classList.add('show');
+    }
+    function closeRecPicker() {
+      document.getElementById('recPickerOverlay').classList.remove('show');
+    }
+    function selectRec(recId) {
+      const rec = REC_SAMPLES.find(r => r.id === recId);
+      if (!rec) return;
+      importSource = 'recording';
+      selectedAi = rec.ai;
+      closeRecPicker();
+      openAiConfirm(rec.ai, rec.name, rec.transcript || null, 'recording');
+    }
+
+    /* ── AI confirm ── */
+    function openAiConfirm(ai, label, transcript, srcType) {
+      checkedFields = {};
+      const container = document.getElementById('ai-fields-list');
+      const rows = AI_FIELD_MAP.filter(f => ai[f.key]);
+      rows.forEach(f => { checkedFields[f.key] = true; });
+      container.innerHTML = rows.map(f => `
+        <div class="ai-field-row">
+          <div class="ai-field-check" id="chk-${f.key}" onclick="toggleField('${f.key}')">✓</div>
+          <div class="ai-field-label">${f.label}</div>
+          <div class="ai-field-value">${ai[f.key]}</div>
+        </div>`).join('');
+
+      // Transcript accordion
+      const accordionEl = document.getElementById('ai-transcript-accordion');
+      if (transcript && transcript.length) {
+        const isCall = srcType === 'call';
+        const badgeText = isCall ? '📞 Call' : '🎙️ Recording';
+        const labelText = isCall ? 'Call Transcript' : 'Recording Transcript';
+        const bubbles = transcript.map(([speaker, text]) => {
+          const isFM = speaker.startsWith('FM');
+          return `<div class="t-bubble">
+            <div class="t-bubble-label" ${isFM ? '' : 'style="text-align:right"'}>${speaker}</div>
+            <div class="${isFM ? 't-bubble-fm' : 't-bubble-client'}">${text}</div>
+          </div>`;
+        }).join('');
+        accordionEl.style.display = 'block';
+        accordionEl.innerHTML = `
+          <div class="transcript-accordion-toggle" onclick="toggleAiTranscript()">
+            <span class="transcript-accordion-label">
+              <span class="src-badge">${badgeText}</span>${labelText}
+            </span>
+            <span class="transcript-accordion-icon" id="ai-transcript-icon">Show ▼</span>
+          </div>
+          <div class="transcript-accordion-body" id="ai-transcript-body">${bubbles}</div>`;
+      } else {
+        accordionEl.style.display = 'none';
+        accordionEl.innerHTML = '';
+      }
+
+      document.getElementById('aiConfirmOverlay').classList.add('show');
+    }
+
+    function toggleAiTranscript() {
+      const body = document.getElementById('ai-transcript-body');
+      const icon = document.getElementById('ai-transcript-icon');
+      if (!body) return;
+      body.classList.toggle('open');
+      icon.textContent = body.classList.contains('open') ? 'Hide ▲' : 'Show ▼';
+    }
+    function closeAiConfirm() {
+      document.getElementById('aiConfirmOverlay').classList.remove('show');
+      selectedAi = null;
+    }
+    function toggleField(key) {
+      checkedFields[key] = !checkedFields[key];
+      const el = document.getElementById('chk-' + key);
+      el.classList.toggle('unchecked', !checkedFields[key]);
+      el.textContent = checkedFields[key] ? '✓' : '';
+    }
+    function applyAiFields() {
+      if (!selectedAi) return;
+      AI_FIELD_MAP.forEach(f => {
+        if (!checkedFields[f.key] || !selectedAi[f.key]) return;
+        if (f.isSelect) {
+          setSelect(f.fieldId, selectedAi[f.key]);
+        } else {
+          const el = document.getElementById(f.fieldId);
+          if (el) { el.value = selectedAi[f.key]; el.classList.add('ai-filled'); }
+        }
+      });
+
+      const banner = document.getElementById('import-applied-banner');
+      const icon = importSource === 'recording' ? '🎙️' : '📞';
+      const label = importSource === 'recording' ? 'Recording data applied' : 'Call data applied';
+      banner.style.display = 'block';
+      banner.innerHTML = `<div class="import-applied">
+        <div class="import-applied-icon">${icon}</div>
+        <div>
+          <div class="import-applied-title">${label}</div>
+          <div class="import-applied-sub">AI-extracted fields filled in. You can edit any field directly.</div>
+        </div>
+      </div>`;
+
+      closeAiConfirm();
+    }
+
+    /* ── Page navigation ── */
+    const PAGES = ['client', 'case', 'retainer', 'handoff'];
+
+    function retSelectMethod(method) {
+      ['send', 'upload'].forEach(m => {
+        const card = document.getElementById('ret-card-' + m);
+        const panel = document.getElementById('ret-panel-' + m);
+        const active = m === method;
+        if (card) card.classList.toggle('selected', active);
+        if (panel) panel.classList.toggle('open', active);
+      });
+    }
+
+    function retSetDelivery(type) {
+      document.getElementById('ret-del-email').classList.toggle('active', type === 'email');
+      document.getElementById('ret-del-sms').classList.toggle('active', type === 'sms');
+      const label = document.getElementById('ret-contact-label');
+      const input = document.getElementById('ret-contact-input');
+      if (type === 'email') {
+        if (label) label.textContent = 'Email';
+        if (input) input.placeholder = 'client@email.com';
+      } else {
+        if (label) label.textContent = 'Phone';
+        if (input) input.placeholder = '+1 (555) 000-0000';
+      }
+    }
+
+    function goToPage(pageId) {
+      PAGES.forEach(p => {
+        document.getElementById('page-' + p).classList.toggle('active', p === pageId);
+        const tab = document.querySelector(`.sec-tab[data-page="${p}"]`);
+        if (tab) tab.classList.toggle('active', p === pageId);
+      });
+
+      if (pageId === 'handoff') renderReviewData();
+      renderBottom(pageId);
+      window.scrollTo(0, 0);
+
+      // scroll active tab into view
+      const activeTab = document.querySelector('.sec-tab.active');
+      if (activeTab) activeTab.scrollIntoView({ inline: 'nearest', behavior: 'smooth', block: 'nearest' });
+    }
+
+    function renderBottom(pageId) {
+      const el = document.getElementById('bottom-actions');
+      if (pageId === 'client') {
+        el.innerHTML = `
+          <a class="btn btn-cancel" href="index.html">Cancel</a>
+          <button class="btn btn-continue" onclick="goToPage('case')">Next</button>`;
+      } else if (pageId === 'case') {
+        el.innerHTML = `
+          <button class="btn btn-cancel" onclick="goToPage('client')">Back</button>
+          <button class="btn btn-continue" onclick="goToPage('retainer')">Next</button>`;
+      } else if (pageId === 'retainer') {
+        el.innerHTML = `
+          <button class="btn btn-cancel" onclick="goToPage('case')">Back</button>
+          <button class="btn btn-continue" onclick="goToPage('handoff')">Next</button>`;
+      } else if (pageId === 'handoff') {
+        el.innerHTML = `
+          <button class="btn btn-cancel" onclick="goToPage('retainer')">Back</button>
+          <button class="btn btn-handoff" onclick="doHandoff()">Request CM Assignment</button>`;
+      }
+    }
+
+    function renderReviewData() {}
+
+    /* ── Case Notes ── */
+    let caseNotes = [];
+    function addNote() {
+      const input = document.getElementById('f-note-input');
+      const text = input.value.trim();
+      if (!text) return;
+      const now = new Date();
+      const ts = now.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
+               + ' ' + now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+      const fm = document.getElementById('f-fm')?.value || 'FM';
+      caseNotes.unshift({ text, ts, fm });
+      input.value = '';
+      renderNotes();
+    }
+    function deleteNote(idx) {
+      caseNotes.splice(idx, 1);
+      renderNotes();
+    }
+    function renderNotes() {
+      const list = document.getElementById('notes-list');
+      if (!list) return;
+      list.innerHTML = caseNotes.map((n, i) => `
+        <div class="note-item">
+          <div class="note-meta">
+            <span>${n.ts} · ${n.fm}</span>
+            <button class="note-delete" onclick="deleteNote(${i})">✕</button>
+          </div>
+          <div class="note-body">${n.text.replace(/</g,'&lt;')}</div>
+        </div>`).join('');
+    }
+
+    function doHandoff() {
+      document.getElementById('successOverlay').classList.add('show');
+    }
+
+    function setRadio(name, value) {
+      document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+        const label = r.closest('.radio-opt');
+        const matches = r.parentElement.textContent.trim() === value;
+        r.checked = matches;
+        label.classList.toggle('checked', matches);
+      });
+    }
+    function setSelect(id, value) {
+      const el = document.getElementById(id);
+      if (!el || !value) return;
+      Array.from(el.options).forEach(o => {
+        if (o.text === value || o.value === value) el.value = o.value;
+      });
+    }
+
+    /* ── SAMPLE DATA (legacy compat) ── */
+    const SAMPLE_DATA = {
+      'sample-1': {
+        name: 'James Okafor', phone: '(818) 555-0273',
+        language: 'English', dol: '2026-05-25', matter: 'Auto Accident',
+        location: 'I-405 N, Van Nuys', police: 'Filed', treatment: 'Scheduled',
+        description: 'Sideswipe on I-405. Other driver changed lanes without signaling. Police report filed. Shoulder pain; ortho appointment 5/30.',
+        source: 'Google Search', fm: 'David Park',
+      },
+    };
+    function getIntakeData(id) {
+      if (SAMPLE_DATA[id]) return SAMPLE_DATA[id];
+      const stored = JSON.parse(localStorage.getItem('fm_intakes') || '[]');
+      return stored.find(i => i.id === id) || null;
+    }
+
+    /* ── INIT ── */
+    (function init() {
+      const params = new URLSearchParams(window.location.search);
+      const id   = params.get('id');
+      const step = params.get('step');
+
+      const pageMap = { '1': 'client', '2': 'case', '3': 'retainer', '4': 'handoff' };
+      const startPage = pageMap[step] || 'client';
+
+      if (id) {
+        const d = getIntakeData(id);
+        if (d) {
+          if (d.name) {
+            const parts = d.name.trim().split(' ');
+            const last  = parts.length > 1 ? parts.pop() : '';
+            const first = parts.join(' ');
+            const el1 = document.getElementById('f-firstname');
+            const el2 = document.getElementById('f-lastname');
+            if (el1) el1.value = first;
+            if (el2) el2.value = last;
+            document.getElementById('nav-title').textContent = d.name;
+          }
+          if (d.phone)    document.getElementById('f-phone').value    = d.phone;
+          if (d.language) setSelect('f-language', d.language);
+          if (d.dol)      document.getElementById('f-dol').value      = d.dol;
+          if (d.location) document.getElementById('f-location').value = d.location;
+          if (d.source)   document.getElementById('f-source').value   = d.source;
+          if (d.fm)       document.getElementById('f-fm').value       = d.fm;
+          if (d.description) document.getElementById('f-desc').value  = d.description;
+          if (d.matter)   setSelect('f-matter', d.matter);
+          if (d.phone)    document.getElementById('retainer-sms-sub').textContent = `Email or SMS via DocuSeal`;
+          if (d.phone) {
+            const ci = document.getElementById('ret-contact-input');
+            if (ci && ci.placeholder === '+1 (555) 000-0000') ci.placeholder = d.phone;
+          }
+          if (d.email) {
+            const ci = document.getElementById('ret-contact-input');
+            if (ci) ci.value = d.email;
+          }
+        }
+      }
+
+      goToPage(startPage);
+    })();
+
+    /* ── Autosave indicator ── */
+    (function autosaveLoop() {
+      const spinner = document.getElementById('autosave-spinner');
+      const text    = document.getElementById('autosave-text');
+      const ind     = document.getElementById('autosave-indicator');
+      function cycle() {
+        // Saving 상태
+        ind.style.color = '#9CA3AF';
+        spinner.setAttribute('stroke', '#9CA3AF');
+        spinner.style.animation = 'spin 1s linear infinite';
+        spinner.innerHTML = '<path d="M21 12a9 9 0 1 1-6.219-8.56"/>';
+        text.textContent = 'Saving...';
+        // 2초 후 Saved
+        setTimeout(() => {
+          spinner.style.animation = 'none';
+          spinner.setAttribute('stroke', '#9CA3AF');
+          spinner.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+          text.textContent = 'Saved';
+          ind.style.color = '#9CA3AF';
+          // 10초 후 다시
+          setTimeout(cycle, 10000);
+        }, 2000);
+      }
+      cycle();
+    })();
+
+
+    /* ── Photo Attachments ── */
+    const PHOTO_CATEGORIES = [
+      { id: 'dl',     label: 'Driver License',        short: 'DL',   sub: 'ID of client or other party',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2.5"/><path d="M14 10h4M14 14h3"/></svg>` },
+      { id: 'client', label: 'CPD', short: 'CPD', sub: 'Client vehicle damage photos',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H3v-5l2.5-5h11L19 12v5h-2"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/><path d="M5 12h14"/></svg>` },
+      { id: 'other',  label: 'PD',    short: 'PD',  sub: 'Other vehicle damage photos',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H3v-5l2.5-5h11L19 12v5h-2"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/><path d="M5 12h14"/><line x1="19" y1="5" x2="22" y2="8"/><line x1="22" y1="5" x2="19" y2="8"/></svg>` },
+      { id: 'police', label: 'Police Report',         short: 'PR',  sub: 'Photo of police report',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>` },
+      { id: 'scene',  label: 'Scene / Road',          short: 'PD',  sub: 'Location, skid marks, signage',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5-8 13-8 13S4 15 4 10a8 8 0 0 1 8-8z"/></svg>` },
+      { id: 'injury', label: 'Injury',                short: 'INJ', sub: 'Visible injury photos',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="2" rx="1"/><rect x="11" y="3" width="2" height="18" rx="1"/></svg>` },
+      { id: 'other2', label: 'Other',                 short: 'OTH', sub: 'Miscellaneous documents',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>` },
+    ];
+
+    // Sample photos — SVG data URIs per category
+    function makeSvg(emoji, bg, label) {
+      const enc = encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160">
+          <rect width="160" height="160" fill="${bg}"/>
+          <text x="80" y="72" font-size="48" text-anchor="middle" dominant-baseline="middle">${emoji}</text>
+          <text x="80" y="118" font-size="13" font-family="sans-serif" font-weight="600" fill="#374151" text-anchor="middle">${label}</text>
+        </svg>`
+      );
+      return 'data:image/svg+xml,' + enc;
+    }
+
+    const SAMPLE_PHOTOS = [
+      { id: 'p1',  src: 'photos/dl_front.png',     cat: 'dl',     name: 'DL_front.png' },
+      { id: 'p2',  src: 'photos/dl_back.png',      cat: 'dl',     name: 'DL_back.png' },
+      { id: 'p3',  src: 'photos/client_front.jpg', cat: 'client', name: 'client_front.jpg' },
+      { id: 'p4',  src: 'photos/client_rear.jpg',  cat: 'client', name: 'client_rear.jpg' },
+      { id: 'p5',  src: 'photos/client_side.jpg',  cat: 'client', name: 'client_side.jpg' },
+      { id: 'p6',  src: 'photos/other_front.jpg',  cat: 'other',  name: 'other_front.jpg' },
+      { id: 'p7',  src: 'photos/other_rear.jpg',   cat: 'other',  name: 'other_rear.jpg' },
+      { id: 'p8',  src: makeSvg('📋','#F3F4F6','Police Report'), cat: 'police', name: 'police_report.jpg' },
+      { id: 'p9',  src: 'photos/scene_01.jpg',     cat: 'scene',  name: 'scene_01.jpg' },
+      { id: 'p10', src: 'photos/scene_02.jpg',     cat: 'scene',  name: 'scene_02.jpg' },
+      { id: 'p11', src: 'photos/injury_neck.jpg',  cat: 'injury', name: 'injury_neck.jpg' },
+      { id: 'p12', src: makeSvg('🩹','#FFE4E6','Knee'),          cat: null, name: 'IMG_0382.jpg' },
+      { id: 'p13', src: makeSvg('📎','#F3F4F6','Document'),      cat: null, name: 'doc_scan.jpg' },
+    ];
+
+    let classifyTarget = null;
+    let classifySelected = null;
+    let guidedMode = false;       // true = auto-advance through unclassified
+    let guidedQueue = [];         // ordered list of photoIds to classify in guided flow
+
+    function getCatInfo(catId) {
+      return PHOTO_CATEGORIES.find(c => c.id === catId) || null;
+    }
+
+    function getUnclassified() {
+      return SAMPLE_PHOTOS.filter(p => !p.cat);
+    }
+
+    function renderPhotos() {
+      const container = document.getElementById('photo-attach-section');
+      if (!container) return;
+
+      const uncat = getUnclassified();
+      let banner = '';
+      if (uncat.length > 0) {
+        banner = `
+          <div class="photo-uncat-banner">
+            <div class="photo-uncat-banner-icon">⚠️</div>
+            <div class="photo-uncat-banner-text">
+              <div class="photo-uncat-banner-title">${uncat.length} Unclassified Photo${uncat.length > 1 ? 's' : ''}</div>
+              <div class="photo-uncat-banner-sub">Tap a photo to classify it</div>
+            </div>
+          </div>`;
+      } else {
+        banner = `
+          <div class="photo-done-banner">
+            ✅ 모든 사진이 분류되었습니다
+          </div>`;
+      }
+
+      const thumbs = SAMPLE_PHOTOS.map(p => {
+        const cat = getCatInfo(p.cat);
+        const badge = cat
+          ? `<div class="photo-thumb-badge">${cat.short}</div>`
+          : `<div class="photo-thumb-badge photo-thumb-badge-uncat">?</div>`;
+        const check = cat ? `<div class="photo-thumb-check">✓</div>` : '';
+        return `
+          <div class="photo-thumb${!p.cat ? ' photo-thumb-uncat' : ''}" onclick="openClassify('${p.id}', false)">
+            <img src="${p.src}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover;" />
+            ${badge}${check}
+          </div>`;
+      }).join('');
+
+      container.innerHTML = `
+        ${banner}
+        <div class="photo-grid">
+          ${thumbs}
+          <div class="photo-add-tile" onclick="alert('File picker')">+</div>
+        </div>`;
+    }
+
+    function startGuidedClassify() {
+      const uncat = getUnclassified();
+      if (!uncat.length) return;
+      guidedQueue = uncat.map(p => p.id);
+      guidedMode = true;
+      openClassify(guidedQueue[0], true);
+    }
+
+    function openClassify(photoId, guided) {
+      const photo = SAMPLE_PHOTOS.find(p => p.id === photoId);
+      if (!photo) return;
+      classifyTarget = photo;
+      classifySelected = photo.cat || null;
+      if (guided !== undefined) guidedMode = !!guided;
+
+      const progressEl = document.getElementById('classify-progress');
+      const titleEl    = document.getElementById('classify-sheet-title');
+      const promptEl   = document.getElementById('classify-prompt');
+
+      titleEl.textContent  = 'Classify Photo';
+      promptEl.textContent = 'Select a category for this photo';
+
+      if (guidedMode) {
+        const remaining = guidedQueue.filter(id => !SAMPLE_PHOTOS.find(p => p.id === id)?.cat);
+        const pos = remaining.indexOf(photoId);
+        progressEl.textContent = `${pos + 1} / ${remaining.length}`;
+      } else {
+        progressEl.textContent = '';
+      }
+
+      document.getElementById('classify-preview').src = photo.src;
+      document.getElementById('classify-filename').textContent = photo.name;
+
+      document.getElementById('classify-options-list').innerHTML = PHOTO_CATEGORIES.map(c => `
+        <div class="classify-option ${classifySelected === c.id ? 'selected' : ''}" id="copt-${c.id}" onclick="selectCat('${c.id}')">
+          <div class="classify-option-icon">${c.icon}</div>
+          <div style="flex:1; min-width:0;">
+            <div class="classify-option-label">${c.label}</div>
+            <div class="classify-option-sub">${c.sub}</div>
+          </div>
+          <div class="classify-check" id="ccheck-${c.id}">${classifySelected === c.id ? '✓' : ''}</div>
+        </div>`).join('');
+
+      document.getElementById('classifyOverlay').classList.add('show');
+    }
+
+    function selectCat(catId) {
+      classifySelected = catId;
+      PHOTO_CATEGORIES.forEach(c => {
+        const opt   = document.getElementById('copt-'   + c.id);
+        const check = document.getElementById('ccheck-' + c.id);
+        if (!opt) return;
+        const active = c.id === catId;
+        opt.classList.toggle('selected', active);
+        check.textContent = active ? '✓' : '';
+      });
+      setTimeout(() => confirmClassify(), 150);
+    }
+
+    function closeClassify() {
+      document.getElementById('classifyOverlay').classList.remove('show');
+      classifyTarget = null;
+      classifySelected = null;
+      guidedMode = false;
+    }
+
+    function confirmClassify() {
+      if (!classifyTarget || !classifySelected) { closeClassify(); return; }
+      classifyTarget.cat = classifySelected;
+
+      if (guidedMode) {
+        // find next unclassified in queue
+        const nextId = guidedQueue.find(id => {
+          const p = SAMPLE_PHOTOS.find(p => p.id === id);
+          return p && !p.cat;
+        });
+        if (nextId) {
+          // stay in guided mode, advance to next
+          openClassify(nextId, true);
+          renderPhotos(); // update grid in background
+          return;
+        } else {
+          // all done
+          document.getElementById('classifyOverlay').classList.remove('show');
+          classifyTarget = null;
+          classifySelected = null;
+          guidedMode = false;
+          renderPhotos();
+          return;
+        }
+      }
+
+      closeClassify();
+      renderPhotos();
+    }
+
+    renderPhotos();
+
+    /* ── Address Autocomplete — OpenStreetMap Nominatim (no API key) ── */
+    const PIN_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5-8 13-8 13S4 15 4 10a8 8 0 0 1 8-8z"/></svg>`;
+    let addrTimers = {};
+
+    function addrInput(input, dropId) {
+      const q = input.value.trim();
+      const drop = document.getElementById(dropId);
+      if (q.length < 3) { drop.classList.remove('open'); return; }
+      clearTimeout(addrTimers[dropId]);
+      drop.innerHTML = `<div class="addr-item" style="color:#9CA3AF; font-size:12px;">Searching...</div>`;
+      drop.classList.add('open');
+      addrTimers[dropId] = setTimeout(() => {
+        fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=us&format=json&addressdetails=1&limit=5`,
+          { headers: { 'Accept-Language': 'en-US' } })
+          .then(r => r.json())
+          .then(results => {
+            if (!results.length) {
+              drop.innerHTML = `<div class="addr-item" style="color:#9CA3AF; font-size:12px;">No results found</div>`;
+              return;
+            }
+            drop._matches = results.map(r => {
+              const a = r.address || {};
+              const street = [a.house_number, a.road].filter(Boolean).join(' ') || r.display_name.split(',')[0];
+              const city   = a.city || a.town || a.village || a.county || '';
+              const state  = a.state || '';
+              const zip    = a.postcode || '';
+              const stateCode = STATE_ABBR[state] || state;
+              return { main: street, sub: [city, stateCode, zip].filter(Boolean).join(', '), city, state: stateCode, zip };
+            });
+            drop.innerHTML = drop._matches.map((a, i) => `
+              <div class="addr-item" onmousedown="pickAddr(event,'${dropId}',${i})">
+                <div class="addr-item-icon">${PIN_SVG}</div>
+                <div>
+                  <div class="addr-item-main">${a.main}</div>
+                  <div class="addr-item-sub">${a.sub}</div>
+                </div>
+              </div>`).join('');
+          })
+          .catch(() => { drop.classList.remove('open'); });
+      }, 350);
+    }
+
+    const STATE_ABBR = {
+      'Alabama':'AL','Alaska':'AK','Arizona':'AZ','Arkansas':'AR','California':'CA',
+      'Colorado':'CO','Connecticut':'CT','Delaware':'DE','Florida':'FL','Georgia':'GA',
+      'Hawaii':'HI','Idaho':'ID','Illinois':'IL','Indiana':'IN','Iowa':'IA',
+      'Kansas':'KS','Kentucky':'KY','Louisiana':'LA','Maine':'ME','Maryland':'MD',
+      'Massachusetts':'MA','Michigan':'MI','Minnesota':'MN','Mississippi':'MS','Missouri':'MO',
+      'Montana':'MT','Nebraska':'NE','Nevada':'NV','New Hampshire':'NH','New Jersey':'NJ',
+      'New Mexico':'NM','New York':'NY','North Carolina':'NC','North Dakota':'ND','Ohio':'OH',
+      'Oklahoma':'OK','Oregon':'OR','Pennsylvania':'PA','Rhode Island':'RI','South Carolina':'SC',
+      'South Dakota':'SD','Tennessee':'TN','Texas':'TX','Utah':'UT','Vermont':'VT',
+      'Virginia':'VA','Washington':'WA','West Virginia':'WV','Wisconsin':'WI','Wyoming':'WY',
+      'District of Columbia':'DC'
+    };
+
+    const ADDR_SUB_MAP = {
+      'addr-drop-client': 'addr-sub-client',
+      'addr-drop-loss':   'addr-sub-loss',
+    };
+
+    function pickAddr(e, dropId, idx) {
+      e.preventDefault();
+      const drop = document.getElementById(dropId);
+      const a = drop._matches[idx];
+      const input = drop.previousElementSibling;
+      input.value = a.main;
+
+      const subRowId = ADDR_SUB_MAP[dropId];
+      const subRow = subRowId && document.getElementById(subRowId);
+      if (subRow) {
+        subRow.style.display = 'flex';
+        const inputs = subRow.querySelectorAll('input');
+        if (inputs[0]) inputs[0].value = a.city;
+        if (inputs[1]) inputs[1].value = a.state;
+        if (inputs[2]) inputs[2].value = a.zip;
+      }
+      drop.classList.remove('open');
+    }
+
+    function addrBlur(dropId) {
+      setTimeout(() => document.getElementById(dropId).classList.remove('open'), 200);
+    }
+
+    function openCanopy() {
+      document.getElementById('canopyOverlay').classList.add('show');
+    }
+    function openRetainerPreviewAndMark() {
+      openRetainerPreview(false);
+    }
+    function sendRetainerGuard() {
+      const overlay = document.getElementById('retainerPreviewOverlay');
+      if (overlay.dataset.reviewed !== '1') {
+        openRetainerPreview(true);
+        return;
+      }
+      doSendRetainer();
+    }
+    function doSendRetainer() {
+      const method  = document.getElementById('ret-del-sms').classList.contains('active') ? 'SMS' : 'Email';
+      const contact = document.getElementById('ret-contact-input').value || '—';
+      const now = new Date().toLocaleString('en-US', {month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'});
+
+      const btn = document.getElementById('btn-send-docuseal');
+      btn.disabled = true;
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Sent';
+      btn.style.background = '#16A34A';
+
+      const history = document.getElementById('ret-history');
+      const list    = document.getElementById('ret-history-list');
+      const item = document.createElement('div');
+      item.style.cssText = 'display:flex; align-items:center; gap:10px; background:#F0FDF4; border:1px solid #BBF7D0; border-radius:8px; padding:10px 12px;';
+      item.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:12px; font-weight:600; color:#111827;">Standard PI Retainer Agreement</div>
+          <div style="font-size:11px; color:#6B7280; margin-top:1px;">Sent via ${method} to ${contact} · ${now}</div>
+        </div>
+        <span style="font-size:10px; font-weight:600; background:#FEF9C3; color:#854D0E; border-radius:4px; padding:2px 7px;">Pending</span>
+      `;
+      list.appendChild(item);
+      history.style.display = 'block';
+      document.getElementById('retainerPreviewOverlay').dataset.reviewed = '';
+      setTimeout(() => history.scrollIntoView({behavior:'smooth', block:'start'}), 100);
+    }
+    function openRetainerPreview(sendOnConfirm) {
+      const clientName = [document.getElementById('f-firstname')?.value, document.getElementById('f-lastname')?.value].filter(Boolean).join(' ') || '[Client Name]';
+      const dol  = document.getElementById('f-dol')?.value  || '[Date of Loss]';
+      const loc  = document.getElementById('f-location')?.value || '[Location]';
+      const today = new Date().toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
+      document.getElementById('prev-client').textContent       = clientName;
+      document.getElementById('prev-client2').textContent      = clientName;
+      document.getElementById('prev-hipaa-client').textContent = clientName;
+      document.getElementById('prev-dol').textContent          = dol;
+      document.getElementById('prev-hipaa-dol').textContent    = dol;
+      document.getElementById('prev-loc').textContent          = loc;
+      document.getElementById('prev-date').textContent         = today;
+      document.getElementById('prev-date2').textContent        = today;
+      const overlay = document.getElementById('retainerPreviewOverlay');
+      overlay.dataset.sendOnConfirm = sendOnConfirm ? '1' : '';
+      document.getElementById('ret-preview-action-label').textContent = sendOnConfirm ? 'Send' : 'Confirm';
+      overlay.classList.add('show');
+    }
+    function retainerPreviewAction() {
+      const overlay = document.getElementById('retainerPreviewOverlay');
+      overlay.classList.remove('show');
+      if (overlay.dataset.sendOnConfirm === '1') {
+        doSendRetainer();
+      } else {
+        overlay.dataset.reviewed = '1';
+      }
+    }
+    function closeRetainerPreview() {
+      const overlay = document.getElementById('retainerPreviewOverlay');
+      overlay.dataset.reviewed = '1';
+      overlay.classList.remove('show');
+    }
+
+    function closeCanopy() {
+      document.getElementById('canopyOverlay').classList.remove('show');
+      const v = document.getElementById('canopy-video');
+      v.pause();
+      v.currentTime = 0;
+    }
+
+    /* ── DOB → Age ── */
+    function fmtPhone(el) {
+      let v = el.value.replace(/\D/g, '').slice(0, 10);
+      if (v.length <= 3)       el.value = v.length ? '(' + v : '';
+      else if (v.length <= 6)  el.value = '(' + v.slice(0,3) + ') ' + v.slice(3);
+      else                     el.value = '(' + v.slice(0,3) + ') ' + v.slice(3,6) + '-' + v.slice(6);
+    }
+    function calcAge(val) {
+      const parts = val.split('/');
+      if (parts.length !== 3) { document.getElementById('f-age').value = ''; return; }
+      const d = new Date(parts[2], parts[0] - 1, parts[1]);
+      if (isNaN(d)) { document.getElementById('f-age').value = ''; return; }
+      const today = new Date();
+      let age = today.getFullYear() - d.getFullYear();
+      if (today.getMonth() < d.getMonth() || (today.getMonth() === d.getMonth() && today.getDate() < d.getDate())) age--;
+      document.getElementById('f-age').value = age >= 0 && age < 130 ? age : '';
+    }
+
+    /* ── Clinic / Doctor Autocomplete (LA mock data) ── */
+    const LA_CLINICS = [
+      { name: 'Cedars-Sinai Medical Center',         street: '8700 Beverly Blvd',         city: 'Los Angeles',  state: 'CA', zip: '90048', phone: '(310) 423-3277' },
+      { name: 'UCLA Medical Center',                 street: '757 Westwood Plaza',         city: 'Los Angeles',  state: 'CA', zip: '90095', phone: '(310) 825-9111' },
+      { name: 'USC Keck Hospital',                   street: '1500 San Pablo St',          city: 'Los Angeles',  state: 'CA', zip: '90033', phone: '(323) 442-8500' },
+      { name: 'Kaiser Permanente Los Angeles',       street: '4867 Sunset Blvd',          city: 'Los Angeles',  state: 'CA', zip: '90027', phone: '(323) 783-4011' },
+      { name: 'Kaiser Permanente West LA',           street: '6041 Cadillac Ave',         city: 'Los Angeles',  state: 'CA', zip: '90034', phone: '(323) 857-2000' },
+      { name: 'Providence Saint John\'s Health Center', street: '2121 Santa Monica Blvd', city: 'Santa Monica', state: 'CA', zip: '90404', phone: '(310) 829-5511' },
+      { name: 'Ronald Reagan UCLA Medical Center',   street: '757 Westwood Plaza',         city: 'Los Angeles',  state: 'CA', zip: '90095', phone: '(310) 825-6301' },
+      { name: 'Huntington Hospital',                 street: '100 W California Blvd',     city: 'Pasadena',     state: 'CA', zip: '91105', phone: '(626) 397-5000' },
+      { name: 'LAC+USC Medical Center',              street: '2051 Marengo St',            city: 'Los Angeles',  state: 'CA', zip: '90033', phone: '(323) 409-1000' },
+      { name: 'Dignity Health — California Hospital',street: '1401 S Grand Ave',           city: 'Los Angeles',  state: 'CA', zip: '90015', phone: '(213) 748-2411' },
+      { name: 'Torrance Memorial Medical Center',    street: '3330 Lomita Blvd',          city: 'Torrance',     state: 'CA', zip: '90505', phone: '(310) 325-9110' },
+      { name: 'Long Beach Memorial Medical Center',  street: '2801 Atlantic Ave',         city: 'Long Beach',   state: 'CA', zip: '90806', phone: '(562) 933-2000' },
+      { name: 'Glendale Adventist Medical Center',   street: '1509 Wilson Terrace',       city: 'Glendale',     state: 'CA', zip: '91206', phone: '(818) 409-8000' },
+      { name: 'Northridge Hospital Medical Center',  street: '18300 Roscoe Blvd',         city: 'Northridge',   state: 'CA', zip: '91328', phone: '(818) 885-8500' },
+      { name: 'Sherman Oaks Hospital',               street: '4929 Van Nuys Blvd',        city: 'Sherman Oaks', state: 'CA', zip: '91403', phone: '(818) 981-7111' },
+      { name: 'Beverly Hills Orthopedic Institute',  street: '8670 Wilshire Blvd',        city: 'Beverly Hills',state: 'CA', zip: '90211', phone: '(310) 860-3048' },
+      { name: 'Pacific Spine & Pain Center',         street: '3400 W 8th St',             city: 'Los Angeles',  state: 'CA', zip: '90005', phone: '(213) 480-0000' },
+      { name: 'Advanced Chiropractic & Rehab',       street: '6200 Wilshire Blvd #710',   city: 'Los Angeles',  state: 'CA', zip: '90048', phone: '(323) 933-1000' },
+      { name: 'LA Pain Clinic',                      street: '3530 Wilshire Blvd #1000',  city: 'Los Angeles',  state: 'CA', zip: '90010', phone: '(213) 365-0530' },
+      { name: 'Centinela Hospital Medical Center',   street: '555 E Hardy St',            city: 'Inglewood',    state: 'CA', zip: '90301', phone: '(310) 673-4660' },
+    ];
+
+    let clinicTimer = null;
+    function clinicInput(q) {
+      const drop = document.getElementById('clinic-drop');
+      if (q.length < 2) { drop.classList.remove('open'); return; }
+      const lower = q.toLowerCase();
+      const matches = LA_CLINICS.filter(c =>
+        c.name.toLowerCase().includes(lower) ||
+        c.city.toLowerCase().includes(lower)
+      ).slice(0, 6);
+      if (!matches.length) { drop.classList.remove('open'); return; }
+      drop._clinicMatches = matches;
+      drop.innerHTML = matches.map((c, i) => `
+        <div class="addr-item" onmousedown="pickClinic(event,${i})">
+          <div class="addr-item-icon">${PIN_SVG}</div>
+          <div>
+            <div class="addr-item-main">${c.name}</div>
+            <div class="addr-item-sub">${c.street}, ${c.city}, ${c.state} ${c.zip}</div>
+          </div>
+        </div>`).join('');
+      drop.classList.add('open');
+    }
+
+    function pickClinic(e, i) {
+      e.preventDefault();
+      const drop = document.getElementById('clinic-drop');
+      const c = drop._clinicMatches?.[i];
+      if (!c) return;
+      document.getElementById('f-doctor').value    = c.name;
+      document.getElementById('f-doc-phone').value = c.phone;
+      document.getElementById('f-doc-addr').value  = c.street;
+      document.getElementById('f-doc-city').value  = c.city;
+      document.getElementById('f-doc-state').value = c.state;
+      document.getElementById('f-doc-zip').value   = c.zip;
+      drop.classList.remove('open');
+    }
+
+    /* ── Vehicle Plate Lookup (mock Zyla → real NHTSA) ── */
+    const PLATE_VIN_MAP = {
+      '8ABC123': '1HGCM82633A004352',
+      '7XYZ456': '2T1BURHE0JC034274',
+      '6JKL789': '3VWFE21C04M000001',
+      'ABC1234': '1G1ZT51806F132965',
+      'KDF5589': 'JN1AZ4EH2FM730608',
+    };
+
+    async function lookupPlate() {
+      const plate = document.getElementById('f-plate').value.trim().toUpperCase();
+      const btn   = document.getElementById('btn-plate-lookup');
+
+      if (!plate) return;
+
+      // Step 1: mock Zyla API — plate → VIN
+      btn.disabled = true;
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 0.8s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Looking up...';
+
+      await new Promise(r => setTimeout(r, 900));
+
+      const vin = PLATE_VIN_MAP[plate];
+
+      if (!vin) {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Lookup';
+        return;
+      }
+
+      document.getElementById('f-vin').value = vin;
+
+      // Step 2: real NHTSA VIN decode
+      try {
+        const res  = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/${vin}?format=json`);
+        const data = await res.json();
+        const get  = (var_) => (data.Results || []).find(r => r.Variable === var_)?.Value || '';
+
+        const year  = get('Model Year');
+        const make  = get('Make');
+        const model = get('Model');
+        const trim  = get('Trim');
+
+        document.getElementById('f-year').value  = year;
+        document.getElementById('f-make').value  = make;
+        document.getElementById('f-model').value = trim ? `${model} ${trim}` : model;
+      } catch {}
+
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Lookup';
+    }
+
+    // ── Photo Portal Modal ──────────────────────────────────────────────────
+
+    function openPhotoPortalModal() {
+      const token = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 6);
+      const portalUrl = 'https://portal.pllawfirm.com/upload/' + token;
+      const firstName = (document.getElementById('f-firstname').value || 'there').split(' ')[0];
+
+      document.getElementById('portal-link-text').textContent = portalUrl;
+      document.getElementById('portal-sms-preview').textContent =
+        'Hi ' + firstName + ', please upload photos for your case here: ' + portalUrl;
+
+      const ol = document.getElementById('photoPortalOverlay');
+      ol.classList.add('show');
+    }
+
+    function closePhotoPortalModal() {
+      document.getElementById('photoPortalOverlay').classList.remove('show');
+    }
+
+    function copyPortalLink() {
+      const text = document.getElementById('portal-link-text').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('portal-copy-btn');
+        btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+        btn.style.color = '#059669';
+        setTimeout(() => {
+          btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
+          btn.style.color = '#4B6CB7';
+        }, 2000);
+      });
+    }
+
+    function sendPortalSMS() {
+      const btn = event.currentTarget;
+      btn.textContent = 'Sent ✓';
+      btn.style.background = '#059669';
+      setTimeout(() => {
+        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Send SMS';
+        btn.style.background = '#4B6CB7';
+      }, 2500);
+    }
+
+    function openPortalPreview() {
+      const url = document.getElementById('portal-link-text').textContent;
+      window.open('photo-portal.html', '_blank', 'width=430,height=850,resizable=yes');
+    }
+  </script>
+  <style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+
+  <!-- Retainer Preview Modal -->
+  <div class="overlay" id="retainerPreviewOverlay" onclick="closeRetainerPreview()" style="align-items:center; justify-content:center; padding:20px;">
+    <div onclick="event.stopPropagation()" style="background:#fff; border-radius:12px; width:100%; max-width:600px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+      <!-- Header -->
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #F3F4F6;">
+        <div>
+          <div style="font-size:14px; font-weight:600; color:#111827;">Standard PI Retainer Agreement</div>
+          <div style="font-size:11px; color:#9CA3AF; margin-top:2px;">AI-generated · 2 pages · PDF</div>
+        </div>
+        <button onclick="closeRetainerPreview()" style="background:#F3F4F6; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#6B7280; font-size:16px;">✕</button>
+      </div>
+      <!-- Document body -->
+      <div style="overflow-y:auto; padding:24px 28px; font-size:12px; color:#374151; line-height:1.8;">
+        <div style="text-align:center; margin-bottom:20px;">
+          <div style="font-size:15px; font-weight:700; color:#111827; margin-bottom:4px;">PERSONAL INJURY RETAINER AGREEMENT</div>
+          <div style="font-size:11px; color:#6B7280;">Contingency Fee Agreement &amp; Power of Attorney</div>
+        </div>
+
+        <p>This Retainer Agreement ("Agreement") is entered into between <strong id="prev-client">[Client Name]</strong> ("Client") and <strong>PLL Law Group</strong> ("Firm"), in connection with a personal injury claim arising from an accident occurring on <strong id="prev-dol">[Date of Loss]</strong> at or near <strong id="prev-loc">[Location]</strong>.</p>
+
+        <div style="font-size:11px; font-weight:700; color:#111827; margin:16px 0 6px; text-transform:uppercase; letter-spacing:0.05em;">1. Scope of Representation</div>
+        <p>The Firm agrees to represent the Client in pursuing all claims for personal injury, property damage, and related damages arising from the above-referenced incident. Representation includes negotiation with insurance carriers, filing of claims, and, if necessary, litigation.</p>
+
+        <div style="font-size:11px; font-weight:700; color:#111827; margin:16px 0 6px; text-transform:uppercase; letter-spacing:0.05em;">2. Contingency Fee</div>
+        <p>Client agrees to pay the Firm a contingency fee of <strong>33⅓%</strong> of any gross recovery if the matter is resolved prior to the filing of a lawsuit, and <strong>40%</strong> of any gross recovery if a lawsuit is filed. No attorney's fee is owed if there is no recovery.</p>
+
+        <div style="font-size:11px; font-weight:700; color:#111827; margin:16px 0 6px; text-transform:uppercase; letter-spacing:0.05em;">3. Costs &amp; Expenses</div>
+        <p>Client authorizes the Firm to advance costs on Client's behalf (e.g., medical records, filing fees, expert witnesses). All advanced costs shall be reimbursed to the Firm from any recovery, prior to distribution of net proceeds to Client.</p>
+
+        <div style="font-size:11px; font-weight:700; color:#111827; margin:16px 0 6px; text-transform:uppercase; letter-spacing:0.05em;">4. Client Obligations</div>
+        <p>Client agrees to: (a) cooperate fully with the Firm; (b) keep the Firm informed of any change in address, employment, or medical treatment; (c) not discuss the claim with any insurance adjuster, opposing party, or their representatives without prior Firm approval.</p>
+
+        <div style="font-size:11px; font-weight:700; color:#111827; margin:16px 0 6px; text-transform:uppercase; letter-spacing:0.05em;">5. Medical Treatment Authorization</div>
+        <p>Client authorizes the Firm to obtain medical records, billing statements, and treatment reports from all healthcare providers relevant to this claim. Client also authorizes healthcare providers to provide a lien on any settlement proceeds for unpaid medical bills.</p>
+
+        <div style="font-size:11px; font-weight:700; color:#111827; margin:16px 0 6px; text-transform:uppercase; letter-spacing:0.05em;">6. Termination</div>
+        <p>Either party may terminate this Agreement upon written notice. In the event of termination by the Client, the Firm shall be entitled to quantum meruit compensation for services rendered.</p>
+
+        <div style="font-size:11px; font-weight:700; color:#111827; margin:16px 0 6px; text-transform:uppercase; letter-spacing:0.05em;">7. Governing Law</div>
+        <p>This Agreement shall be governed by the laws of the State of California. Any dispute arising under this Agreement shall be subject to binding arbitration in Los Angeles County.</p>
+
+        <!-- HIPAA Authorization -->
+        <div style="margin-top:24px; padding:16px; background:#F8FAFF; border:1px solid #DBEAFE; border-radius:8px;">
+          <div style="font-size:12px; font-weight:700; color:#1E40AF; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.05em;">HIPAA Authorization for Release of Medical Records</div>
+          <p style="margin:0 0 10px;">I, <strong id="prev-hipaa-client">[Client Name]</strong>, hereby authorize any physician, hospital, clinic, therapist, or other healthcare provider to release to <strong>PLL Law Group</strong> and/or its designated agents complete medical records, itemized billing statements, diagnostic reports, and treatment notes related to injuries sustained on or after <strong id="prev-hipaa-dol">[Date of Loss]</strong>.</p>
+          <p style="margin:0 0 10px;">This authorization includes, but is not limited to, records relating to: physical therapy, chiropractic care, orthopedic treatment, neurological evaluations, imaging (X-ray, MRI, CT), pharmaceutical records, and any mental health or behavioral health treatment directly related to the above incident.</p>
+          <p style="margin:0 0 10px;">This authorization is valid for <strong>one (1) year</strong> from the date signed, or until the conclusion of the legal matter, whichever is later. A copy or fax of this authorization shall be as valid as the original.</p>
+          <p style="margin:0; font-size:11px; color:#6B7280;">You have the right to revoke this authorization at any time by submitting written notice to PLL Law Group. Revocation will not affect disclosures already made in reliance on this authorization.</p>
+        </div>
+
+        <!-- Medical Lien Authorization -->
+        <div style="margin-top:14px; padding:16px; background:#FFF8F0; border:1px solid #FED7AA; border-radius:8px;">
+          <div style="font-size:12px; font-weight:700; color:#92400E; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.05em;">Medical Lien Authorization</div>
+          <p style="margin:0 0 10px;">Client authorizes all treating physicians, medical groups, hospitals, and healthcare providers to provide services on a lien basis. Client hereby assigns to such providers a security interest in any settlement, judgment, or award obtained in this matter, to the extent of any outstanding balances for treatment rendered.</p>
+          <p style="margin:0; font-size:11px; color:#6B7280;">This lien is subordinate to attorney's fees and costs. PLL Law Group is authorized to honor and pay any valid medical lien from settlement proceeds prior to disbursement of net proceeds to Client.</p>
+        </div>
+
+        <!-- Signature Block -->
+        <div style="margin-top:28px; padding-top:16px; border-top:2px solid #E5E7EB;">
+          <p style="font-size:11px; color:#6B7280; margin:0 0 20px;">By signing below, Client acknowledges having read and understood this Agreement in its entirety, including the Contingency Fee, HIPAA Authorization, and Lien Authorization, and agrees to be bound by its terms.</p>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:20px;">
+            <div>
+              <div style="font-size:11px; color:#9CA3AF; margin-bottom:20px;">Client Signature</div>
+              <div style="border-bottom:2px solid #374151; margin-bottom:4px; height:28px;"></div>
+              <div style="font-size:11px; color:#6B7280;" id="prev-client2">[Client Name]</div>
+            </div>
+            <div>
+              <div style="font-size:11px; color:#9CA3AF; margin-bottom:20px;">Date</div>
+              <div style="border-bottom:2px solid #374151; margin-bottom:4px; height:28px;"></div>
+              <div style="font-size:11px; color:#6B7280;" id="prev-date">[Date]</div>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+            <div>
+              <div style="font-size:11px; color:#9CA3AF; margin-bottom:20px;">Attorney Signature</div>
+              <div style="border-bottom:2px solid #374151; margin-bottom:4px; height:28px;"></div>
+              <div style="font-size:11px; color:#6B7280;">PLL Law Group</div>
+            </div>
+            <div>
+              <div style="font-size:11px; color:#9CA3AF; margin-bottom:20px;">Date</div>
+              <div style="border-bottom:2px solid #374151; margin-bottom:4px; height:28px;"></div>
+              <div style="font-size:11px; color:#6B7280;" id="prev-date2">[Date]</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Footer -->
+      <div style="padding:12px 20px; border-top:1px solid #F3F4F6; display:flex; justify-content:flex-end; gap:8px; background:#FAFAFA;">
+        <button id="ret-preview-action-btn" onclick="retainerPreviewAction()" style="padding:7px 20px; border:none; border-radius:6px; background:#4B6CB7; font-size:12px; color:#fff; cursor:pointer; display:flex; align-items:center; gap:5px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="ret-preview-action-label">Confirm</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Photo Portal Modal -->
+  <div class="overlay" id="photoPortalOverlay" onclick="closePhotoPortalModal()" style="align-items:center; justify-content:center; padding:20px;">
+    <div style="background:#fff; border-radius:16px; width:100%; max-width:400px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.25);" onclick="event.stopPropagation()">
+      <!-- Header -->
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 18px 14px; border-bottom:1px solid #F3F4F6;">
+        <div>
+          <div style="font-size:14px; font-weight:700; color:#111827;">Photo Upload Link</div>
+          <div style="font-size:11px; color:#9CA3AF; margin-top:2px;" id="portal-subtitle">Send this link to the client</div>
+        </div>
+        <button onclick="closePhotoPortalModal()" style="background:#F3F4F6; border:none; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; color:#6B7280;">✕</button>
+      </div>
+      <!-- Body -->
+      <div style="padding:18px; display:flex; flex-direction:column; gap:16px;">
+        <!-- Link -->
+        <div>
+          <div style="font-size:11px; font-weight:600; color:#6B7280; margin-bottom:6px;">Portal Link</div>
+          <div style="display:flex; align-items:center; gap:8px; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:9px 12px;">
+            <span id="portal-link-text" style="flex:1; font-size:11px; color:#374151; font-family:monospace; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+            <button id="portal-copy-btn" onclick="copyPortalLink()" style="flex-shrink:0; background:none; border:none; font-size:11px; font-weight:700; color:#4B6CB7; cursor:pointer; padding:0; white-space:nowrap; display:flex; align-items:center; gap:4px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+        <!-- SMS preview -->
+        <div>
+          <div style="font-size:11px; font-weight:600; color:#6B7280; margin-bottom:6px;">SMS Preview</div>
+          <div id="portal-sms-preview" style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:10px 12px; font-size:12px; color:#374151; line-height:1.6; word-break:break-all; overflow-wrap:break-word;"></div>
+        </div>
+        <!-- Actions -->
+        <div style="display:flex; gap:8px;">
+          <button onclick="sendPortalSMS()" style="flex:1; height:38px; background:#4B6CB7; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Send SMS
+          </button>
+          <button onclick="openPortalPreview()" style="height:38px; padding:0 14px; background:#F3F4F6; color:#374151; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Preview
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Canopy Modal -->
+  <div class="overlay" id="canopyOverlay" onclick="closeCanopy()" style="align-items:center; justify-content:center; padding:0;">
+    <div style="position:relative; width:100%; height:100%; display:flex; flex-direction:column;" onclick="event.stopPropagation()">
+      <div style="position:absolute; top:12px; right:12px; z-index:10;">
+        <button onclick="closeCanopy()" style="background:rgba(0,0,0,0.5); border:none; color:#fff; font-size:18px; width:32px; height:32px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+      </div>
+      <video id="canopy-video" src="canopy.mp4" style="width:100%; height:100%; object-fit:contain; background:#000;" controls playsinline></video>
+    </div>
+  </div>
+
+</body>
+</html>

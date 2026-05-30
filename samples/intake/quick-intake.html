@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Quick Intake</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F5F6F8;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+    }
+
+    .nav {
+      background: #fff;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .nav-back { font-size: 20px; text-decoration: none; color: #4B6CB7; }
+    .nav-title { font-size: 16px; font-weight: 600; color: #111827; }
+    .nav-sub   { font-size: 11px; color: #9CA3AF; margin-top: 1px; }
+
+    /* Phase indicator */
+    .phase-bar {
+      background: #fff;
+      border-bottom: 1px solid #E5E7EB;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .phase {
+      display: flex; align-items: center; gap: 5px;
+    }
+    .phase-dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; flex-shrink: 0;
+    }
+    .phase-active .phase-dot  { background: #4B6CB7; color: #fff; }
+    .phase-pending .phase-dot { background: #E5E7EB; color: #9CA3AF; }
+    .phase-label { font-size: 10px; font-weight: 600; }
+    .phase-active .phase-label  { color: #4B6CB7; }
+    .phase-pending .phase-label { color: #9CA3AF; }
+    .phase-line { flex: 1; height: 1px; background: #E5E7EB; margin: 0 6px; }
+
+    .content { padding: 14px 12px 130px; display: flex; flex-direction: column; gap: 10px; }
+
+    /* Info banner */
+    .info-banner {
+      background: #EEF2FF;
+      border: 1px solid #C7D2FE;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #3730A3;
+      line-height: 1.55;
+    }
+    .info-banner strong { color: #1E3A8A; }
+
+    /* Section labels */
+    .section-label {
+      font-size: 10px; font-weight: 700; color: #9CA3AF;
+      letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 2px 0;
+    }
+
+    /* Fields */
+    .form-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 14px;
+      border: 1px solid #E5E7EB;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field-label {
+      font-size: 11px; font-weight: 600; color: #6B7280;
+    }
+    .field-label .ai-tag {
+      font-size: 9px; font-weight: 700; color: #4B6CB7;
+      background: #EEF2FF; border: 1px solid #C7D2FE;
+      border-radius: 3px; padding: 1px 4px;
+      margin-left: 4px; vertical-align: middle;
+    }
+    .field input, .field select {
+      width: 100%;
+      border: 1px solid #E5E7EB;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #111827;
+      outline: none;
+    }
+    .field input:focus, .field select:focus { border-color: #4B6CB7; }
+    .field input.ai-filled, .field select.ai-filled {
+      border-color: #C7D2FE;
+      background: #F8F9FF;
+    }
+    .field-row { display: flex; gap: 8px; }
+    .field-row .field { flex: 1; min-width: 0; }
+
+    /* Decision trio */
+    .decision-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 14px;
+      border: 1px solid #E5E7EB;
+    }
+    .decision-title {
+      font-size: 10px; font-weight: 700; color: #4B6CB7;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .decision-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .decision-item:last-child { margin-bottom: 0; }
+    .decision-label {
+      font-size: 11px; font-weight: 600; color: #6B7280;
+      width: 90px; flex-shrink: 0; padding-top: 7px;
+    }
+    .decision-badge {
+      flex: 1;
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid;
+    }
+
+    /* Timestamps */
+    .meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0 0;
+      border-top: 1px solid #F3F4F6;
+      font-size: 11px;
+      color: #9CA3AF;
+    }
+    .meta-dot { width: 6px; height: 6px; border-radius: 50%; background: #D1D5DB; }
+
+    /* Bottom */
+    .bottom-actions {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      background: #fff;
+      border-top: 1px solid #E5E7EB;
+      padding: 10px 12px 28px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .btn {
+      width: 100%; padding: 12px; border-radius: 6px;
+      font-size: 14px; font-weight: 600; border: none;
+      cursor: pointer; text-align: center; text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.8; }
+    .btn-primary   { background: #4B6CB7; color: #fff; }
+    .btn-secondary { background: #F3F4F6; color: #374151; }
+    .btn-hint {
+      font-size: 10px; color: #9CA3AF; text-align: center;
+      padding: 0 0 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="nav">
+    <a class="nav-back" id="nav-back" href="index.html">‹</a>
+    <div>
+      <div class="nav-title" id="nav-title">Quick Intake</div>
+      <div class="nav-sub" id="nav-sub">Loading…</div>
+    </div>
+  </div>
+
+  <div class="phase-bar">
+    <div class="phase phase-active">
+      <div class="phase-dot">1</div>
+      <span class="phase-label">Quick Intake</span>
+    </div>
+    <div class="phase-line"></div>
+    <div class="phase phase-pending">
+      <div class="phase-dot">2</div>
+      <span class="phase-label">Full Intake</span>
+    </div>
+    <div class="phase-line"></div>
+    <div class="phase phase-pending">
+      <div class="phase-dot">3</div>
+      <span class="phase-label">Retainer</span>
+    </div>
+    <div class="phase-line"></div>
+    <div class="phase phase-pending">
+      <div class="phase-dot">4</div>
+      <span class="phase-label">Handoff</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="info-banner">
+      <strong>Phone call accepted.</strong> Confirm the key details below — AI pre-filled from the call transcript. After registering, bring the client in for the full intake form at the meeting.
+    </div>
+
+    <div class="section-label">Viability Check</div>
+
+    <div class="decision-card" id="decision-card">
+      <div class="decision-title">Viability Check — 3 Must Pass</div>
+      <div id="decision-rows"></div>
+    </div>
+
+    <div class="section-label">Must Confirm on Call</div>
+
+    <div class="form-card">
+      <div class="field">
+        <label class="field-label">Treatment Status <span class="ai-tag">AI</span></label>
+        <input id="f-treatment" class="ai-filled" type="text" placeholder="e.g. Scheduled, ER same day, None" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Represented? <span class="ai-tag">AI</span></label>
+          <select id="f-represented" class="ai-filled">
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+            <option value="Unknown">Unknown</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Confirm Before Meeting</div>
+
+    <div class="form-card">
+      <div class="field">
+        <label class="field-label">D Insurance <span class="ai-tag">AI</span></label>
+        <input id="f-dinsurance" class="ai-filled" type="text" placeholder="Carrier name or 'Not confirmed'" />
+      </div>
+      <div class="field">
+        <label class="field-label">Prior Injuries <span class="ai-tag">AI</span></label>
+        <select id="f-prior" class="ai-filled">
+          <option value="None reported">None reported</option>
+          <option value="Yes — disclosed">Yes — disclosed</option>
+          <option value="Unknown">Unknown</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-label">Basic Info</div>
+
+    <div class="form-card">
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">First Name <span class="ai-tag">AI</span></label>
+          <input id="f-first" class="ai-filled" type="text" />
+        </div>
+        <div class="field">
+          <label class="field-label">Last Name <span class="ai-tag">AI</span></label>
+          <input id="f-last" class="ai-filled" type="text" />
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Phone</label>
+        <input id="f-phone" type="tel" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Matter Type <span class="ai-tag">AI</span></label>
+          <select id="f-matter" class="ai-filled">
+            <option>Auto Accident</option>
+            <option>Slip &amp; Fall</option>
+            <option>Pedestrian</option>
+            <option>Dog Bite</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Date of Loss <span class="ai-tag">AI</span></label>
+          <input id="f-dol" class="ai-filled" type="text" placeholder="MM/DD/YYYY" />
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Accident Location <span class="ai-tag">AI</span></label>
+        <input id="f-location" class="ai-filled" type="text" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Language <span class="ai-tag">AI</span></label>
+          <input id="f-language" class="ai-filled" type="text" />
+        </div>
+        <div class="field">
+          <label class="field-label">Police Report <span class="ai-tag">AI</span></label>
+          <select id="f-police" class="ai-filled">
+            <option>Filed</option>
+            <option>Not Filed</option>
+            <option>Unknown</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-actions">
+    <div class="btn-hint">Register now · Full intake form at the meeting</div>
+    <button class="btn btn-primary" onclick="registerAndContinue()">Register &amp; Go to Full Intake →</button>
+    <button class="btn btn-secondary" onclick="registerOnly()">Register for Meeting (Fill Later)</button>
+  </div>
+
+  <script>
+    const CALLS = {
+      '2135550192': {
+        phone: '(213) 555-0192',
+        ai: [
+          ['Caller Name', 'Daniel Park'],
+          ['Matter Type', 'Auto Accident'],
+          ['Date of Loss', '05/10/2026'],
+          ['Location', 'Wilshire Blvd & La Brea Ave, Los Angeles'],
+          ['Fault', 'Clear — other driver ran red light'],
+          ['Treatment', 'Scheduled — Chiro 5/15'],
+          ['D Insurance', 'State Farm (confirmed)'],
+          ['Coverage Risk', 'Low — at-fault driver insured, coverage confirmed'],
+          ['SOL Check', 'OK — ~23 months remaining (May 2028)'],
+          ['Prior Injuries', 'None reported'],
+          ['Represented', 'No'],
+          ['Police Report', 'Filed'],
+          ['Language', 'English'],
+          ['Summary', 'Rear-ended at Wilshire & La Brea. Other driver ran red light. Police report filed. Treatment scheduled 5/15. Strong liability — recommend accept.'],
+        ],
+      },
+      '3105550847': {
+        phone: '(310) 555-0847',
+        ai: [
+          ['Caller Name', 'Maria Gonzalez'],
+          ['Matter Type', 'Slip & Fall'],
+          ['Date of Loss', 'May 20, 2026'],
+          ['Location', 'Ralphs Supermarket, 3rd St, Santa Monica'],
+          ['Fault', 'Likely premises — wet floor, no warning sign posted'],
+          ['Treatment', 'ER same day — knee laceration'],
+          ['D Insurance', 'Commercial — Ralphs/Kroger (large carrier, likely covered)'],
+          ['Coverage Risk', 'Low — large commercial retailer'],
+          ['SOL Check', 'OK — ~23 months remaining (May 2028)'],
+          ['Prior Injuries', 'None reported'],
+          ['Represented', 'No'],
+          ['Police Report', 'Not Filed'],
+          ['Language', 'Spanish / English'],
+          ['Summary', 'Slipped on wet floor at Ralphs. No warning sign. ER same day — knee laceration. Store manager present at incident. Strong premises liability indicators — recommend accept.'],
+        ],
+      },
+      '8185550273': {
+        phone: '(818) 555-0273',
+        ai: [
+          ['Caller Name', 'James Okafor'],
+          ['Matter Type', 'Auto Accident'],
+          ['Date of Loss', 'May 25, 2026'],
+          ['Location', 'I-405 N, Van Nuys'],
+          ['Fault', 'Clear — other driver lane change without signal'],
+          ['Treatment', 'Scheduled — Ortho consult 5/30'],
+          ['D Insurance', 'Not confirmed — need to obtain'],
+          ['Coverage Risk', 'Unknown — insurance not yet verified'],
+          ['SOL Check', 'OK — ~23 months remaining (May 2028)'],
+          ['Prior Injuries', 'None reported'],
+          ['Represented', 'No'],
+          ['Police Report', 'Filed'],
+          ['Language', 'English'],
+          ['Summary', 'Sideswipe on I-405. Other driver changed lanes without signaling. Police report filed. Shoulder pain; ortho scheduled 5/30. Verify D insurance before final accept.'],
+        ],
+      },
+      '3235550614': {
+        phone: '(323) 555-0614',
+        ai: [
+          ['Caller Name', 'Kevin Tran'],
+          ['Matter Type', 'Auto Accident'],
+          ['Date of Loss', 'March 3, 2026'],
+          ['Location', 'Hollywood Blvd, Los Angeles'],
+          ['Fault', 'Unclear — both parties disputing liability'],
+          ['Treatment', 'No new treatment — pre-existing back condition'],
+          ['D Insurance', 'Not confirmed'],
+          ['Coverage Risk', 'High — liability disputed, no treatment, pre-existing injury'],
+          ['SOL Check', 'Caution — ~22 months remaining (Mar 2028)'],
+          ['Prior Injuries', 'Pre-existing back condition — complicates causation'],
+          ['Represented', 'No'],
+          ['Police Report', 'Not Filed'],
+          ['Language', 'English'],
+          ['Summary', 'Low-speed collision 2 months ago. Liability unclear, both parties disputing. Pre-existing back injury complicates causation. No treatment sought. SOL ~22 months (Mar 2028). Multiple red flags — passed to attorney for review.'],
+        ],
+      },
+    };
+
+    function badgeStyle(label, value) {
+      let bg, bd, col;
+      if (label === 'Fault') {
+        const isUnclear = value.startsWith('Unclear');
+        const isLikely  = value.startsWith('Likely');
+        bg  = isUnclear ? '#FEF2F2' : isLikely ? '#FFFBEB' : '#F0FDF4';
+        bd  = isUnclear ? '#FECACA' : isLikely ? '#FDE68A' : '#BBF7D0';
+        col = isUnclear ? '#B91C1C' : isLikely ? '#92400E' : '#065F46';
+      } else if (label === 'Coverage Risk') {
+        const isHigh    = value.startsWith('High');
+        const isUnknown = value.startsWith('Unknown');
+        bg  = isHigh ? '#FEF2F2' : isUnknown ? '#FFFBEB' : '#F0FDF4';
+        bd  = isHigh ? '#FECACA' : isUnknown ? '#FDE68A' : '#BBF7D0';
+        col = isHigh ? '#B91C1C' : isUnknown ? '#92400E' : '#065F46';
+      } else if (label === 'SOL Check') {
+        const isCaution = value.startsWith('Caution');
+        bg  = isCaution ? '#FFFBEB' : '#F0FDF4';
+        bd  = isCaution ? '#FDE68A' : '#BBF7D0';
+        col = isCaution ? '#92400E' : '#065F46';
+      }
+      return { bg, bd, col };
+    }
+
+    let currentKey = '';
+    let currentData = null;
+
+    function render() {
+      const params = new URLSearchParams(window.location.search);
+      currentKey = params.get('phone') || '2135550192';
+      currentData = CALLS[currentKey] || CALLS['2135550192'];
+      const d = currentData;
+
+      const aiMap = {};
+      (d.ai || []).forEach(([l, v]) => { aiMap[l] = v; });
+
+      // Nav
+      document.getElementById('nav-title').textContent = aiMap['Caller Name'] || d.phone;
+      document.getElementById('nav-sub').textContent = d.phone + ' · Quick Intake';
+      document.getElementById('nav-back').href = 'call-detail.html?phone=' + currentKey;
+
+      // Pre-fill fields
+      const fullName = (aiMap['Caller Name'] || '').trim().split(' ');
+      document.getElementById('f-first').value = fullName.slice(0, -1).join(' ') || fullName[0] || '';
+      document.getElementById('f-last').value  = fullName.length > 1 ? fullName[fullName.length - 1] : '';
+      document.getElementById('f-phone').value    = d.phone;
+      document.getElementById('f-dol').value      = aiMap['Date of Loss'] || '';
+      document.getElementById('f-location').value = aiMap['Location'] || '';
+      document.getElementById('f-language').value = aiMap['Language'] || '';
+
+      // Matter Type select
+      const matterSel = document.getElementById('f-matter');
+      const matterVal = aiMap['Matter Type'] || '';
+      for (let opt of matterSel.options) {
+        if (opt.value === matterVal || opt.text === matterVal) {
+          opt.selected = true; break;
+        }
+      }
+
+      // Police select
+      const policeSel = document.getElementById('f-police');
+      const policeVal = aiMap['Police Report'] || '';
+      if (policeVal.includes('Not')) {
+        policeSel.value = 'Not Filed';
+      } else if (policeVal.includes('Unknown') || policeVal.includes('unknown')) {
+        policeSel.value = 'Unknown';
+      } else if (policeVal.includes('Filed') || policeVal.includes('filed')) {
+        policeSel.value = 'Filed';
+      }
+
+      // Treatment & Insurance fields
+      document.getElementById('f-treatment').value  = aiMap['Treatment'] || '';
+      document.getElementById('f-dinsurance').value = aiMap['D Insurance'] || '';
+
+      // Prior Injuries select
+      const priorSel = document.getElementById('f-prior');
+      const priorVal = (aiMap['Prior Injuries'] || '').toLowerCase();
+      if (priorVal.includes('none') || priorVal === '') {
+        priorSel.value = 'None reported';
+      } else if (priorVal.includes('unknown')) {
+        priorSel.value = 'Unknown';
+      } else {
+        priorSel.value = 'Yes — disclosed';
+      }
+
+      // Represented select
+      const repSel = document.getElementById('f-represented');
+      const repVal = (aiMap['Represented'] || '').toLowerCase();
+      if (repVal === 'yes') {
+        repSel.value = 'Yes';
+      } else if (repVal.includes('unknown')) {
+        repSel.value = 'Unknown';
+      } else {
+        repSel.value = 'No';
+      }
+
+      // Decision trio
+      const DECISION = ['Fault', 'Coverage Risk', 'SOL Check'];
+      const rows = DECISION.map(label => {
+        const value = aiMap[label] || '—';
+        const { bg, bd, col } = badgeStyle(label, value);
+        return `<div class="decision-item">
+          <span class="decision-label">${label}</span>
+          <div class="decision-badge" style="background:${bg};border-color:${bd};color:${col};">${value}</div>
+        </div>`;
+      }).join('');
+      document.getElementById('decision-rows').innerHTML = rows;
+    }
+
+    function buildEntry(id) {
+      const d = currentData;
+      const aiMap = {};
+      (d.ai || []).forEach(([l, v]) => { aiMap[l] = v; });
+
+      const firstName = document.getElementById('f-first').value.trim();
+      const lastName  = document.getElementById('f-last').value.trim();
+      const name = [firstName, lastName].filter(Boolean).join(' ') || d.phone;
+
+      return {
+        id,
+        name,
+        phone:         document.getElementById('f-phone').value.trim() || d.phone,
+        matter:        document.getElementById('f-matter').value,
+        dol:           document.getElementById('f-dol').value.trim() || aiMap['Date of Loss'] || '—',
+        location:      document.getElementById('f-location').value.trim() || aiMap['Location'] || '',
+        police:        document.getElementById('f-police').value,
+        treatment:     document.getElementById('f-treatment').value.trim() || aiMap['Treatment'] || '',
+        language:      document.getElementById('f-language').value.trim() || aiMap['Language'] || '',
+        description:   aiMap['Summary'] || '',
+        fault:         aiMap['Fault'] || '',
+        dInsurance:    document.getElementById('f-dinsurance').value.trim() || aiMap['D Insurance'] || '',
+        coverageRisk:  aiMap['Coverage Risk'] || '',
+        solCheck:      aiMap['SOL Check'] || '',
+        priorInjuries: document.getElementById('f-prior').value,
+        represented:   document.getElementById('f-represented').value,
+        fm:            'Sarah Klein',
+        time:          'Today ' + new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}),
+        status:        'pending',
+      };
+    }
+
+    function saveEntry(entry) {
+      const existing = JSON.parse(localStorage.getItem('fm_intakes') || '[]');
+      const alreadyExists = existing.some(e => e.phone === entry.phone);
+      if (!alreadyExists) {
+        existing.unshift(entry);
+        localStorage.setItem('fm_intakes', JSON.stringify(existing));
+      }
+      return entry;
+    }
+
+    function registerAndContinue() {
+      const id = 'intake-' + Date.now();
+      const entry = buildEntry(id);
+      saveEntry(entry);
+      window.location.href = 'intake-form.html?id=' + id + '&from=quick&step=1';
+    }
+
+    function registerOnly() {
+      const id = 'intake-' + Date.now();
+      const entry = buildEntry(id);
+      saveEntry(entry);
+      window.location.href = 'intakes.html';
+    }
+
+    render();
+  </script>
+</body>
+</html>

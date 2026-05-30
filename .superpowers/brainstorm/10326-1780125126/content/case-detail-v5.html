@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CM Case Detail v5</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F0F2F5;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+      border: 1px solid #ddd;
+    }
+
+    /* ===== NAV ===== */
+    .nav {
+      background: #fff;
+      padding: 13px 16px 11px;
+      border-bottom: 1px solid #EAECF0;
+      display: flex; align-items: center; gap: 10px;
+      position: sticky; top: 0; z-index: 30;
+    }
+    .nav-back { font-size: 22px; color: #4B5B8C; line-height: 1; cursor: pointer; }
+    .nav-info { flex: 1; }
+    .nav-title { font-size: 15px; font-weight: 700; color: #101828; }
+    .nav-sub { font-size: 10px; color: #98A2B3; margin-top: 1px; }
+    .nav-lang {
+      font-size: 10px; font-weight: 600;
+      background: #F2F4F7; color: #667085;
+      padding: 3px 8px; border-radius: 5px;
+    }
+
+    /* ===== SOL BANNER (D-30 이하 시 노출) ===== */
+    .sol-banner {
+      background: #FEF3F2;
+      border-bottom: 1px solid #FECDCA;
+      padding: 8px 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .sol-banner-icon { font-size: 14px; }
+    .sol-banner-text { flex: 1; font-size: 11px; font-weight: 600; color: #B42318; }
+    .sol-banner-days { font-size: 12px; font-weight: 700; color: #B42318; }
+
+    /* ===== STAGE BAR ===== */
+    .stage-bar {
+      padding: 10px 16px 9px;
+      background: #FAFAFA;
+      border-bottom: 1px solid #EAECF0;
+    }
+    .stages-row { display: flex; align-items: flex-start; }
+    .stage-col { display: flex; flex-direction: column; align-items: center; flex: 1; }
+    .stage-dot {
+      width: 22px; height: 22px; border-radius: 50%;
+      font-size: 9px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .stage-dot.done   { background: #0D9488; color: #fff; }
+    .stage-dot.active { background: #4B5B8C; color: #fff; font-size: 8px; }
+    .stage-dot.pending{ background: #F2F4F7; color: #98A2B3; border: 1.5px solid #E4E7EC; }
+    .stage-line-wrap { flex: 1; display: flex; align-items: center; padding-top: 11px; }
+    .stage-line { width: 100%; height: 2px; background: #E4E7EC; }
+    .stage-line.done { background: #0D9488; }
+    .stage-name { font-size: 8px; color: #98A2B3; margin-top: 3px; text-align: center; line-height: 1.3; }
+    .stage-name.active { color: #4B5B8C; font-weight: 700; }
+    .stage-name.done   { color: #0D9488; }
+
+    /* ===== DUAL TRACK CHIPS ===== */
+    .track-chips {
+      padding: 8px 16px;
+      background: #fff;
+      border-bottom: 1px solid #EAECF0;
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .track-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .track-label {
+      font-size: 9px; font-weight: 700;
+      color: #98A2B3; letter-spacing: 0.05em; text-transform: uppercase;
+      width: 20px; flex-shrink: 0;
+    }
+    .chip { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 5px; cursor: default; }
+    .chip-blue  { background: #EEF2FF; color: #3D4E7A; }
+    .chip-green { background: #ECFDF5; color: #027A48; }
+    .chip-amber { background: #FFFAEB; color: #B54708; }
+    .chip-red   { background: #FEF3F2; color: #B42318; }
+    .chip-gray  { background: #F2F4F7; color: #667085; }
+    .chip-teal  { background: #F0FDF4; color: #0D9488; }
+    .chip.clickable { cursor: pointer; }
+    .chip.clickable:hover { opacity: 0.8; }
+
+    /* ===== TABS ===== */
+    .tabs-row {
+      background: #fff;
+      border-bottom: 2px solid #EAECF0;
+      display: flex;
+      position: sticky; top: 53px; z-index: 20;
+    }
+    .tab-btn {
+      flex: 1; text-align: center;
+      padding: 10px 4px;
+      font-size: 11px; font-weight: 600; color: #98A2B3;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer; transition: all 0.15s;
+      background: none; border-top: none; border-left: none; border-right: none;
+    }
+    .tab-btn.active { color: #4B5B8C; border-bottom-color: #4B5B8C; }
+    .tab-badge {
+      display: inline-block;
+      font-size: 9px; font-weight: 700;
+      background: #F04438; color: #fff;
+      border-radius: 20px; padding: 0 5px; margin-left: 3px;
+      vertical-align: middle;
+    }
+
+    /* ===== BODY ===== */
+    .body { padding: 12px 14px 100px; display: flex; flex-direction: column; gap: 8px; }
+    .tab-panel { display: none; flex-direction: column; gap: 8px; }
+    .tab-panel.active { display: flex; }
+
+    .section-label {
+      font-size: 10px; font-weight: 700; color: #98A2B3;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      padding: 4px 2px 2px;
+    }
+
+    /* ===== PINNED CARD ===== */
+    .pinned-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1.5px solid #4B5B8C;
+      overflow: hidden;
+    }
+    .pinned-header {
+      display: flex; align-items: center; gap: 9px;
+      padding: 11px 13px; cursor: pointer; user-select: none;
+      background: #F5F7FF;
+    }
+    .pinned-title { flex: 1; font-size: 12px; font-weight: 700; color: #3D4E7A; }
+    .pinned-badge {
+      font-size: 10px; font-weight: 600;
+      padding: 2px 8px; border-radius: 20px;
+    }
+    .badge-overdue { background: #FEF3F2; color: #B42318; }
+    .badge-ok      { background: #EEF2FF; color: #4B5B8C; }
+    .pinned-chevron { font-size: 11px; color: #4B5B8C; transition: transform 0.2s; flex-shrink: 0; }
+    .pinned-chevron.open { transform: rotate(180deg); }
+    .pinned-body { border-top: 1.5px solid #C7D2FE; }
+    .pinned-footer {
+      padding: 8px 13px;
+      border-top: 1px solid #EEF2FF;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cadence-label { font-size: 10px; color: #667085; flex: 1; }
+    .cadence-select {
+      font-size: 10px; font-weight: 600; color: #4B5B8C;
+      background: #EEF2FF; border: none; border-radius: 5px;
+      padding: 3px 8px; cursor: pointer;
+    }
+
+    /* ===== ACCORDION ===== */
+    .accordion {
+      background: #fff; border-radius: 10px;
+      border: 1px solid #E4E7EC; overflow: hidden;
+    }
+    .accordion-header {
+      display: flex; align-items: center; gap: 9px;
+      padding: 11px 13px; cursor: pointer; user-select: none;
+    }
+    .acc-icon { font-size: 14px; flex-shrink: 0; }
+    .acc-title { flex: 1; font-size: 12px; font-weight: 700; color: #101828; }
+    .acc-badge {
+      font-size: 10px; font-weight: 600;
+      background: #EEF2FF; color: #3D4E7A;
+      padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+    }
+    .acc-chevron { font-size: 11px; color: #98A2B3; transition: transform 0.2s; flex-shrink: 0; }
+    .acc-chevron.open { transform: rotate(180deg); }
+    .accordion-body { border-top: 1px solid #F2F4F7; }
+
+    /* ===== CHECK ITEMS ===== */
+    .check-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 10px 13px;
+      border-bottom: 1px solid #F9FAFB;
+    }
+    .check-item:last-child { border-bottom: none; }
+    .pri-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .pri-high { background: #F04438; }
+    .pri-mid  { background: #F79009; }
+    .pri-low  { background: #D0D5DD; }
+    .check-box {
+      width: 20px; height: 20px; border-radius: 6px;
+      border: 1.5px solid #D0D5DD; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; cursor: pointer; transition: all 0.15s;
+    }
+    .check-text { flex: 1; font-size: 12px; color: #344054; line-height: 1.4; }
+    .check-text.struck { color: #98A2B3; text-decoration: line-through; }
+    .check-sub { font-size: 10px; color: #98A2B3; margin-top: 2px; }
+
+    /* DOC STATUS chip */
+    .doc-status {
+      font-size: 9px; font-weight: 600;
+      padding: 2px 7px; border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+    }
+    .doc-pending { background: #FFFAEB; color: #B54708; }
+    .doc-waiting { background: #EEF2FF; color: #3D4E7A; }
+    .doc-arrived { background: #ECFDF5; color: #027A48; }
+
+    /* ACTION BUTTONS */
+    .action-btn {
+      font-size: 10px; font-weight: 600;
+      padding: 5px 10px; border-radius: 6px;
+      border: none; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    }
+    .btn-send  { background: #4B5B8C; color: #fff; }
+    .btn-call  { background: #ECFDF5; color: #027A48; }
+    .btn-view  { background: #F2F4F7; color: #344054; }
+    .btn-check { background: #FFFAEB; color: #B54708; }
+    .btn-req   { background: #EEF2FF; color: #3D4E7A; }
+    .btn-log   { background: #F9F5FF; color: #6941C6; }
+
+    /* ===== DONE LOG ===== */
+    .done-card {
+      background: #F6FEF9; border-radius: 10px;
+      border: 1px solid #D1FADF; overflow: hidden;
+    }
+    .done-header {
+      display: flex; align-items: center; gap: 9px;
+      padding: 11px 13px; cursor: pointer; user-select: none;
+    }
+    .done-title { flex: 1; font-size: 12px; font-weight: 700; color: #027A48; }
+    .done-count {
+      font-size: 10px; font-weight: 600;
+      background: #ECFDF5; color: #027A48;
+      padding: 2px 8px; border-radius: 20px;
+    }
+    .done-chevron { font-size: 11px; color: #6CE9A6; transition: transform 0.2s; }
+    .done-chevron.open { transform: rotate(180deg); }
+    .done-body { border-top: 1px solid #D1FADF; }
+    .done-item {
+      display: flex; align-items: flex-start; gap: 9px;
+      padding: 9px 13px; border-bottom: 1px solid #F0FDF4;
+    }
+    .done-item:last-child { border-bottom: none; }
+    .done-check {
+      width: 18px; height: 18px; border-radius: 5px;
+      background: #0D9488; color: #fff; font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .done-text-main { font-size: 11px; color: #6CE9A6; text-decoration: line-through; }
+    .done-meta { font-size: 9px; color: #A6F4C5; margin-top: 1px; }
+    .done-time { font-size: 9px; color: #6CE9A6; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
+
+    /* ===== TIMELINE TAB ===== */
+    .timeline-item {
+      background: #fff; border-radius: 10px;
+      border: 1px solid #E4E7EC; overflow: hidden;
+      padding: 11px 13px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .tl-icon-wrap {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    .tl-email  { background: #EEF2FF; }
+    .tl-call   { background: #ECFDF5; }
+    .tl-note   { background: #FFF8F0; }
+    .tl-doc    { background: #F0FDF4; }
+    .tl-content { flex: 1; }
+    .tl-header { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+    .tl-type { font-size: 10px; font-weight: 700; color: #344054; }
+    .tl-from { font-size: 10px; color: #667085; flex: 1; }
+    .tl-time { font-size: 9px; color: #98A2B3; white-space: nowrap; }
+    .tl-subject { font-size: 11px; font-weight: 600; color: #101828; margin-bottom: 3px; }
+    .tl-body-text { font-size: 11px; color: #667085; line-height: 1.4; }
+    .tl-ack-badge {
+      display: inline-block; margin-top: 5px;
+      font-size: 9px; font-weight: 600;
+      padding: 2px 7px; border-radius: 20px;
+    }
+    .ack-waiting { background: #FFFAEB; color: #B54708; }
+    .ack-done    { background: #ECFDF5; color: #027A48; }
+    .tl-actions { display: flex; gap: 6px; margin-top: 8px; }
+
+    /* ===== CONTACTS TAB ===== */
+    .contact-card {
+      background: #fff; border-radius: 10px;
+      border: 1px solid #E4E7EC;
+      padding: 13px;
+    }
+    .contact-track {
+      font-size: 9px; font-weight: 700; color: #98A2B3;
+      letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .contact-name { font-size: 13px; font-weight: 700; color: #101828; margin-bottom: 2px; }
+    .contact-role { font-size: 10px; color: #667085; margin-bottom: 8px; }
+    .contact-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .contact-row:last-child { margin-bottom: 0; }
+    .contact-label { font-size: 10px; color: #98A2B3; width: 40px; flex-shrink: 0; }
+    .contact-value { font-size: 11px; color: #344054; flex: 1; }
+    .contact-btns { display: flex; gap: 5px; }
+    .last-contact { font-size: 9px; color: #98A2B3; margin-top: 10px; padding-top: 8px; border-top: 1px solid #F2F4F7; }
+
+    /* ===== MODAL OVERLAY ===== */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4); z-index: 100;
+      align-items: flex-end; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-sheet {
+      background: #fff; width: 100%; max-width: 430px;
+      border-radius: 16px 16px 0 0;
+      padding: 20px 16px 32px;
+      animation: slideUp 0.2s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(60px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .modal-handle {
+      width: 36px; height: 4px; background: #E4E7EC;
+      border-radius: 2px; margin: 0 auto 16px;
+    }
+    .modal-title { font-size: 14px; font-weight: 700; color: #101828; margin-bottom: 16px; }
+    .modal-section { font-size: 10px; font-weight: 700; color: #98A2B3; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+    .modal-preview {
+      background: #F8F9FC; border-radius: 8px; border: 1px solid #E4E7EC;
+      padding: 12px; font-size: 12px; color: #344054; line-height: 1.6;
+      margin-bottom: 14px; white-space: pre-wrap;
+    }
+    .modal-result-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .modal-label { font-size: 11px; font-weight: 600; color: #344054; }
+    .modal-input {
+      background: #F8F9FC; border: 1.5px solid #E4E7EC; border-radius: 8px;
+      padding: 10px 12px; font-size: 12px; color: #101828;
+      width: 100%; resize: none; font-family: 'Inter', sans-serif;
+    }
+    .modal-input:focus { outline: none; border-color: #4B5B8C; }
+    .modal-radio-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    .radio-chip {
+      flex: 1; padding: 8px 4px; border-radius: 8px; border: 1.5px solid #E4E7EC;
+      text-align: center; font-size: 11px; font-weight: 600; color: #667085;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .radio-chip.selected { border-color: #4B5B8C; color: #4B5B8C; background: #EEF2FF; }
+    .modal-submit {
+      width: 100%; padding: 13px; border-radius: 10px;
+      background: #4B5B8C; color: #fff;
+      font-size: 13px; font-weight: 700; border: none; cursor: pointer;
+    }
+    .modal-cancel {
+      width: 100%; padding: 10px; border-radius: 10px;
+      background: none; border: none; color: #667085;
+      font-size: 12px; cursor: pointer; margin-top: 6px;
+    }
+
+    /* ===== ADJUSTER SHEET ===== */
+    .adj-sheet-name { font-size: 15px; font-weight: 700; color: #101828; margin-bottom: 2px; }
+    .adj-sheet-role { font-size: 11px; color: #667085; margin-bottom: 14px; }
+    .adj-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #F2F4F7; }
+    .adj-row:last-of-type { border-bottom: none; }
+    .adj-icon { font-size: 16px; width: 28px; text-align: center; flex-shrink: 0; }
+    .adj-info { flex: 1; }
+    .adj-label { font-size: 9px; color: #98A2B3; text-transform: uppercase; letter-spacing: 0.05em; }
+    .adj-value { font-size: 12px; color: #101828; font-weight: 500; }
+    .adj-btn { font-size: 10px; font-weight: 600; padding: 5px 10px; border-radius: 6px; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <div class="nav">
+    <div class="nav-back">‹</div>
+    <div class="nav-info">
+      <div class="nav-title">Maria Gonzalez</div>
+      <div class="nav-sub">Auto Accident · DOL 05/10/26 · Sarah Klein</div>
+    </div>
+    <div class="nav-lang">🇪🇸 ES</div>
+  </div>
+
+  <!-- STAGE BAR -->
+  <div class="stage-bar">
+    <div class="stages-row">
+      <div class="stage-col">
+        <div class="stage-dot done">✓</div>
+        <div class="stage-name done">보험사<br>연락</div>
+      </div>
+      <div class="stage-line-wrap"><div class="stage-line done"></div></div>
+      <div class="stage-col">
+        <div class="stage-dot active">NOW</div>
+        <div class="stage-name active">의료기록<br>수집</div>
+      </div>
+      <div class="stage-line-wrap"><div class="stage-line"></div></div>
+      <div class="stage-col">
+        <div class="stage-dot pending">3</div>
+        <div class="stage-name">Demand<br>이관</div>
+      </div>
+      <div class="stage-line-wrap"><div class="stage-line"></div></div>
+      <div class="stage-col">
+        <div class="stage-dot pending">4</div>
+        <div class="stage-name">협상<br>완료</div>
+      </div>
+      <div class="stage-line-wrap"><div class="stage-line"></div></div>
+      <div class="stage-col">
+        <div class="stage-dot pending">5</div>
+        <div class="stage-name">합의<br>종결</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DUAL TRACK CHIPS (BI / PD 분리) -->
+  <div class="track-chips">
+    <div class="track-row">
+      <div class="track-label">BI</div>
+      <span class="chip chip-blue clickable" onclick="openAdjuster('bi')">📋 #2891 · Adjuster: Tom Reid ▸</span>
+      <span class="chip chip-green">Liability ✓</span>
+      <span class="chip chip-amber" id="sol-chip">SOL D-180</span>
+    </div>
+    <div class="track-row">
+      <div class="track-label">PD</div>
+      <span class="chip chip-blue clickable" onclick="openAdjuster('pd')">🚗 #2891-PD · Adjuster: Lisa Park ▸</span>
+      <span class="chip chip-teal">수리완료 ✓</span>
+      <span class="chip chip-amber">SOL D-270</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-row">
+    <button class="tab-btn active" onclick="switchTab('checklist', this)">할 일</button>
+    <button class="tab-btn" onclick="switchTab('timeline', this)">타임라인 <span class="tab-badge">2</span></button>
+    <button class="tab-btn" onclick="switchTab('contacts', this)">연락처</button>
+    <button class="tab-btn" onclick="switchTab('docs', this)">문서</button>
+  </div>
+
+  <!-- ===== TAB: 체크리스트 ===== -->
+  <div class="body">
+    <div class="tab-panel active" id="panel-checklist">
+
+      <!-- 📌 고객 팔로우업 고정 -->
+      <div class="section-label">📌 고객 관리 (상시)</div>
+      <div class="pinned-card" id="pinned">
+        <div class="pinned-header" onclick="toggleEl('pinned-body','pinned-chev')">
+          <span style="font-size:13px;">👤</span>
+          <div class="pinned-title">고객 팔로우업</div>
+          <div class="pinned-badge badge-overdue">D+5 초과</div>
+          <div class="pinned-chevron open" id="pinned-chev">▼</div>
+        </div>
+        <div class="pinned-body" id="pinned-body">
+          <div class="check-item">
+            <div class="pri-dot pri-high"></div>
+            <div class="check-box" onclick="checkItem(this)"></div>
+            <div class="check-text">치료 진행 상황 확인 전화</div>
+            <button class="action-btn btn-call" onclick="openCallModal('치료 진행 상황 확인 전화')">전화</button>
+          </div>
+          <div class="check-item">
+            <div class="pri-dot pri-high"></div>
+            <div class="check-box" onclick="checkItem(this)"></div>
+            <div class="check-text">다음 병원 예약일 확인</div>
+            <button class="action-btn btn-check" onclick="openCallModal('다음 병원 예약일 확인')">확인</button>
+          </div>
+          <div class="check-item">
+            <div class="pri-dot pri-mid"></div>
+            <div class="check-box" onclick="checkItem(this)"></div>
+            <div class="check-text">고객 불편사항 / 추가 요청 접수</div>
+            <button class="action-btn btn-req" onclick="openCallModal('고객 불편사항 접수')">메모</button>
+          </div>
+        </div>
+        <div class="pinned-footer">
+          <div class="cadence-label">팔로우업 주기</div>
+          <select class="cadence-select">
+            <option>3일마다</option>
+            <option selected>7일마다</option>
+            <option>14일마다</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 할 일 -->
+      <div class="section-label" style="margin-top:4px;">할 일</div>
+
+      <!-- 의료기록 수집 (현재 단계, 펼침) -->
+      <div class="accordion" id="acc1">
+        <div class="accordion-header" onclick="toggleEl('acc1-body','acc1-chev')">
+          <div class="acc-icon">📋</div>
+          <div class="acc-title">의료기록 & 빌링 요청</div>
+          <div class="acc-badge">3개 남음</div>
+          <div class="acc-chevron open" id="acc1-chev">▼</div>
+        </div>
+        <div class="accordion-body" id="acc1-body">
+          <!-- 문서 상태 포함 -->
+          <div class="check-item">
+            <div class="pri-dot pri-high"></div>
+            <div class="check-box" onclick="checkItem(this)"></div>
+            <div style="flex:1;">
+              <div class="check-text">Cedars-Sinai Medical Records</div>
+              <div class="check-sub">요청일: 05/20 · 예상 D+14</div>
+            </div>
+            <span class="doc-status doc-waiting">수신대기 D+10</span>
+          </div>
+          <div class="check-item">
+            <div class="pri-dot pri-high"></div>
+            <div class="check-box" onclick="checkItem(this)"></div>
+            <div style="flex:1;">
+              <div class="check-text">Kaiser Permanente Billing</div>
+              <div class="check-sub">요청 전</div>
+            </div>
+            <button class="action-btn btn-send">요청</button>
+          </div>
+          <div class="check-item">
+            <div class="pri-dot pri-mid"></div>
+            <div class="check-box" onclick="checkItem(this)"></div>
+            <div style="flex:1;">
+              <div class="check-text">Medical Collection 부서에 전달</div>
+              <div class="check-sub">기록 수령 후 진행</div>
+            </div>
+            <button class="action-btn btn-req">전달</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thank You Letter — 이메일 모달 포함 -->
+      <div class="accordion" id="acc0">
+        <div class="accordion-header" onclick="toggleEl('acc0-body','acc0-chev')">
+          <div class="acc-icon">✉️</div>
+          <div class="acc-title">초기 클라이언트 연락</div>
+          <div class="acc-badge">완료됨</div>
+          <div class="acc-chevron" id="acc0-chev">▼</div>
+        </div>
+        <div class="accordion-body" id="acc0-body" style="display:none;">
+          <div class="check-item">
+            <div class="pri-dot pri-low"></div>
+            <div class="check-box" data-checked="1" style="background:#0D9488;border-color:#0D9488;color:#fff;font-size:11px;">✓</div>
+            <div class="check-text struck">Thank You Letter 발송</div>
+          </div>
+          <div class="check-item">
+            <div class="pri-dot pri-low"></div>
+            <div class="check-box" data-checked="1" style="background:#0D9488;border-color:#0D9488;color:#fff;font-size:11px;">✓</div>
+            <div class="check-text struck">사건 배정 확인 이메일 수신</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PD 클레임 -->
+      <div class="accordion" id="acc2">
+        <div class="accordion-header" onclick="toggleEl('acc2-body','acc2-chev')">
+          <div class="acc-icon">🚗</div>
+          <div class="acc-title">PD 클레임 (차량 처리)</div>
+          <div class="acc-badge">1개 남음</div>
+          <div class="acc-chevron" id="acc2-chev">▼</div>
+        </div>
+        <div class="accordion-body" id="acc2-body" style="display:none;">
+          <div class="check-item">
+            <div class="pri-dot pri-mid"></div>
+            <div class="check-box" data-checked="1" style="background:#0D9488;border-color:#0D9488;color:#fff;font-size:11px;">✓</div>
+            <div class="check-text struck">차량 점검 일정 조율</div>
+          </div>
+          <div class="check-item">
+            <div class="pri-dot pri-mid"></div>
+            <div class="check-box" data-checked="1" style="background:#0D9488;border-color:#0D9488;color:#fff;font-size:11px;">✓</div>
+            <div class="check-text struck">수리 진행 확인 완료</div>
+          </div>
+          <div class="check-item">
+            <div class="pri-dot pri-mid"></div>
+            <div class="check-box" onclick="checkItem(this)"></div>
+            <div class="check-text">Loss of Use (렌트카) 지원 확인</div>
+            <button class="action-btn btn-view">보기</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 예외 처리 -->
+      <div class="accordion" id="acc3">
+        <div class="accordion-header" onclick="toggleEl('acc3-body','acc3-chev')">
+          <div class="acc-icon">⚠️</div>
+          <div class="acc-title">예외 처리 (DMV / 정부보험)</div>
+          <div class="acc-badge">1개 남음</div>
+          <div class="acc-chevron" id="acc3-chev">▼</div>
+        </div>
+        <div class="accordion-body" id="acc3-body" style="display:none;">
+          <div class="check-item">
+            <div class="pri-dot pri-mid"></div>
+            <div class="check-box" onclick="checkItem(this)"></div>
+            <div class="check-text">Medicare / Medi-Cal 여부 확인</div>
+            <button class="action-btn btn-check">확인</button>
+          </div>
+          <div class="check-item">
+            <div class="pri-dot pri-low"></div>
+            <div class="check-box" data-checked="1" style="background:#0D9488;border-color:#0D9488;color:#fff;font-size:11px;">✓</div>
+            <div class="check-text struck">DMV SR-1 보고 및 자료 요청</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Liability 분기 -->
+      <div class="accordion" id="acc4">
+        <div class="accordion-header" onclick="toggleEl('acc4-body','acc4-chev')">
+          <div class="acc-icon">⚖️</div>
+          <div class="acc-title">Liability 결정</div>
+          <div class="acc-badge chip-green" style="background:#ECFDF5;color:#027A48;">인정됨 ✓</div>
+          <div class="acc-chevron" id="acc4-chev">▼</div>
+        </div>
+        <div class="accordion-body" id="acc4-body" style="display:none;">
+          <div class="check-item">
+            <div class="pri-dot pri-low"></div>
+            <div class="check-box" data-checked="1" style="background:#0D9488;border-color:#0D9488;color:#fff;font-size:11px;">✓</div>
+            <div class="check-text struck">Liability 인정 여부 확인 요청</div>
+          </div>
+          <div class="check-item" style="background:#F6FEF9;">
+            <div class="pri-dot pri-low"></div>
+            <div style="flex:1; font-size:11px; color:#344054;">
+              결과: <strong style="color:#027A48;">인정됨</strong> · 05/15
+            </div>
+            <!-- 만약 Denied였다면: Litigation 이관 / Drop 버튼 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 완료 로그 -->
+      <div class="section-label" style="margin-top:4px;">완료</div>
+      <div class="done-card">
+        <div class="done-header" onclick="toggleEl('done-body','done-chev')">
+          <div style="font-size:14px;">✅</div>
+          <div class="done-title">완료된 항목</div>
+          <div class="done-count" id="done-count">7개</div>
+          <div class="done-chevron open" id="done-chev">▼</div>
+        </div>
+        <div class="done-body" id="done-body">
+          <div class="done-item">
+            <div class="done-check">✓</div>
+            <div style="flex:1;">
+              <div class="done-text-main">Thank You Letter 발송</div>
+              <div class="done-meta">초기 클라이언트 연락</div>
+            </div>
+            <div class="done-time">오늘 9:25</div>
+          </div>
+          <div class="done-item">
+            <div class="done-check">✓</div>
+            <div style="flex:1;">
+              <div class="done-text-main">BI 클레임 번호 확보 & Tom Reid 연락</div>
+              <div class="done-meta">보험사 연락 · BI</div>
+            </div>
+            <div class="done-time">어제</div>
+          </div>
+          <div class="done-item">
+            <div class="done-check">✓</div>
+            <div style="flex:1;">
+              <div class="done-text-main">PD 클레임 번호 확보 & Lisa Park 연락</div>
+              <div class="done-meta">보험사 연락 · PD</div>
+            </div>
+            <div class="done-time">어제</div>
+          </div>
+          <div class="done-item">
+            <div class="done-check">✓</div>
+            <div style="flex:1;">
+              <div class="done-text-main">커버리지 유무 확인</div>
+              <div class="done-meta">보험사 연락 · BI</div>
+            </div>
+            <div class="done-time">어제</div>
+          </div>
+          <div class="done-item">
+            <div class="done-check">✓</div>
+            <div style="flex:1;">
+              <div class="done-text-main">Liability 인정 확인</div>
+              <div class="done-meta">Liability 결정</div>
+            </div>
+            <div class="done-time">05/15</div>
+          </div>
+          <div class="done-item">
+            <div class="done-check">✓</div>
+            <div style="flex:1;">
+              <div class="done-text-main">차량 점검 일정 조율</div>
+              <div class="done-meta">PD 클레임</div>
+            </div>
+            <div class="done-time">05/12</div>
+          </div>
+          <div class="done-item">
+            <div class="done-check">✓</div>
+            <div style="flex:1;">
+              <div class="done-text-main">DMV SR-1 보고</div>
+              <div class="done-meta">예외 처리</div>
+            </div>
+            <div class="done-time">05/11</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /panel-checklist -->
+
+    <!-- ===== TAB: 타임라인 ===== -->
+    <div class="tab-panel" id="panel-timeline">
+
+      <div class="section-label">최근 활동</div>
+
+      <!-- 새 이메일 incoming — ACK 필요 -->
+      <div class="timeline-item" style="border-left: 3px solid #F79009;">
+        <div class="tl-icon-wrap tl-email">📧</div>
+        <div class="tl-content">
+          <div class="tl-header">
+            <div class="tl-type">이메일 수신</div>
+            <div class="tl-from">State Farm · Tom Reid</div>
+            <div class="tl-time">오늘 10:14</div>
+          </div>
+          <div class="tl-subject">Re: Claim #2891 — Medical Records Request</div>
+          <div class="tl-body-text">요청하신 양식 첨부드립니다. 추가 서류는 30일 이내 제출 바랍니다.</div>
+          <span class="tl-ack-badge ack-waiting">ACK 필요</span>
+          <div class="tl-actions">
+            <button class="action-btn btn-req">답장</button>
+            <button class="action-btn btn-call">전화</button>
+            <button class="action-btn btn-log" onclick="openCallModal('이메일 처리 결과 기록')">결과 기록</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 발신 이메일 -->
+      <div class="timeline-item">
+        <div class="tl-icon-wrap tl-email">📤</div>
+        <div class="tl-content">
+          <div class="tl-header">
+            <div class="tl-type">이메일 발송</div>
+            <div class="tl-from">→ Cedars-Sinai Records Dept</div>
+            <div class="tl-time">05/20</div>
+          </div>
+          <div class="tl-subject">Medical Records Authorization — Gonzalez, Maria</div>
+          <div class="tl-body-text">의료기록 공개 승인서 및 요청서 발송</div>
+          <span class="tl-ack-badge ack-waiting">ACK 대기 D+10</span>
+        </div>
+      </div>
+
+      <!-- 전화 통화 기록 -->
+      <div class="timeline-item">
+        <div class="tl-icon-wrap tl-call">📞</div>
+        <div class="tl-content">
+          <div class="tl-header">
+            <div class="tl-type">통화 완료</div>
+            <div class="tl-from">Maria Gonzalez (고객)</div>
+            <div class="tl-time">05/18 · 7분</div>
+          </div>
+          <div class="tl-subject">치료 현황 확인</div>
+          <div class="tl-body-text">Kaiser PT 주 2회 진행 중. 어깨 통증 지속. 다음 예약 06/03.</div>
+        </div>
+      </div>
+
+      <!-- 메모 -->
+      <div class="timeline-item">
+        <div class="tl-icon-wrap tl-note">📝</div>
+        <div class="tl-content">
+          <div class="tl-header">
+            <div class="tl-type">메모</div>
+            <div class="tl-from">Sarah Klein</div>
+            <div class="tl-time">05/15</div>
+          </div>
+          <div class="tl-body-text">Liability 인정 Letter 수령 완료. 파일 저장. Demand 단계 이관 전 의료기록 모두 확보 필요.</div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:4px;">
+        <button class="action-btn btn-call" style="flex:1;padding:10px;" onclick="openCallModal('통화 결과 기록')">+ 통화 기록</button>
+        <button class="action-btn btn-req" style="flex:1;padding:10px;" onclick="openCallModal('이메일 발송')">+ 이메일</button>
+        <button class="action-btn btn-log" style="flex:1;padding:10px;" onclick="openCallModal('메모 추가')">+ 메모</button>
+      </div>
+    </div><!-- /panel-timeline -->
+
+    <!-- ===== TAB: 연락처 ===== -->
+    <div class="tab-panel" id="panel-contacts">
+
+      <!-- BI Adjuster -->
+      <div class="contact-card">
+        <div class="contact-track">BI 담당</div>
+        <div class="contact-name">Tom Reid</div>
+        <div class="contact-role">State Farm · BI Adjuster</div>
+        <div class="contact-row">
+          <div class="contact-label">Claim</div>
+          <div class="contact-value">#2891</div>
+        </div>
+        <div class="contact-row">
+          <div class="contact-label">전화</div>
+          <div class="contact-value">(213) 555-0182</div>
+          <div class="contact-btns">
+            <button class="action-btn btn-call adj-btn" onclick="openCallModal('Tom Reid 통화 기록')">전화</button>
+          </div>
+        </div>
+        <div class="contact-row">
+          <div class="contact-label">이메일</div>
+          <div class="contact-value" style="font-size:10px;">t.reid@statefarm.com</div>
+          <div class="contact-btns">
+            <button class="action-btn btn-req adj-btn">메일</button>
+          </div>
+        </div>
+        <div class="last-contact">마지막 연락: 오늘 10:14 · 이메일 수신</div>
+      </div>
+
+      <!-- PD Adjuster -->
+      <div class="contact-card">
+        <div class="contact-track">PD 담당</div>
+        <div class="contact-name">Lisa Park</div>
+        <div class="contact-role">State Farm · PD Adjuster</div>
+        <div class="contact-row">
+          <div class="contact-label">Claim</div>
+          <div class="contact-value">#2891-PD</div>
+        </div>
+        <div class="contact-row">
+          <div class="contact-label">전화</div>
+          <div class="contact-value">(213) 555-0247</div>
+          <div class="contact-btns">
+            <button class="action-btn btn-call adj-btn" onclick="openCallModal('Lisa Park 통화 기록')">전화</button>
+          </div>
+        </div>
+        <div class="contact-row">
+          <div class="contact-label">이메일</div>
+          <div class="contact-value" style="font-size:10px;">l.park@statefarm.com</div>
+          <div class="contact-btns">
+            <button class="action-btn btn-req adj-btn">메일</button>
+          </div>
+        </div>
+        <div class="last-contact">마지막 연락: 05/18 · 전화 발신</div>
+      </div>
+
+      <!-- 고객 -->
+      <div class="contact-card">
+        <div class="contact-track">고객</div>
+        <div class="contact-name">Maria Gonzalez</div>
+        <div class="contact-role">원고 · 🇪🇸 Spanish</div>
+        <div class="contact-row">
+          <div class="contact-label">전화</div>
+          <div class="contact-value">(323) 555-0914</div>
+          <div class="contact-btns">
+            <button class="action-btn btn-call adj-btn" onclick="openCallModal('고객 통화 기록')">전화</button>
+          </div>
+        </div>
+        <div class="contact-row">
+          <div class="contact-label">이메일</div>
+          <div class="contact-value" style="font-size:10px;">maria.g@email.com</div>
+          <div class="contact-btns">
+            <button class="action-btn btn-send adj-btn">메일</button>
+          </div>
+        </div>
+        <div class="last-contact">마지막 연락: 05/18 · 통화 7분</div>
+      </div>
+
+    </div><!-- /panel-contacts -->
+
+    <!-- ===== TAB: 문서 ===== -->
+    <div class="tab-panel" id="panel-docs">
+      <div class="section-label">의료기록 수신 현황</div>
+
+      <!-- 문서 매트릭스 -->
+      <div class="accordion" id="docs1">
+        <div class="accordion-header" onclick="toggleEl('docs1-body','docs1-chev')">
+          <div class="acc-icon">🏥</div>
+          <div class="acc-title">Cedars-Sinai</div>
+          <span class="doc-status doc-waiting" style="margin-left:auto;margin-right:8px;">대기 중</span>
+          <div class="acc-chevron open" id="docs1-chev">▼</div>
+        </div>
+        <div class="accordion-body" id="docs1-body">
+          <div class="check-item">
+            <div class="pri-dot pri-high"></div>
+            <div style="flex:1;">
+              <div class="check-text">Medical Records</div>
+              <div class="check-sub">요청일: 05/20 · 예상 수령: 06/03</div>
+            </div>
+            <span class="doc-status doc-waiting">D+10</span>
+          </div>
+          <div class="check-item">
+            <div class="pri-dot pri-high"></div>
+            <div style="flex:1;">
+              <div class="check-text">Billing Statement</div>
+              <div class="check-sub">요청일: 05/20</div>
+            </div>
+            <span class="doc-status doc-waiting">D+10</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion" id="docs2">
+        <div class="accordion-header" onclick="toggleEl('docs2-body','docs2-chev')">
+          <div class="acc-icon">🏥</div>
+          <div class="acc-title">Kaiser Permanente</div>
+          <span class="doc-status doc-pending" style="margin-left:auto;margin-right:8px;">미요청</span>
+          <div class="acc-chevron" id="docs2-chev">▼</div>
+        </div>
+        <div class="accordion-body" id="docs2-body" style="display:none;">
+          <div class="check-item">
+            <div class="pri-dot pri-high"></div>
+            <div style="flex:1;">
+              <div class="check-text">Medical Records</div>
+              <div class="check-sub">요청 전</div>
+            </div>
+            <button class="action-btn btn-send">요청</button>
+          </div>
+          <div class="check-item">
+            <div class="pri-dot pri-mid"></div>
+            <div style="flex:1;">
+              <div class="check-text">Billing Statement</div>
+              <div class="check-sub">요청 전</div>
+            </div>
+            <button class="action-btn btn-send">요청</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:8px;">수신 완료 문서</div>
+      <div class="accordion" id="docs3">
+        <div class="accordion-header" onclick="toggleEl('docs3-body','docs3-chev')">
+          <div class="acc-icon">📁</div>
+          <div class="acc-title">Liability Letter</div>
+          <span class="doc-status doc-arrived" style="margin-left:auto;margin-right:8px;">수신 완료</span>
+          <div class="acc-chevron open" id="docs3-chev">▼</div>
+        </div>
+        <div class="accordion-body" id="docs3-body">
+          <div class="check-item">
+            <div style="flex:1;">
+              <div class="check-text">State Farm Liability Acceptance Letter</div>
+              <div class="check-sub">수신: 05/15 · 파일: PDF</div>
+            </div>
+            <button class="action-btn btn-view">보기</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /panel-docs -->
+
+  </div><!-- /body -->
+
+  <!-- ===== 통화/이메일 결과 기록 모달 ===== -->
+  <div class="modal-overlay" id="modal-call" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="modal-call-title">결과 기록</div>
+
+      <div class="modal-section">결과</div>
+      <div class="modal-radio-row" id="modal-result-chips">
+        <div class="radio-chip selected" onclick="selectChip(this)">완료</div>
+        <div class="radio-chip" onclick="selectChip(this)">후속 필요</div>
+        <div class="radio-chip" onclick="selectChip(this)">미연결</div>
+      </div>
+
+      <div class="modal-result-row">
+        <div class="modal-label">내용 요약</div>
+        <textarea class="modal-input" rows="3" placeholder="통화 또는 이메일 내용 요약..."></textarea>
+      </div>
+
+      <div class="modal-result-row">
+        <div class="modal-label">다음 액션 (선택)</div>
+        <textarea class="modal-input" rows="2" placeholder="예: 06/03 예약일 재확인 필요"></textarea>
+      </div>
+
+      <button class="modal-submit" onclick="closeModal()">저장 & 완료 처리</button>
+      <button class="modal-cancel" onclick="closeModal()">취소</button>
+    </div>
+  </div>
+
+  <!-- ===== Adjuster 연락처 시트 ===== -->
+  <div class="modal-overlay" id="modal-adj" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div id="adj-content">
+        <!-- JS로 동적 삽입 -->
+      </div>
+      <button class="modal-cancel" onclick="closeModal()">닫기</button>
+    </div>
+  </div>
+
+  <script>
+    /* ===== TAB SWITCH ===== */
+    function switchTab(id, btn) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('panel-' + id).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    /* ===== ACCORDION ===== */
+    function toggleEl(bodyId, chevId) {
+      const body = document.getElementById(bodyId);
+      const chev = document.getElementById(chevId);
+      const isOpen = body.style.display !== 'none';
+      body.style.display = isOpen ? 'none' : 'block';
+      if (chev) chev.classList.toggle('open', !isOpen);
+    }
+
+    /* ===== CHECK ITEM ===== */
+    function checkItem(box) {
+      const isDone = box.dataset.checked === '1';
+      if (isDone) {
+        box.dataset.checked = '0';
+        box.innerHTML = '';
+        box.style.background = '';
+        box.style.borderColor = '#D0D5DD';
+        box.style.color = '';
+        const txt = box.nextElementSibling;
+        if (txt) { txt.classList.remove('struck'); if(txt.querySelector) txt.querySelector('.check-text') && txt.querySelector('.check-text').classList.remove('struck'); }
+      } else {
+        box.dataset.checked = '1';
+        box.innerHTML = '✓';
+        box.style.background = '#0D9488';
+        box.style.borderColor = '#0D9488';
+        box.style.color = '#fff';
+        const txt = box.nextElementSibling;
+        if (txt) {
+          if (txt.classList.contains('check-text')) txt.classList.add('struck');
+        }
+      }
+    }
+
+    /* ===== CALL MODAL ===== */
+    function openCallModal(title) {
+      document.getElementById('modal-call-title').textContent = title;
+      document.getElementById('modal-call').classList.add('open');
+    }
+
+    /* ===== ADJUSTER SHEET ===== */
+    const adjusters = {
+      bi: {
+        track: 'BI 담당',
+        name: 'Tom Reid',
+        role: 'State Farm · BI Adjuster',
+        claim: '#2891',
+        phone: '(213) 555-0182',
+        email: 't.reid@statefarm.com',
+        last: '오늘 10:14 · 이메일 수신'
+      },
+      pd: {
+        track: 'PD 담당',
+        name: 'Lisa Park',
+        role: 'State Farm · PD Adjuster',
+        claim: '#2891-PD',
+        phone: '(213) 555-0247',
+        email: 'l.park@statefarm.com',
+        last: '05/18 · 전화 발신'
+      }
+    };
+
+    function openAdjuster(type) {
+      const a = adjusters[type];
+      document.getElementById('adj-content').innerHTML = `
+        <div style="font-size:10px;font-weight:700;color:#98A2B3;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">${a.track}</div>
+        <div class="adj-sheet-name">${a.name}</div>
+        <div class="adj-sheet-role">${a.role}</div>
+        <div class="adj-row"><div class="adj-icon">📋</div><div class="adj-info"><div class="adj-label">Claim</div><div class="adj-value">${a.claim}</div></div></div>
+        <div class="adj-row"><div class="adj-icon">📞</div><div class="adj-info"><div class="adj-label">전화</div><div class="adj-value">${a.phone}</div></div><button class="action-btn btn-call adj-btn" onclick="openCallModal('${a.name} 통화 기록');closeAdjModal()">전화</button></div>
+        <div class="adj-row"><div class="adj-icon">📧</div><div class="adj-info"><div class="adj-label">이메일</div><div class="adj-value" style="font-size:11px;">${a.email}</div></div><button class="action-btn btn-req adj-btn">메일</button></div>
+        <div style="font-size:9px;color:#98A2B3;margin-top:10px;padding-top:8px;border-top:1px solid #F2F4F7;">마지막 연락: ${a.last}</div>
+      `;
+      document.getElementById('modal-adj').classList.add('open');
+    }
+    function closeAdjModal() {
+      document.getElementById('modal-adj').classList.remove('open');
+    }
+
+    /* ===== CLOSE MODAL ===== */
+    function closeModal(e) {
+      if (!e || e.target === e.currentTarget) {
+        document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+      }
+    }
+
+    /* ===== RADIO CHIP ===== */
+    function selectChip(el) {
+      el.closest('.modal-radio-row').querySelectorAll('.radio-chip').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+  </script>
+
+</body>
+</html>

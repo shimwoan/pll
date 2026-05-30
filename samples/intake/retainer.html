@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Get Signed Retainer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F5F6F8;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+    }
+
+    .nav {
+      background: #fff;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .nav-back { font-size: 20px; text-decoration: none; color: #4B6CB7; }
+    .nav-title { font-size: 16px; font-weight: 600; color: #111827; }
+    .nav-sub   { font-size: 11px; color: #9CA3AF; margin-top: 1px; }
+
+    .steps {
+      background: #fff;
+      padding: 10px 16px 12px;
+      border-bottom: 1px solid #E5E7EB;
+      display: flex; align-items: center;
+    }
+    .step { display: flex; align-items: center; gap: 5px; flex: 1; }
+    .step-circle {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; flex-shrink: 0;
+    }
+    .step-done    .step-circle { background: #0D9488; color: #fff; }
+    .step-active  .step-circle { background: #4B6CB7; color: #fff; }
+    .step-pending .step-circle { background: #E5E7EB; color: #9CA3AF; }
+    .step-label { font-size: 10px; font-weight: 600; }
+    .step-done    .step-label { color: #0D9488; }
+    .step-active  .step-label { color: #4B6CB7; }
+    .step-pending .step-label { color: #9CA3AF; }
+    .step-line { flex: 1; height: 1px; background: #E5E7EB; margin: 0 4px; }
+    .step-line.done { background: #0D9488; }
+    .step-done { cursor: pointer; }
+    .step-done:hover .step-circle { opacity: 0.8; }
+    .step-active { cursor: default; }
+    .step-pending { cursor: not-allowed; opacity: 0.6; }
+
+    .content { padding: 14px 12px 100px; display: flex; flex-direction: column; gap: 10px; }
+
+    .info-card {
+      background: #EEF2FF;
+      border: 1px solid #C7D2FE;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 12px;
+      color: #3730A3;
+      line-height: 1.6;
+    }
+    .info-card strong { color: #1E3A8A; }
+
+    .uploaded-card {
+      background: #F0FDF9;
+      border: 1px solid #99F6E4;
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .uploaded-check {
+      width: 32px; height: 32px;
+      background: #0D9488;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .uploaded-title { font-size: 13px; font-weight: 600; color: #065F46; }
+    .uploaded-sub   { font-size: 11px; color: #0D9488; margin-top: 2px; }
+
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #9CA3AF;
+      font-size: 11px;
+    }
+    .or-line { flex: 1; height: 1px; background: #E5E7EB; }
+
+    .upload-area {
+      background: #fff;
+      border-radius: 8px;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      border: 1.5px dashed #D1D5DB;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .upload-area:active { background: #F9FAFB; }
+    .upload-title { font-size: 14px; font-weight: 600; color: #374151; }
+    .upload-sub   { font-size: 11px; color: #9CA3AF; text-align: center; }
+
+    .send-methods { display: flex; flex-direction: column; gap: 6px; }
+    .send-btn {
+      background: #fff;
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid #E5E7EB;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+      transition: background 0.12s;
+    }
+    .send-btn:active { background: #F9FAFB; }
+    .send-btn-label { font-size: 13px; font-weight: 600; color: #111827; }
+    .send-btn-sub   { font-size: 11px; color: #9CA3AF; }
+    .send-btn-arrow { margin-left: auto; color: #D1D5DB; font-size: 16px; }
+
+    .bottom-actions {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      background: #fff;
+      border-top: 1px solid #E5E7EB;
+      padding: 10px 12px 28px;
+      display: flex; gap: 8px;
+    }
+    .btn {
+      flex: 1; padding: 12px; border-radius: 6px;
+      font-size: 14px; font-weight: 600; border: none;
+      cursor: pointer; text-align: center; text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.8; }
+    .btn-cancel   { background: #F3F4F6; color: #374151; flex: 0.7; }
+    .btn-continue { background: #4B6CB7; color: #fff; }
+  </style>
+</head>
+<body>
+
+  <div class="nav">
+    <a class="nav-back" href="intake-form.html">‹</a>
+    <div>
+      <div class="nav-title">Get Signed Retainer</div>
+      <div class="nav-sub">Daniel Park · Step 2 of 4</div>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step step-done" onclick="window.location.href='intake-form.html?step=1'">
+      <div class="step-circle">✓</div>
+      <span class="step-label">Intake Form</span>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step step-active">
+      <div class="step-circle">2</div>
+      <span class="step-label">Retainer</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step step-pending">
+      <div class="step-circle">3</div>
+      <span class="step-label">Review</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step step-pending">
+      <div class="step-circle">4</div>
+      <span class="step-label">Handoff</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="info-card">
+      <strong>Retainer Agreement Required</strong><br/>
+      A signed retainer must be attached before this case can be handed off to the Claim department.
+    </div>
+
+    <div class="uploaded-card">
+      <div class="uploaded-check">✓</div>
+      <div>
+        <div class="uploaded-title">Retainer_DanielPark.pdf</div>
+        <div class="uploaded-sub">1.8 MB · 2 pages · Signed</div>
+      </div>
+    </div>
+
+    <div class="or-divider">
+      <div class="or-line"></div>
+      <span>or attach a new file</span>
+      <div class="or-line"></div>
+    </div>
+
+    <div class="upload-area">
+      <div class="upload-title">Upload Signed Retainer</div>
+      <div class="upload-sub">Tap to select PDF or photo from your device</div>
+    </div>
+
+    <div class="send-methods">
+      <button class="send-btn">
+        <div>
+          <div class="send-btn-label">Send via SMS</div>
+          <div class="send-btn-sub">Text signing link to (555) 311-2244</div>
+        </div>
+        <span class="send-btn-arrow">›</span>
+      </button>
+
+      <button class="send-btn">
+        <div>
+          <div class="send-btn-label">Send via Email</div>
+          <div class="send-btn-sub">Send DocuSign link to client</div>
+        </div>
+        <span class="send-btn-arrow">›</span>
+      </button>
+    </div>
+
+  </div>
+
+  <div class="bottom-actions">
+    <a class="btn btn-cancel" href="intake-form.html">Back</a>
+    <a class="btn btn-continue" href="review-photos.html">Continue to Review →</a>
+  </div>
+
+</body>
+</html>

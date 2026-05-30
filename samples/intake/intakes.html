@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>FM Intake — Intakes</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F5F6F8;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+    }
+
+    .nav {
+      background: #fff;
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid #E5E7EB;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav-title { font-size: 17px; font-weight: 600; color: #111827; letter-spacing: -0.01em; }
+    .nav-sub   { font-size: 12px; color: #9CA3AF; margin-top: 2px; }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      padding: 10px 16px;
+      background: #F5F6F8;
+    }
+    .tab {
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid #E5E7EB;
+      cursor: pointer;
+      background: #fff;
+      color: #6B7280;
+    }
+    .tab.active { background: #4B6CB7; color: #fff; border-color: #4B6CB7; }
+
+    .intake-list {
+      padding: 0 12px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #9CA3AF;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 12px 4px 4px;
+    }
+
+    .intake-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      border: 1px solid #E5E7EB;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .intake-card:active { background: #F9FAFB; }
+
+    .intake-body { flex: 1; min-width: 0; }
+    .intake-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111827;
+      letter-spacing: -0.01em;
+    }
+    .intake-meta {
+      font-size: 11px;
+      color: #6B7280;
+      margin-top: 3px;
+      font-variant-numeric: tabular-nums;
+    }
+    .intake-preview {
+      font-size: 11px;
+      color: #9CA3AF;
+      margin-top: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .intake-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    .intake-time { font-size: 11px; color: #6B7280; font-variant-numeric: tabular-nums; }
+
+    .badge {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+    .badge-pending   { background: #FEF9C3; color: #854D0E; }
+    .badge-scheduled { background: #DBEAFE; color: #1D4ED8; }
+
+    .chevron { color: #D1D5DB; font-size: 14px; margin-left: 2px; }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-pending   { background: #F59E0B; }
+    .dot-scheduled { background: #4B6CB7; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #9CA3AF;
+    }
+    .empty-state-title { font-size: 14px; font-weight: 600; color: #6B7280; margin-bottom: 6px; }
+    .empty-state-sub   { font-size: 12px; line-height: 1.6; }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      background: #fff;
+      border-top: 1px solid #E5E7EB;
+      display: flex;
+      padding: 8px 0 10px;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 10px;
+      color: #9CA3AF;
+      cursor: pointer;
+      text-decoration: none;
+      min-width: 0;
+      padding: 0 4px;
+    }
+    .nav-item.active { color: #4B6CB7; }
+    .nav-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      stroke: currentColor;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="nav">
+    <div class="nav-title">Intakes</div>
+    <div class="nav-sub" id="nav-sub">—</div>
+  </div>
+
+
+  <div class="intake-list" id="intake-list"></div>
+
+  <div class="bottom-nav">
+    <a class="nav-item" href="index.html">
+      <!-- Phone Call icon (Lucide phone-call) -->
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 5.49 5.49l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>
+      Calls
+    </a>
+    <a class="nav-item active" href="intakes.html">
+      <!-- Clipboard List icon (Lucide clipboard-list) -->
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="8" y="2" width="8" height="4" rx="1"/>
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+        <line x1="9" y1="12" x2="15" y2="12"/>
+        <line x1="9" y1="16" x2="13" y2="16"/>
+      </svg>
+      Intakes
+    </a>
+  </div>
+
+  <script>
+    const SAMPLE = [
+      {
+        id: 'sample-1',
+        name: 'James Okafor',
+        phone: '(818) 555-0273',
+        matter: 'Auto Accident',
+        dol: '05/25/26',
+        fm: 'David Park',
+        time: 'Yesterday 3:58 PM',
+        status: 'pending',
+      },
+      {
+        id: 'sample-2',
+        name: 'Maria Gonzalez',
+        phone: '(310) 555-0847',
+        matter: 'Slip & Fall',
+        dol: '05/20/26',
+        fm: 'Sarah Klein',
+        time: 'Today 9:15 AM',
+        status: 'scheduled',
+        meetingDate: 'Jun 3',
+      },
+    ];
+
+    let currentFilter = 'all';
+
+    function getIntakes() {
+      const stored = JSON.parse(localStorage.getItem('fm_intakes') || '[]');
+      // dedupe by phone against SAMPLE
+      const samplePhones = SAMPLE.map(s => s.phone);
+      const filtered = stored.filter(i => !samplePhones.includes(i.phone));
+      return [...filtered, ...SAMPLE];
+    }
+
+    const STATUS = {
+      pending:    { label: 'Unscheduled',  badge: 'badge-pending',   dot: 'dot-pending' },
+      scheduled:  { label: 'Meeting Set',  badge: 'badge-scheduled', dot: 'dot-scheduled' },
+      // legacy fallbacks
+      preintake:  { label: 'Unscheduled',  badge: 'badge-pending',   dot: 'dot-pending' },
+      inprogress: { label: 'Meeting Set',  badge: 'badge-scheduled', dot: 'dot-scheduled' },
+      call:       { label: 'Unscheduled',  badge: 'badge-pending',   dot: 'dot-pending' },
+      done:       { label: 'Meeting Set',  badge: 'badge-scheduled', dot: 'dot-scheduled' },
+    };
+    function statusLabel(s, meetingDate) {
+      if ((s === 'scheduled') && meetingDate) return meetingDate;
+      return STATUS[s]?.label || 'Unscheduled';
+    }
+    function badgeClass(s)  { return STATUS[s]?.badge || 'badge-pending'; }
+    function dotClass(s)    { return STATUS[s]?.dot   || 'dot-pending'; }
+
+    function render(filter) {
+      const all = getIntakes();
+      const filtered = filter === 'all' ? all : all.filter(i => i.status === filter);
+
+      const list = document.getElementById('intake-list');
+      const sub  = document.getElementById('nav-sub');
+      const pendingCount = all.filter(i => i.status === 'pending').length;
+      sub.textContent = `${all.length} total · ${pendingCount} 미팅 미정`;
+
+      if (!filtered.length) {
+        list.innerHTML = `<div class="empty-state">
+          <div class="empty-state-title">No intakes yet</div>
+          <div class="empty-state-sub">Accepted calls will appear here as Pre-Intake.</div>
+        </div>`;
+        return;
+      }
+
+      // group by date label
+      const groups = {};
+      filtered.forEach(i => {
+        const g = i.time.startsWith('Today') ? 'Today' :
+                  i.time.startsWith('Yesterday') ? 'Yesterday' : 'Earlier';
+        if (!groups[g]) groups[g] = [];
+        groups[g].push(i);
+      });
+
+      const order = ['Today', 'Yesterday', 'Earlier'];
+      let html = '';
+      order.forEach(g => {
+        if (!groups[g]) return;
+        html += `<div class="section-label">${g}</div>`;
+        groups[g].forEach(i => {
+          const href = `intake-form.html?id=${encodeURIComponent(i.id)}&step=1`;
+          html += `<a class="intake-card" href="${href}">
+            <div class="status-dot ${dotClass(i.status)}"></div>
+            <div class="intake-body">
+              <div class="intake-name">${i.name}</div>
+              <div class="intake-meta">${i.phone} · FM: ${i.fm}</div>
+              <div class="intake-preview">${i.matter} · DOL ${i.dol}</div>
+            </div>
+            <div class="intake-right">
+              <span class="intake-time">${i.time.replace('Today ','').replace('Yesterday ','')}</span>
+              <span class="badge ${badgeClass(i.status)}">${statusLabel(i.status, i.meetingDate)}</span>
+            </div>
+            <span class="chevron">›</span>
+          </a>`;
+        });
+      });
+
+      list.innerHTML = html;
+    }
+
+    function filterTab(filter, el) {
+      currentFilter = filter;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      render(filter);
+    }
+
+    render('all');
+  </script>
+</body>
+</html>

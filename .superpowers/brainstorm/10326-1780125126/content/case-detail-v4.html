@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CM Case Detail v4</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F0F2F5;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+      border: 1px solid #ddd;
+    }
+
+    /* NAV */
+    .nav {
+      background: #fff;
+      padding: 13px 16px 11px;
+      border-bottom: 1px solid #EAECF0;
+      display: flex; align-items: center; gap: 10px;
+      position: sticky; top: 0; z-index: 20;
+    }
+    .nav-back { font-size: 22px; color: #4B5B8C; line-height: 1; }
+    .nav-info { flex: 1; }
+    .nav-title { font-size: 15px; font-weight: 700; color: #101828; }
+    .nav-sub { font-size: 10px; color: #98A2B3; margin-top: 1px; }
+
+    /* STAGE BAR — 케이스 외부 마일스톤만 */
+    .stage-bar {
+      padding: 10px 16px 9px;
+      background: #FAFAFA;
+      border-bottom: 1px solid #EAECF0;
+    }
+    .stages-row { display: flex; align-items: flex-start; }
+    .stage-col { display: flex; flex-direction: column; align-items: center; flex: 1; }
+    .stage-dot {
+      width: 22px; height: 22px; border-radius: 50%;
+      font-size: 9px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .stage-dot.done   { background: #0D9488; color: #fff; }
+    .stage-dot.active { background: #4B5B8C; color: #fff; font-size: 8px; }
+    .stage-dot.pending{ background: #F2F4F7; color: #98A2B3; border: 1.5px solid #E4E7EC; }
+    .stage-line-wrap { flex: 1; display: flex; align-items: center; padding-top: 11px; }
+    .stage-line { width: 100%; height: 2px; background: #E4E7EC; }
+    .stage-line.done { background: #0D9488; }
+    .stage-name { font-size: 8px; color: #98A2B3; margin-top: 3px; text-align: center; line-height: 1.3; }
+    .stage-name.active { color: #4B5B8C; font-weight: 700; }
+    .stage-name.done   { color: #0D9488; }
+
+    /* INFO CHIPS */
+    .info-chips {
+      padding: 8px 16px;
+      background: #fff;
+      border-bottom: 1px solid #EAECF0;
+      display: flex; gap: 5px; flex-wrap: wrap;
+    }
+    .chip { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 5px; }
+    .chip-blue  { background: #EEF2FF; color: #3D4E7A; }
+    .chip-green { background: #ECFDF5; color: #027A48; }
+    .chip-amber { background: #FFFAEB; color: #B54708; }
+    .chip-gray  { background: #F2F4F7; color: #667085; }
+
+    /* BODY */
+    .body { padding: 12px 14px 100px; display: flex; flex-direction: column; gap: 8px; }
+
+    .section-label {
+      font-size: 10px; font-weight: 700; color: #98A2B3;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      padding: 4px 2px 2px;
+    }
+
+    /* PINNED 고객관리 */
+    .pinned-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1.5px solid #4B5B8C;
+      overflow: hidden;
+    }
+    .pinned-header {
+      display: flex; align-items: center; gap: 9px;
+      padding: 11px 13px;
+      cursor: pointer;
+      user-select: none;
+      background: #F5F7FF;
+    }
+    .pinned-pin { font-size: 13px; flex-shrink: 0; }
+    .pinned-title { flex: 1; font-size: 12px; font-weight: 700; color: #3D4E7A; }
+    .pinned-next {
+      font-size: 10px; font-weight: 600;
+      background: #EEF2FF; color: #4B5B8C;
+      padding: 2px 8px; border-radius: 20px;
+    }
+    .pinned-next.overdue {
+      background: #FEF3F2; color: #B42318;
+    }
+    .pinned-chevron { font-size: 11px; color: #4B5B8C; transition: transform 0.2s; flex-shrink: 0; }
+    .pinned-chevron.open { transform: rotate(180deg); }
+    .pinned-body { border-top: 1.5px solid #C7D2FE; }
+
+    /* ACCORDION */
+    .accordion {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #E4E7EC;
+      overflow: hidden;
+    }
+    .accordion-header {
+      display: flex; align-items: center; gap: 9px;
+      padding: 11px 13px;
+      cursor: pointer; user-select: none;
+    }
+    .acc-icon { font-size: 14px; flex-shrink: 0; }
+    .acc-title { flex: 1; font-size: 12px; font-weight: 700; color: #101828; }
+    .acc-badge {
+      font-size: 10px; font-weight: 600;
+      background: #EEF2FF; color: #3D4E7A;
+      padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+    }
+    .acc-chevron { font-size: 11px; color: #98A2B3; transition: transform 0.2s; flex-shrink: 0; }
+    .acc-chevron.open { transform: rotate(180deg); }
+    .accordion-body { border-top: 1px solid #F2F4F7; }
+
+    /* CHECK ITEMS */
+    .check-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 10px 13px;
+      border-bottom: 1px solid #F9FAFB;
+    }
+    .check-item:last-child { border-bottom: none; }
+    .pri-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .pri-high { background: #F04438; }
+    .pri-mid  { background: #F79009; }
+    .pri-low  { background: #D0D5DD; }
+
+    .check-box {
+      width: 20px; height: 20px; border-radius: 6px;
+      border: 1.5px solid #D0D5DD; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; cursor: pointer; transition: all 0.15s;
+    }
+    .check-text { flex: 1; font-size: 12px; color: #344054; line-height: 1.4; }
+    .check-text.struck { color: #98A2B3; text-decoration: line-through; }
+
+    .action-btn {
+      font-size: 10px; font-weight: 600;
+      padding: 5px 10px; border-radius: 6px;
+      border: none; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    }
+    .btn-send  { background: #4B5B8C; color: #fff; }
+    .btn-call  { background: #ECFDF5; color: #027A48; }
+    .btn-view  { background: #F2F4F7; color: #344054; }
+    .btn-check { background: #FFFAEB; color: #B54708; }
+    .btn-req   { background: #EEF2FF; color: #3D4E7A; }
+
+    /* DONE LOG */
+    .done-card {
+      background: #F6FEF9;
+      border-radius: 10px;
+      border: 1px solid #D1FADF;
+      overflow: hidden;
+    }
+    .done-header {
+      display: flex; align-items: center; gap: 9px;
+      padding: 11px 13px; cursor: pointer; user-select: none;
+    }
+    .done-title { flex: 1; font-size: 12px; font-weight: 700; color: #027A48; }
+    .done-count {
+      font-size: 10px; font-weight: 600;
+      background: #ECFDF5; color: #027A48;
+      padding: 2px 8px; border-radius: 20px;
+    }
+    .done-chevron { font-size: 11px; color: #6CE9A6; transition: transform 0.2s; }
+    .done-chevron.open { transform: rotate(180deg); }
+    .done-body { border-top: 1px solid #D1FADF; }
+    .done-item {
+      display: flex; align-items: flex-start; gap: 9px;
+      padding: 9px 13px;
+      border-bottom: 1px solid #F0FDF4;
+    }
+    .done-item:last-child { border-bottom: none; }
+    .done-check {
+      width: 18px; height: 18px; border-radius: 5px;
+      background: #0D9488; color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .done-text-main { font-size: 11px; color: #6CE9A6; text-decoration: line-through; }
+    .done-meta { font-size: 9px; color: #A6F4C5; margin-top: 1px; }
+    .done-time { font-size: 9px; color: #6CE9A6; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <div class="nav">
+    <div class="nav-back">‹</div>
+    <div class="nav-info">
+      <div class="nav-title">Maria Gonzalez</div>
+      <div class="nav-sub">Auto Accident · DOL 05/10/26 · Sarah Klein</div>
+    </div>
+  </div>
+
+  <!-- STAGE BAR: 외부 마일스톤만 (치료관리 제외) -->
+  <div class="stage-bar">
+    <div class="stages-row">
+      <div class="stage-col">
+        <div class="stage-dot done">✓</div>
+        <div class="stage-name done">보험사<br>연락</div>
+      </div>
+      <div class="stage-line-wrap"><div class="stage-line done"></div></div>
+      <div class="stage-col">
+        <div class="stage-dot active">NOW</div>
+        <div class="stage-name active">의료기록<br>수집</div>
+      </div>
+      <div class="stage-line-wrap"><div class="stage-line"></div></div>
+      <div class="stage-col">
+        <div class="stage-dot pending">3</div>
+        <div class="stage-name">Demand<br>이관</div>
+      </div>
+      <div class="stage-line-wrap"><div class="stage-line"></div></div>
+      <div class="stage-col">
+        <div class="stage-dot pending">4</div>
+        <div class="stage-name">협상<br>완료</div>
+      </div>
+      <div class="stage-line-wrap"><div class="stage-line"></div></div>
+      <div class="stage-col">
+        <div class="stage-dot pending">5</div>
+        <div class="stage-name">합의<br>종결</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFO CHIPS -->
+  <div class="info-chips">
+    <span class="chip chip-blue">BI #2891</span>
+    <span class="chip chip-blue">PD #2891-PD</span>
+    <span class="chip chip-green">Liability ✓</span>
+    <span class="chip chip-amber">SOL D-180</span>
+    <span class="chip chip-gray">State Farm</span>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- 📌 고정: 고객 팔로우업 (항상 최상단) -->
+    <div class="section-label">📌 고객 관리 (상시)</div>
+    <div class="pinned-card" id="pinned">
+      <div class="pinned-header" onclick="togglePinned()">
+        <div class="pinned-pin">👤</div>
+        <div class="pinned-title">고객 팔로우업</div>
+        <div class="pinned-next overdue">D+3 연락 필요</div>
+        <div class="pinned-chevron open" id="pinned-chev">▼</div>
+      </div>
+      <div class="pinned-body" id="pinned-body">
+        <div class="check-item">
+          <div class="pri-dot pri-high"></div>
+          <div class="check-box" onclick="checkItem(this)"></div>
+          <div class="check-text">치료 진행 상황 확인 전화</div>
+          <button class="action-btn btn-call">전화</button>
+        </div>
+        <div class="check-item">
+          <div class="pri-dot pri-high"></div>
+          <div class="check-box" onclick="checkItem(this)"></div>
+          <div class="check-text">다음 병원 예약일 확인</div>
+          <button class="action-btn btn-check">확인</button>
+        </div>
+        <div class="check-item">
+          <div class="pri-dot pri-mid"></div>
+          <div class="check-box" onclick="checkItem(this)"></div>
+          <div class="check-text">고객 불편사항 / 추가 요청 접수</div>
+          <button class="action-btn btn-req">메모</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 할 일 섹션 -->
+    <div class="section-label" style="margin-top:4px;">할 일</div>
+
+    <!-- 아코디언: 의료기록 수집 (현재 단계, 펼침) -->
+    <div class="accordion" id="acc1">
+      <div class="accordion-header" onclick="toggleAcc('acc1')">
+        <div class="acc-icon">📋</div>
+        <div class="acc-title">의료기록 & 빌링 요청</div>
+        <div class="acc-badge">3개 남음</div>
+        <div class="acc-chevron open" id="acc1-chev">▼</div>
+      </div>
+      <div class="accordion-body" id="acc1-body">
+        <div class="check-item">
+          <div class="pri-dot pri-high"></div>
+          <div class="check-box" onclick="checkItem(this)"></div>
+          <div class="check-text">Cedars-Sinai에 Medical Records 요청</div>
+          <button class="action-btn btn-send">요청</button>
+        </div>
+        <div class="check-item">
+          <div class="pri-dot pri-high"></div>
+          <div class="check-box" onclick="checkItem(this)"></div>
+          <div class="check-text">의료비 Billing 요청</div>
+          <button class="action-btn btn-send">요청</button>
+        </div>
+        <div class="check-item">
+          <div class="pri-dot pri-mid"></div>
+          <div class="check-box" onclick="checkItem(this)"></div>
+          <div class="check-text">Medical Collection 부서에 전달</div>
+          <button class="action-btn btn-req">전달</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 아코디언: PD 클레임 (접힘) -->
+    <div class="accordion" id="acc2">
+      <div class="accordion-header" onclick="toggleAcc('acc2')">
+        <div class="acc-icon">🚗</div>
+        <div class="acc-title">PD 클레임 (차량 처리)</div>
+        <div class="acc-badge">2개 남음</div>
+        <div class="acc-chevron" id="acc2-chev">▼</div>
+      </div>
+      <div class="accordion-body" id="acc2-body" style="display:none;">
+        <div class="check-item">
+          <div class="pri-dot pri-mid"></div>
+          <div class="check-box" onclick="checkItem(this)"></div>
+          <div class="check-text">차량 수리 진행 상황 확인</div>
+          <button class="action-btn btn-check">확인</button>
+        </div>
+        <div class="check-item">
+          <div class="pri-dot pri-mid"></div>
+          <div class="check-box" onclick="checkItem(this)"></div>
+          <div class="check-text">Loss of Use (렌트카) 지원 확인</div>
+          <button class="action-btn btn-view">보기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 아코디언: 예외 처리 (접힘) -->
+    <div class="accordion" id="acc3">
+      <div class="accordion-header" onclick="toggleAcc('acc3')">
+        <div class="acc-icon">⚠️</div>
+        <div class="acc-title">예외 처리 (DMV / 정부보험)</div>
+        <div class="acc-badge">1개 남음</div>
+        <div class="acc-chevron" id="acc3-chev">▼</div>
+      </div>
+      <div class="accordion-body" id="acc3-body" style="display:none;">
+        <div class="check-item">
+          <div class="pri-dot pri-mid"></div>
+          <div class="check-box" onclick="checkItem(this)"></div>
+          <div class="check-text">Medicare / Medi-Cal 여부 확인</div>
+          <button class="action-btn btn-check">확인</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 완료 로그 -->
+    <div class="section-label" style="margin-top:4px;">완료</div>
+    <div class="done-card">
+      <div class="done-header" onclick="toggleDone()">
+        <div style="font-size:14px;">✅</div>
+        <div class="done-title">완료된 항목</div>
+        <div class="done-count" id="done-count">7개</div>
+        <div class="done-chevron open" id="done-chev">▼</div>
+      </div>
+      <div class="done-body" id="done-body">
+        <div class="done-item">
+          <div class="done-check">✓</div>
+          <div style="flex:1;">
+            <div class="done-text-main">Thank You Letter 발송</div>
+            <div class="done-meta">고객 팔로우업</div>
+          </div>
+          <div class="done-time">오늘 9:25</div>
+        </div>
+        <div class="done-item">
+          <div class="done-check">✓</div>
+          <div style="flex:1;">
+            <div class="done-text-main">BI 클레임 번호 확보 & 담당자 연락</div>
+            <div class="done-meta">보험사 연락</div>
+          </div>
+          <div class="done-time">어제</div>
+        </div>
+        <div class="done-item">
+          <div class="done-check">✓</div>
+          <div style="flex:1;">
+            <div class="done-text-main">PD 클레임 번호 확보 & 담당자 연락</div>
+            <div class="done-meta">보험사 연락</div>
+          </div>
+          <div class="done-time">어제</div>
+        </div>
+        <div class="done-item">
+          <div class="done-check">✓</div>
+          <div style="flex:1;">
+            <div class="done-text-main">커버리지 유무 확인 요청</div>
+            <div class="done-meta">보험사 연락</div>
+          </div>
+          <div class="done-time">어제</div>
+        </div>
+        <div class="done-item">
+          <div class="done-check">✓</div>
+          <div style="flex:1;">
+            <div class="done-text-main">Liability 인정 여부 확인 요청</div>
+            <div class="done-meta">보험사 연락</div>
+          </div>
+          <div class="done-time">어제</div>
+        </div>
+        <div class="done-item">
+          <div class="done-check">✓</div>
+          <div style="flex:1;">
+            <div class="done-text-main">차량 점검 일정 조율</div>
+            <div class="done-meta">PD 클레임</div>
+          </div>
+          <div class="done-time">2일 전</div>
+        </div>
+        <div class="done-item">
+          <div class="done-check">✓</div>
+          <div style="flex:1;">
+            <div class="done-text-main">DMV SR-1 보고 및 자료 요청</div>
+            <div class="done-meta">예외 처리</div>
+          </div>
+          <div class="done-time">3일 전</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function togglePinned() {
+      const body = document.getElementById('pinned-body');
+      const chev = document.getElementById('pinned-chev');
+      const open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : 'block';
+      chev.classList.toggle('open', !open);
+    }
+    function toggleAcc(id) {
+      const body = document.getElementById(id + '-body');
+      const chev = document.getElementById(id + '-chev');
+      const open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : 'block';
+      chev.classList.toggle('open', !open);
+    }
+    function toggleDone() {
+      const body = document.getElementById('done-body');
+      const chev = document.getElementById('done-chev');
+      const open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : 'block';
+      chev.classList.toggle('open', !open);
+    }
+    function checkItem(box) {
+      const isDone = box.dataset.checked === '1';
+      if (isDone) {
+        box.dataset.checked = '0';
+        box.innerHTML = '';
+        box.style.background = '';
+        box.style.borderColor = '#D0D5DD';
+        box.style.color = '';
+        box.nextElementSibling.classList.remove('struck');
+      } else {
+        box.dataset.checked = '1';
+        box.innerHTML = '✓';
+        box.style.background = '#0D9488';
+        box.style.borderColor = '#0D9488';
+        box.style.color = '#fff';
+        box.nextElementSibling.classList.add('struck');
+      }
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Call Detail</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F5F6F8;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+    }
+
+    .nav {
+      background: #fff;
+      padding: 12px 16px 11px;
+      border-bottom: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav-back {
+      font-size: 22px;
+      text-decoration: none;
+      color: #4B6CB7;
+      line-height: 1;
+      flex-shrink: 0;
+      padding-right: 2px;
+    }
+    .nav-info { flex: 1; min-width: 0; }
+    .nav-title { font-size: 17px; font-weight: 700; color: #111827; letter-spacing: -0.01em; }
+    .nav-sub {
+      font-size: 11px; color: #9CA3AF;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .content { padding: 14px 12px 140px; display: flex; flex-direction: column; gap: 10px; }
+
+
+    /* Section Label */
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #9CA3AF;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 4px 2px 0;
+    }
+
+    /* AI Summary */
+    .ai-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 14px 14px 4px;
+      border: 1px solid #E5E7EB;
+    }
+    .ai-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #F3F4F6;
+    }
+    .ai-badge {
+      background: #EEF2FF;
+      color: #4B6CB7;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
+    .ai-confidence {
+      font-size: 11px;
+      color: #0D9488;
+      margin-left: auto;
+    }
+
+    .ai-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 10px 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+    .ai-row:last-child { border-bottom: none; }
+    .ai-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #374151;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .ai-tag {
+      background: #EEF2FF;
+      color: #4B6CB7;
+      font-size: 9px;
+      font-weight: 600;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    .ai-input {
+      width: 100%;
+      font-size: 13px;
+      font-weight: 400;
+      color: #111827;
+      font-family: inherit;
+      background: #F8F9FF;
+      border: 1px solid #C7D2FE;
+      border-radius: 6px;
+      padding: 9px 10px;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .ai-input:focus { border-color: #4B6CB7; background: #fff; }
+    .ai-input.summary { resize: none; line-height: 1.5; }
+
+    /* Transcript */
+    .transcript-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 14px;
+      border: 1px solid #E5E7EB;
+    }
+    .transcript-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .transcript-toggle-label { font-size: 13px; font-weight: 600; color: #374151; }
+    .transcript-toggle-icon  { font-size: 11px; color: #9CA3AF; }
+    .transcript-body {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #4B5563;
+      line-height: 1.7;
+      display: none;
+    }
+    .transcript-body.open { display: block; }
+    .bubble { margin-bottom: 8px; }
+    .bubble-label { font-size: 10px; font-weight: 600; color: #9CA3AF; margin-bottom: 2px; }
+    .bubble-fm     { background: #EEF2FF; border-radius: 0 8px 8px 8px; padding: 7px 10px; color: #374151; }
+    .bubble-client { background: #F3F4F6; border-radius: 8px 0 8px 8px; padding: 7px 10px; text-align: right; }
+
+    /* Decision Banner */
+    .decision-banner {
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #92400E;
+      line-height: 1.5;
+    }
+    .decision-banner strong { color: #78350F; }
+
+    /* Bottom Actions */
+    .bottom-actions {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      background: #fff;
+      border-top: 1px solid #E5E7EB;
+      padding: 10px 12px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .btn-row { display: flex; gap: 8px; }
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.8; }
+    .btn-drop   { background: #FEE2E2; color: #B91C1C; flex: 0.7; }
+    .btn-accept { background: #4B6CB7; color: #fff; flex: 1.3; }
+    .btn-review {
+      width: 100%;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid #E5E7EB;
+      background: #fff;
+      color: #374151;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: background 0.15s;
+    }
+    .btn-review:active { background: #F9FAFB; }
+    .review-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #F59E0B;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    /* Review Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-sheet {
+      background: #fff;
+      border-radius: 12px 12px 0 0;
+      padding: 20px 16px 36px;
+      width: 100%;
+      max-width: 430px;
+    }
+    .modal-handle {
+      width: 36px; height: 4px;
+      background: #E5E7EB;
+      border-radius: 2px;
+      margin: 0 auto 18px;
+    }
+    .modal-title { font-size: 15px; font-weight: 700; color: #111827; margin-bottom: 4px; }
+    .modal-sub   { font-size: 12px; color: #6B7280; margin-bottom: 16px; line-height: 1.5; }
+    .modal-note {
+      width: 100%;
+      border: 1px solid #E5E7EB;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #111827;
+      resize: none;
+      outline: none;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .modal-note:focus { border-color: #4B6CB7; }
+    .modal-btn-row { display: flex; gap: 8px; }
+    .modal-cancel {
+      flex: 0.7; padding: 11px; border-radius: 6px;
+      font-size: 13px; font-weight: 600;
+      background: #F3F4F6; color: #374151;
+      border: none; cursor: pointer;
+    }
+    .modal-send {
+      flex: 1.3; padding: 11px; border-radius: 6px;
+      font-size: 13px; font-weight: 600;
+      background: #4B6CB7; color: #fff;
+      border: none; cursor: pointer;
+    }
+    .modal-sent {
+      text-align: center;
+      padding: 8px 0 4px;
+    }
+    .modal-sent-icon {
+      width: 40px; height: 40px;
+      background: #0D9488;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 18px; font-weight: 700;
+      margin: 0 auto 10px;
+    }
+    .modal-sent-title { font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 4px; }
+    .modal-sent-sub   { font-size: 12px; color: #6B7280; }
+  </style>
+</head>
+<body>
+
+  <div class="nav">
+    <a class="nav-back" href="index.html">‹</a>
+    <div class="nav-info">
+      <div class="nav-title" id="nav-phone">Call Detail</div>
+      <div class="nav-sub" id="nav-sub">—</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+
+    <div class="section-label" id="ai-label-row" style="display:none">AI Call Summary</div>
+
+    <div class="ai-card" id="ai-card" style="display:none">
+      <div class="ai-header">
+        <span class="ai-badge">AI Analyzed</span>
+        <span class="ai-confidence" id="ai-confidence">—</span>
+      </div>
+      <div id="ai-rows"></div>
+    </div>
+
+    <div class="transcript-card" id="transcript-card" style="display:none">
+      <div class="transcript-toggle" onclick="toggleTranscript()">
+        <span class="transcript-toggle-label">Call Transcript</span>
+        <span id="toggle-icon" class="transcript-toggle-icon">Show ▼</span>
+      </div>
+      <div class="transcript-body" id="transcript"></div>
+    </div>
+
+    <div class="decision-banner" id="decision-banner" style="display:none">
+      <strong>FM Decision Required</strong><br/>
+      Review the AI summary above and decide whether to accept this case for intake or drop it.
+    </div>
+
+    <div class="decision-banner" id="missed-banner" style="display:none; background:#F9FAFB; border-color:#E5E7EB; color:#6B7280;">
+      <strong style="color:#374151;">Missed Call</strong><br/>
+      No voicemail left. Consider calling back if a callback number is available.
+    </div>
+
+  </div>
+
+  <div class="bottom-actions" id="bottom-actions">
+    <div class="btn-row">
+      <a class="btn btn-drop" href="drop.html">Drop</a>
+      <button class="btn btn-accept" onclick="acceptIntake()">Accept &amp; Start Intake</button>
+    </div>
+    <button class="btn-review" onclick="openReview()"><span class="review-dot"></span> Request Attorney Review</button>
+  </div>
+
+  <!-- Review Request Modal -->
+  <div class="modal-overlay" id="reviewOverlay" onclick="closeReview(event)">
+    <div class="modal-sheet" id="reviewSheet">
+      <div class="modal-handle"></div>
+      <div id="review-form">
+        <div class="modal-title">Request Attorney Review</div>
+        <div class="modal-sub">This call summary will be sent to the managing attorney for review before a decision is made.</div>
+        <textarea class="modal-note" rows="3" placeholder="Add a note for the attorney (optional)..." id="review-note"></textarea>
+        <div class="modal-btn-row">
+          <button class="modal-cancel" onclick="closeReview()">Cancel</button>
+          <button class="modal-send" onclick="sendReview()">Send Request</button>
+        </div>
+      </div>
+      <div id="review-sent" class="modal-sent" style="display:none">
+        <div class="modal-sent-icon">✓</div>
+        <div class="modal-sent-title">Review Requested</div>
+        <div class="modal-sent-sub">The managing attorney has been notified and will review this call shortly.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CALLS = {
+      '2135550192': {
+        phone: '(213) 555-0192',
+        type: 'incoming',
+        meta: 'Inbound · 4m 32s · RingCentral',
+        time: 'Today 10:42 AM',
+        confidence: 'Confidence 94%',
+        ai: [
+          ['Caller Name', 'Daniel Park'],
+          ['Matter Type', 'Auto Accident'],
+          ['Date of Loss', 'May 10, 2026'],
+          ['Location', 'Wilshire Blvd & La Brea Ave, LA'],
+          ['Fault', 'Clear — other driver admitted at scene'],
+          ['Treatment', 'Scheduled — Chiro 5/15'],
+          ['D Insurance', 'Confirmed — carrier unknown'],
+          ['Coverage Risk', 'Low — D confirmed insured'],
+          ['SOL Check', 'OK — ~21 months remaining (May 2028)'],
+          ['Prior Injuries', 'None reported'],
+          ['Represented', 'No'],
+          ['Police Report', 'Filed'],
+          ['Language', 'English'],
+          ['Summary', 'Rear-ended at red light. Other driver admitted fault at scene. Client has neck/back pain; chiro scheduled 5/15. Police report filed. Clean case — recommend accept.'],
+        ],
+        transcript: [
+          ['FM — Sarah Klein', 'Hi, this is Sarah from the law office. How can I help you today?'],
+          ['Caller', 'Yes, I was in a car accident last week and someone told me I should call a lawyer.'],
+          ['FM — Sarah Klein', "I'm sorry to hear that. Can I get your name and what happened?"],
+          ['Caller', 'My name is Daniel Park. I was rear-ended at a red light on Wilshire and La Brea on May 10th. The other driver admitted it was his fault right there.'],
+          ['FM — Sarah Klein', 'Did you get a police report filed?'],
+          ['Caller', 'Yes, police came to the scene.'],
+          ['FM — Sarah Klein', 'Have you received any medical treatment?'],
+          ['Caller', 'I have neck and back pain. I have an appointment with a chiropractor on May 15th.'],
+        ],
+        status: 'pending',
+      },
+      '3105550847': {
+        phone: '(310) 555-0847',
+        type: 'incoming',
+        meta: 'Inbound · 2m 11s · RingCentral',
+        time: 'Today 9:15 AM',
+        confidence: 'Confidence 88%',
+        ai: [
+          ['Caller Name', 'Maria Gonzalez'],
+          ['Matter Type', 'Slip & Fall'],
+          ['Date of Loss', 'May 20, 2026'],
+          ['Location', 'Ralphs Supermarket, 3rd St, Santa Monica'],
+          ['Fault', 'Likely premises — wet floor, no warning sign posted'],
+          ['Treatment', 'ER same day — knee laceration'],
+          ['D Insurance', 'Commercial — Ralphs/Kroger (large carrier, likely covered)'],
+          ['Coverage Risk', 'Low — large commercial retailer'],
+          ['SOL Check', 'OK — ~23 months remaining (May 2028)'],
+          ['Prior Injuries', 'None reported'],
+          ['Represented', 'No'],
+          ['Police Report', 'Not Filed'],
+          ['Language', 'Spanish / English'],
+          ['Summary', 'Slipped on wet floor at Ralphs. No warning sign. ER same day — knee laceration. Store manager present at incident. Strong premises liability indicators — recommend accept.'],
+        ],
+        transcript: [
+          ['FM — Sarah Klein', 'Thank you for calling. What can I help you with today?'],
+          ['Caller', 'I slipped and fell at the grocery store last week and hurt my knee badly.'],
+          ['FM — Sarah Klein', 'I\'m sorry to hear that. Which store was this and what happened exactly?'],
+          ['Caller', 'Ralphs on 3rd Street in Santa Monica. The floor was wet but there was no sign. I went to the ER that day.'],
+        ],
+        status: 'pending',
+      },
+      '5625550031': {
+        phone: '(562) 555-0031',
+        type: 'missed',
+        meta: 'Missed · No voicemail',
+        time: 'Today 8:02 AM',
+        status: 'missed',
+      },
+      '8185550273': {
+        phone: '(818) 555-0273',
+        type: 'incoming',
+        meta: 'Inbound · 6m 04s · RingCentral',
+        time: 'Yesterday 3:58 PM',
+        confidence: 'Confidence 91%',
+        ai: [
+          ['Caller Name', 'James Okafor'],
+          ['Matter Type', 'Auto Accident'],
+          ['Date of Loss', 'May 25, 2026'],
+          ['Location', 'I-405 N, Van Nuys'],
+          ['Fault', 'Clear — other driver lane change without signal'],
+          ['Treatment', 'Scheduled — Ortho consult 5/30'],
+          ['D Insurance', 'Not confirmed — need to obtain'],
+          ['Coverage Risk', 'Unknown — insurance not yet verified'],
+          ['SOL Check', 'OK — ~23 months remaining (May 2028)'],
+          ['Prior Injuries', 'None reported'],
+          ['Represented', 'No'],
+          ['Police Report', 'Filed'],
+          ['Language', 'English'],
+          ['Summary', 'Sideswipe on I-405. Other driver changed lanes without signaling. Police report filed. Shoulder pain; ortho scheduled 5/30. Verify D insurance before final accept.'],
+        ],
+        transcript: [
+          ['FM — David Park', 'Pacific Liberty Law, how can I help?'],
+          ['Caller', 'I was in an accident on the 405 yesterday and I need to talk to a lawyer.'],
+          ['FM — David Park', 'Of course. Can you tell me what happened?'],
+          ['Caller', 'A car sideswiped me when they changed lanes without signaling. My shoulder has been killing me since.'],
+        ],
+        status: 'done',
+      },
+      '3235550614': {
+        phone: '(323) 555-0614',
+        type: 'incoming',
+        meta: 'Inbound · 1m 48s · RingCentral',
+        time: 'Yesterday 11:20 AM',
+        confidence: 'Confidence 76%',
+        ai: [
+          ['Caller Name', 'Kevin Tran'],
+          ['Matter Type', 'Auto Accident'],
+          ['Date of Loss', 'March 3, 2026'],
+          ['Location', 'Hollywood Blvd, Los Angeles'],
+          ['Fault', 'Unclear — both parties disputing liability'],
+          ['Treatment', 'No new treatment — pre-existing back condition'],
+          ['D Insurance', 'Not confirmed'],
+          ['Coverage Risk', 'High — liability disputed, no treatment, pre-existing injury'],
+          ['SOL Check', 'Caution — ~22 months remaining (Mar 2028)'],
+          ['Prior Injuries', 'Pre-existing back condition — complicates causation'],
+          ['Represented', 'No'],
+          ['Police Report', 'Not Filed'],
+          ['Language', 'English'],
+          ['Summary', 'Low-speed collision 2 months ago. Liability unclear, both parties disputing. Pre-existing back injury complicates causation. No treatment sought. SOL ~22 months (Mar 2028). Multiple red flags — passed to attorney for review.'],
+        ],
+        transcript: [
+          ['FM — Sarah Klein', 'Pacific Liberty Law, this is Sarah.'],
+          ['Caller', 'Hi, I had a fender-bender back in March and I\'m wondering if I have a case.'],
+          ['FM — Sarah Klein', 'What happened and have you seen a doctor?'],
+          ['Caller', 'Well, I have a bad back already, and honestly I\'m not sure who was at fault. It was a slow crash.'],
+        ],
+        status: 'done',
+      },
+    };
+
+    function render() {
+      const params = new URLSearchParams(window.location.search);
+      const key = params.get('phone') || '2135550192';
+      const d = CALLS[key] || CALLS['2135550192'];
+
+      document.getElementById('nav-phone').textContent = d.phone;
+      document.getElementById('nav-sub').textContent = d.time + ' · ' + d.meta;
+
+      if (d.type === 'missed') {
+        document.getElementById('missed-banner').style.display = 'block';
+        document.getElementById('bottom-actions').innerHTML =
+          '<a class="btn btn-cancel" href="index.html" style="flex:1;background:#F3F4F6;color:#374151;">Back to Calls</a>';
+        return;
+      }
+
+      document.getElementById('ai-label-row').style.display = 'block';
+      document.getElementById('ai-card').style.display = 'block';
+      document.getElementById('ai-confidence').textContent = d.confidence;
+
+      // Priority-ordered rendering groups
+      const DECISION_FIELDS = ['Fault', 'Coverage Risk', 'SOL Check'];
+      // Group 1: 수임 판단 기준 (top)
+      const decisionFields = d.ai.filter(([l]) => DECISION_FIELDS.includes(l));
+      // Group 2a: 전화 중 확인 필수
+      const CALL_MUST = ['Treatment', 'Represented'];
+      const callMustFields = d.ai.filter(([l]) => CALL_MUST.includes(l));
+      // Group 2b: 미팅 전 확인
+      const PRE_MEETING = ['D Insurance', 'Prior Injuries'];
+      const preMeetingFields = d.ai.filter(([l]) => PRE_MEETING.includes(l));
+      // Group 3: Basic info
+      const BASIC = ['Caller Name', 'Matter Type', 'Date of Loss', 'Location', 'Police Report', 'Language'];
+      const basicFields = d.ai.filter(([l]) => BASIC.includes(l));
+      // Group 4: Summary
+      const summaryField = d.ai.filter(([l]) => l === 'Summary');
+
+      function renderBadge(label, value) {
+        let bg, bd, col;
+        if (label === 'Fault') {
+          const isUnclear = value.startsWith('Unclear');
+          const isLikely  = value.startsWith('Likely');
+          bg  = isUnclear ? '#FEF2F2' : isLikely ? '#FFFBEB' : '#F0FDF4';
+          bd  = isUnclear ? '#FECACA' : isLikely ? '#FDE68A' : '#BBF7D0';
+          col = isUnclear ? '#B91C1C' : isLikely ? '#92400E' : '#065F46';
+        } else if (label === 'Coverage Risk') {
+          const isHigh    = value.startsWith('High');
+          const isUnknown = value.startsWith('Unknown');
+          bg  = isHigh ? '#FEF2F2' : isUnknown ? '#FFFBEB' : '#F0FDF4';
+          bd  = isHigh ? '#FECACA' : isUnknown ? '#FDE68A' : '#BBF7D0';
+          col = isHigh ? '#B91C1C' : isUnknown ? '#92400E' : '#065F46';
+        } else if (label === 'SOL Check') {
+          const isCaution = value.startsWith('Caution');
+          bg  = isCaution ? '#FFFBEB' : '#F0FDF4';
+          bd  = isCaution ? '#FDE68A' : '#BBF7D0';
+          col = isCaution ? '#92400E' : '#065F46';
+        }
+        return `<div style="background:${bg};border:1px solid ${bd};border-radius:6px;padding:8px 10px;font-size:12px;font-weight:600;color:${col};">${value}</div>`;
+      }
+
+      function renderRow([label, value]) {
+        if (label === 'Summary') {
+          return `<div class="ai-row">
+            <span class="ai-label">${label} <span class="ai-tag">AI</span></span>
+            <textarea class="ai-input summary" rows="3">${value}</textarea>
+          </div>`;
+        }
+        if (DECISION_FIELDS.includes(label)) {
+          return `<div class="ai-row">
+            <span class="ai-label">${label} <span class="ai-tag">AI</span></span>
+            ${renderBadge(label, value)}
+          </div>`;
+        }
+        return `<div class="ai-row">
+          <span class="ai-label">${label} <span class="ai-tag">AI</span></span>
+          <input class="ai-input" type="text" value="${value.replace(/"/g, '&quot;')}" />
+        </div>`;
+      }
+
+      const sectionHeader = (title, color) =>
+        `<div style="padding:8px 0 4px;border-top:1px solid #E5E7EB;margin-top:6px;">
+          <div style="font-size:10px;font-weight:700;color:${color};letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;">${title}</div>
+        </div>`;
+
+      document.getElementById('ai-rows').innerHTML =
+        sectionHeader('Viability Check', '#4B6CB7') +
+        decisionFields.map(renderRow).join('') +
+        sectionHeader('Must Confirm on Call', '#6B7280') +
+        callMustFields.map(renderRow).join('') +
+        sectionHeader('Basic Info', '#9CA3AF') +
+        basicFields.map(renderRow).join('') +
+        summaryField.map(renderRow).join('');
+
+      if (d.transcript && d.transcript.length) {
+        document.getElementById('transcript-card').style.display = 'block';
+        const bubbles = d.transcript.map(([speaker, text]) => {
+          const isFM = speaker.startsWith('FM');
+          return `<div class="bubble">
+            <div class="bubble-label" ${isFM ? '' : 'style="text-align:right"'}>${speaker}</div>
+            <div class="${isFM ? 'bubble-fm' : 'bubble-client'}">${text}</div>
+          </div>`;
+        }).join('');
+        document.getElementById('transcript').innerHTML = bubbles;
+      }
+
+      if (d.status === 'pending') {
+        document.getElementById('decision-banner').style.display = 'block';
+      } else {
+        document.getElementById('bottom-actions').innerHTML =
+          '<a class="btn btn-cancel" href="index.html" style="flex:1;background:#F3F4F6;color:#374151;">Back to Calls</a>';
+      }
+    }
+
+    render();
+
+    function toggleTranscript() {
+      const body = document.getElementById('transcript');
+      const icon = document.getElementById('toggle-icon');
+      body.classList.toggle('open');
+      icon.textContent = body.classList.contains('open') ? 'Hide ▲' : 'Show ▼';
+    }
+
+    function acceptIntake() {
+      const params = new URLSearchParams(window.location.search);
+      const key = params.get('phone') || '2135550192';
+      const d = CALLS[key] || CALLS['2135550192'];
+
+      const aiMap = {};
+      (d.ai || []).forEach(([label, value]) => { aiMap[label] = value; });
+
+      const id = 'intake-' + Date.now();
+      const entry = {
+        id,
+        name:          aiMap['Caller Name'] || d.phone,
+        phone:         d.phone,
+        matter:        aiMap['Matter Type'] || '—',
+        dol:           aiMap['Date of Loss'] || '—',
+        location:      aiMap['Location'] || '',
+        police:        aiMap['Police Report'] || '',
+        treatment:     aiMap['Treatment'] || '',
+        language:      aiMap['Language'] || '',
+        description:   aiMap['Summary'] || '',
+        fault:         aiMap['Fault'] || '',
+        dInsurance:    aiMap['D Insurance'] || '',
+        coverageRisk:  aiMap['Coverage Risk'] || '',
+        solCheck:      aiMap['SOL Check'] || '',
+        priorInjuries: aiMap['Prior Injuries'] || '',
+        represented:   aiMap['Represented'] || '',
+        fm:            'Sarah Klein',
+        time:          'Today ' + new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}),
+        status:        'pending',
+      };
+
+      const existing = JSON.parse(localStorage.getItem('fm_intakes') || '[]');
+      const alreadyExists = existing.some(e => e.phone === entry.phone);
+      if (!alreadyExists) {
+        existing.unshift(entry);
+        localStorage.setItem('fm_intakes', JSON.stringify(existing));
+      }
+
+      window.location.href = 'quick-intake.html?phone=' + encodeURIComponent(key);
+    }
+
+    function openReview() {
+      document.getElementById('reviewOverlay').classList.add('show');
+    }
+    function closeReview(e) {
+      if (!e || e.target === document.getElementById('reviewOverlay')) {
+        document.getElementById('reviewOverlay').classList.remove('show');
+        setTimeout(() => {
+          document.getElementById('review-form').style.display = 'block';
+          document.getElementById('review-sent').style.display = 'none';
+          document.getElementById('review-note').value = '';
+        }, 300);
+      }
+    }
+    function sendReview() {
+      document.getElementById('review-form').style.display = 'none';
+      document.getElementById('review-sent').style.display = 'block';
+      setTimeout(() => closeReview(), 2000);
+    }
+  </script>
+</body>
+</html>

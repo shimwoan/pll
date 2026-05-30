@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>CM Demo v6 — 업무 흐름 시연</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #E8EAF0;
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 20px 0 40px;
+    }
+
+    /* ── DEMO LABEL ── */
+    .demo-label {
+      font-size: 11px; font-weight: 600; color: #98A2B3;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      margin-bottom: 10px; text-align: center;
+    }
+
+    /* ── PHONE FRAME ── */
+    .phone {
+      width: 390px;
+      background: #F0F2F5;
+      border-radius: 40px;
+      border: 8px solid #1D2939;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25), inset 0 0 0 1px #344054;
+      overflow: hidden;
+      position: relative;
+      min-height: 780px;
+    }
+    /* notch */
+    .phone::before {
+      content: '';
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 100px; height: 26px;
+      background: #1D2939;
+      border-radius: 0 0 18px 18px;
+      z-index: 99;
+    }
+
+    /* ── SCREENS ── */
+    .screen { display: none; flex-direction: column; min-height: 764px; }
+    .screen.active { display: flex; }
+
+    /* ── NAV ── */
+    .nav {
+      background: #fff;
+      padding: 38px 20px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #EAECF0;
+      position: sticky; top: 0; z-index: 20;
+      flex-shrink: 0;
+    }
+    .nav-title { font-size: 18px; font-weight: 700; color: #101828; }
+    .nav-sub { font-size: 11px; color: #98A2B3; margin-top: 2px; }
+    .nav-back { font-size: 22px; color: #4B5B8C; cursor: pointer; line-height: 1; }
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+    .nav-bell { font-size: 20px; position: relative; cursor: pointer; }
+    .bell-dot {
+      position: absolute; top: -2px; right: -2px;
+      width: 8px; height: 8px; background: #F04438; border-radius: 50%;
+      border: 1.5px solid #fff;
+    }
+    .nav-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #4B5B8C; color: #fff;
+      font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-lang {
+      font-size: 10px; font-weight: 600;
+      background: #FFF8F0; color: #B54708;
+      padding: 3px 8px; border-radius: 5px;
+      border: 1px solid #FECDCA;
+    }
+
+    /* ── SCROLL BODY ── */
+    .scroll-body { flex: 1; overflow-y: auto; padding-bottom: 32px; }
+
+    /* ── DATE STRIP ── */
+    .date-strip {
+      padding: 10px 16px 6px;
+      font-size: 11px; font-weight: 600; color: #667085;
+    }
+
+    /* ── ACTION QUEUE (홈 최상단) ── */
+    .action-queue {
+      margin: 8px 12px 4px;
+      background: #fff;
+      border-radius: 12px;
+      border: 1.5px solid #E4E7EC;
+      overflow: hidden;
+    }
+    .aq-header {
+      padding: 10px 14px;
+      background: #F8F9FC;
+      border-bottom: 1px solid #EAECF0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .aq-title { font-size: 11px; font-weight: 700; color: #344054; }
+    .aq-subtitle { font-size: 10px; color: #98A2B3; }
+    .aq-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 14px; border-bottom: 1px solid #F9FAFB;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .aq-row:last-child { border-bottom: none; }
+    .aq-row:active { background: #F9FAFB; }
+    .aq-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .aq-dot-red { background: #F04438; }
+    .aq-dot-amber { background: #F79009; }
+    .aq-dot-blue { background: #4B5B8C; }
+    .aq-label { flex: 1; font-size: 11px; color: #344054; font-weight: 500; }
+    .aq-count {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px;
+    }
+    .aq-count-red { background: #FEF3F2; color: #B42318; }
+    .aq-count-amber { background: #FFFAEB; color: #B54708; }
+    .aq-count-blue { background: #EEF2FF; color: #3D4E7A; }
+    .aq-arrow { font-size: 12px; color: #98A2B3; }
+
+    /* ── NOTIFICATION BANNER ── */
+    .notif-banner {
+      margin: 0 12px 6px;
+      background: #fff;
+      border-radius: 12px;
+      border: 1.5px solid #4B5B8C;
+      padding: 12px 14px;
+      display: flex; gap: 10px; align-items: flex-start;
+      cursor: pointer;
+      transition: all 0.15s;
+      animation: slideDown 0.3s ease;
+    }
+    .notif-banner:active { background: #F5F7FF; }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .notif-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: #EEF2FF; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .notif-content { flex: 1; }
+    .notif-type { font-size: 10px; font-weight: 700; color: #4B5B8C; margin-bottom: 2px; }
+    .notif-title { font-size: 13px; font-weight: 700; color: #101828; margin-bottom: 2px; }
+    .notif-body { font-size: 11px; color: #667085; line-height: 1.4; }
+    .notif-time { font-size: 9px; color: #98A2B3; white-space: nowrap; }
+    .notif-arrow { font-size: 14px; color: #4B5B8C; align-self: center; }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+      padding: 14px 16px 6px;
+      font-size: 11px; font-weight: 700; color: #98A2B3;
+      letter-spacing: 0.07em; text-transform: uppercase;
+    }
+
+    /* ── CASE CARD ── */
+    .case-card {
+      margin: 0 12px 6px;
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #EAECF0;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.12s;
+      position: relative;
+    }
+    .case-card:active { background: #F9FAFB; }
+    .case-card.new-case { border-color: #4B5B8C; }
+    .new-badge {
+      position: absolute; top: 12px; right: 12px;
+      font-size: 9px; font-weight: 700; color: #4B5B8C;
+      background: #EEF2FF; padding: 2px 7px; border-radius: 20px;
+    }
+    .case-name { font-size: 14px; font-weight: 700; color: #101828; margin-bottom: 4px; }
+    .case-meta { font-size: 11px; color: #667085; margin-bottom: 8px; }
+    .case-chips { display: flex; gap: 5px; flex-wrap: wrap; }
+    .chip { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 5px; }
+    .chip-blue   { background: #EEF2FF; color: #3D4E7A; }
+    .chip-green  { background: #ECFDF5; color: #027A48; }
+    .chip-amber  { background: #FFFAEB; color: #B54708; }
+    .chip-red    { background: #FEF3F2; color: #B42318; }
+    .chip-gray   { background: #F2F4F7; color: #667085; }
+    .chip-teal   { background: #F0FDF4; color: #0D9488; }
+    .chip-orange { background: #FFF8F0; color: #B54708; }
+
+    /* ── STAGE BAR ── */
+    .stage-bar {
+      padding: 12px 16px 10px;
+      background: #FAFAFA;
+      border-bottom: 1px solid #EAECF0;
+      flex-shrink: 0;
+    }
+    .stages-row { display: flex; align-items: flex-start; }
+    .stage-col { display: flex; flex-direction: column; align-items: center; flex: 1; }
+    .stage-dot {
+      width: 22px; height: 22px; border-radius: 50%;
+      font-size: 9px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .stage-dot.done    { background: #0D9488; color: #fff; }
+    .stage-dot.active  { background: #4B5B8C; color: #fff; font-size: 8px; }
+    .stage-dot.pending { background: #F2F4F7; color: #98A2B3; border: 1.5px solid #E4E7EC; }
+    .stage-line-wrap { flex: 1; display: flex; align-items: center; padding-top: 11px; }
+    .stage-line { width: 100%; height: 2px; background: #E4E7EC; }
+    .stage-line.done { background: #0D9488; }
+    .stage-name { font-size: 8px; color: #98A2B3; margin-top: 3px; text-align: center; line-height: 1.3; }
+    .stage-name.active { color: #4B5B8C; font-weight: 700; }
+    .stage-name.done   { color: #0D9488; }
+
+    /* ── TRACK CHIPS ── */
+    .track-chips {
+      padding: 8px 16px;
+      background: #fff;
+      border-bottom: 1px solid #EAECF0;
+      display: flex; flex-direction: column; gap: 5px;
+      flex-shrink: 0;
+    }
+    .track-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .track-label { font-size: 9px; font-weight: 700; color: #98A2B3; letter-spacing: 0.05em; text-transform: uppercase; width: 20px; flex-shrink: 0; }
+    .chip.clickable { cursor: pointer; }
+    .chip.clickable:hover { opacity: 0.8; }
+
+    /* ── TABS ── */
+    .tabs-row {
+      background: #fff;
+      border-bottom: 2px solid #EAECF0;
+      display: flex;
+      flex-shrink: 0;
+      position: sticky; top: 77px; z-index: 15;
+    }
+    .tab-btn {
+      flex: 1; text-align: center; padding: 10px 4px;
+      font-size: 11px; font-weight: 600; color: #98A2B3;
+      border-bottom: 2px solid transparent; margin-bottom: -2px;
+      cursor: pointer; background: none;
+      border-top: none; border-left: none; border-right: none;
+      transition: all 0.15s;
+    }
+    .tab-btn.active { color: #4B5B8C; border-bottom-color: #4B5B8C; }
+
+    /* ── BODY ── */
+    .detail-body { padding: 12px 14px 80px; display: flex; flex-direction: column; gap: 8px; }
+    .tab-panel { display: none; flex-direction: column; gap: 8px; }
+    .tab-panel.active { display: flex; }
+    .section-label {
+      font-size: 10px; font-weight: 700; color: #98A2B3;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      padding: 4px 2px 2px;
+    }
+
+    /* ── URGENT BANNER (Thank You Letter) ── */
+    .urgent-banner {
+      background: #FEF3F2;
+      border-radius: 10px;
+      border: 1.5px solid #FECDCA;
+      padding: 12px 13px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .urgent-icon { font-size: 20px; flex-shrink: 0; }
+    .urgent-text { flex: 1; }
+    .urgent-label { font-size: 10px; font-weight: 700; color: #B42318; margin-bottom: 2px; }
+    .urgent-title { font-size: 13px; font-weight: 700; color: #101828; }
+    .urgent-sub { font-size: 10px; color: #667085; margin-top: 2px; }
+    .urgent-btn {
+      font-size: 11px; font-weight: 700;
+      padding: 8px 14px; border-radius: 8px;
+      background: #4B5B8C; color: #fff; border: none; cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* ── DEADLOCK BANNER (Adjuster 미확보 액션) ── */
+    .deadlock-banner {
+      background: #FFFAEB;
+      border-radius: 10px;
+      border: 1.5px solid #FEC84B;
+      padding: 11px 13px;
+      display: flex; align-items: flex-start; gap: 9px;
+      margin-bottom: 4px;
+    }
+    .deadlock-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .deadlock-text { flex: 1; }
+    .deadlock-label { font-size: 10px; font-weight: 700; color: #B54708; margin-bottom: 3px; }
+    .deadlock-msg { font-size: 11px; color: #344054; margin-bottom: 8px; line-height: 1.4; }
+    .deadlock-actions { display: flex; gap: 6px; }
+    .deadlock-btn {
+      font-size: 10px; font-weight: 700; padding: 6px 12px; border-radius: 7px;
+      border: none; cursor: pointer;
+    }
+    .deadlock-btn-primary { background: #4B5B8C; color: #fff; }
+    .deadlock-btn-secondary { background: #F2F4F7; color: #344054; }
+
+    /* ── PD PARALLEL SECTION ── */
+    .parallel-section {
+      background: #fff; border-radius: 10px;
+      border: 1.5px solid #E4E7EC; overflow: hidden;
+    }
+    .parallel-header {
+      display: flex; align-items: center; gap: 9px;
+      padding: 11px 13px; cursor: pointer; user-select: none;
+      background: linear-gradient(135deg, #F8F9FC 0%, #F5F7FF 100%);
+    }
+    .parallel-title { flex: 1; font-size: 12px; font-weight: 700; color: #101828; }
+    .parallel-badge { font-size: 10px; font-weight: 600; background: #EEF2FF; color: #3D4E7A; padding: 2px 8px; border-radius: 20px; }
+    .parallel-tag {
+      font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+      background: #F9F5FF; color: #6941C6;
+    }
+    .parallel-chevron { font-size: 11px; color: #98A2B3; transition: transform 0.2s; flex-shrink: 0; }
+    .parallel-chevron.open { transform: rotate(180deg); }
+    .parallel-body { border-top: 1px solid #E4E7EC; }
+
+    /* ── PINNED CARD ── */
+    .pinned-card { background: #fff; border-radius: 10px; border: 1.5px solid #4B5B8C; overflow: hidden; }
+    .pinned-header {
+      display: flex; align-items: center; gap: 9px;
+      padding: 11px 13px; cursor: pointer; user-select: none; background: #F5F7FF;
+    }
+    .pinned-title { flex: 1; font-size: 12px; font-weight: 700; color: #3D4E7A; }
+    .pinned-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+    .badge-new  { background: #FEF3F2; color: #B42318; }
+    .badge-ok   { background: #EEF2FF; color: #4B5B8C; }
+    .pinned-chevron { font-size: 11px; color: #4B5B8C; transition: transform 0.2s; }
+    .pinned-chevron.open { transform: rotate(180deg); }
+    .pinned-body { border-top: 1.5px solid #C7D2FE; }
+    .pinned-footer { padding: 8px 13px; border-top: 1px solid #EEF2FF; display: flex; align-items: center; gap: 8px; }
+    .cadence-label { font-size: 10px; color: #667085; flex: 1; }
+    .cadence-select { font-size: 10px; font-weight: 600; color: #4B5B8C; background: #EEF2FF; border: none; border-radius: 5px; padding: 3px 8px; }
+
+    /* ── ACCORDION ── */
+    .accordion { background: #fff; border-radius: 10px; border: 1px solid #E4E7EC; overflow: hidden; }
+    .accordion-header { display: flex; align-items: center; gap: 9px; padding: 11px 13px; cursor: pointer; user-select: none; }
+    .acc-icon { font-size: 14px; flex-shrink: 0; }
+    .acc-title { flex: 1; font-size: 12px; font-weight: 700; color: #101828; }
+    .acc-badge { font-size: 10px; font-weight: 600; background: #EEF2FF; color: #3D4E7A; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+    .acc-chevron { font-size: 11px; color: #98A2B3; transition: transform 0.2s; flex-shrink: 0; }
+    .acc-chevron.open { transform: rotate(180deg); }
+    .accordion-body { border-top: 1px solid #F2F4F7; }
+
+    /* ── CHECK ITEMS ── */
+    .check-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 10px 13px; border-bottom: 1px solid #F9FAFB;
+    }
+    .check-item:last-child { border-bottom: none; }
+    .pri-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .pri-high { background: #F04438; }
+    .pri-mid  { background: #F79009; }
+    .pri-low  { background: #D0D5DD; }
+    .check-box {
+      width: 20px; height: 20px; border-radius: 6px;
+      border: 1.5px solid #D0D5DD; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; cursor: pointer; transition: all 0.15s;
+    }
+    .check-text { flex: 1; font-size: 12px; color: #344054; line-height: 1.4; }
+    .check-sub { font-size: 10px; color: #98A2B3; margin-top: 2px; }
+    .check-text.struck { color: #98A2B3; text-decoration: line-through; }
+    .doc-status { font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+    .doc-pending { background: #FFFAEB; color: #B54708; }
+    .doc-waiting { background: #EEF2FF; color: #3D4E7A; }
+    .doc-arrived { background: #ECFDF5; color: #027A48; }
+
+    /* ── ACTION BUTTONS ── */
+    .action-btn { font-size: 10px; font-weight: 600; padding: 5px 10px; border-radius: 6px; border: none; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+    .btn-send  { background: #4B5B8C; color: #fff; }
+    .btn-call  { background: #ECFDF5; color: #027A48; }
+    .btn-view  { background: #F2F4F7; color: #344054; }
+    .btn-check { background: #FFFAEB; color: #B54708; }
+    .btn-req   { background: #EEF2FF; color: #3D4E7A; }
+    .btn-log   { background: #F9F5FF; color: #6941C6; }
+    .btn-handoff { background: #101828; color: #fff; }
+
+    /* ── DONE LOG ── */
+    .done-card { background: #F6FEF9; border-radius: 10px; border: 1px solid #D1FADF; overflow: hidden; }
+    .done-header { display: flex; align-items: center; gap: 9px; padding: 11px 13px; cursor: pointer; user-select: none; }
+    .done-title { flex: 1; font-size: 12px; font-weight: 700; color: #027A48; }
+    .done-count { font-size: 10px; font-weight: 600; background: #ECFDF5; color: #027A48; padding: 2px 8px; border-radius: 20px; }
+    .done-chevron { font-size: 11px; color: #027A48; transition: transform 0.2s; }
+    .done-chevron.open { transform: rotate(180deg); }
+    .done-body { border-top: 1px solid #D1FADF; }
+    .done-item { display: flex; align-items: flex-start; gap: 9px; padding: 9px 13px; border-bottom: 1px solid #F0FDF4; }
+    .done-item:last-child { border-bottom: none; }
+    .done-check { width: 18px; height: 18px; border-radius: 5px; background: #0D9488; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .done-text-main { font-size: 11px; color: #475467; text-decoration: line-through; }
+    .done-meta { font-size: 9px; color: #667085; margin-top: 1px; }
+    .done-time { font-size: 9px; color: #98A2B3; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── TIMELINE ── */
+    .timeline-item { background: #fff; border-radius: 10px; border: 1px solid #E4E7EC; padding: 11px 13px; display: flex; gap: 10px; align-items: flex-start; }
+    .tl-icon-wrap { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .tl-email { background: #EEF2FF; }
+    .tl-call  { background: #ECFDF5; }
+    .tl-note  { background: #FFF8F0; }
+    .tl-content { flex: 1; }
+    .tl-header { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+    .tl-type { font-size: 10px; font-weight: 700; color: #344054; }
+    .tl-from { font-size: 10px; color: #667085; flex: 1; }
+    .tl-time { font-size: 9px; color: #98A2B3; white-space: nowrap; }
+    .tl-subject { font-size: 11px; font-weight: 600; color: #101828; margin-bottom: 3px; }
+    .tl-body-text { font-size: 11px; color: #667085; line-height: 1.4; }
+    .tl-ack-badge { display: inline-block; margin-top: 5px; font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 20px; }
+    .ack-waiting { background: #FFFAEB; color: #B54708; }
+    .tl-actions { display: flex; gap: 6px; margin-top: 8px; }
+    .tl-add-row { display: flex; gap: 8px; margin-top: 4px; }
+
+    /* ── DOCS ── */
+    .doc-card { background: #fff; border-radius: 10px; border: 1px solid #E4E7EC; overflow: hidden; }
+    .doc-header { display: flex; align-items: center; gap: 9px; padding: 11px 13px; cursor: pointer; }
+    .doc-body { border-top: 1px solid #F2F4F7; }
+
+    /* ── MODAL ── */
+    .modal-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.45); z-index: 50; align-items: flex-end; justify-content: center; border-radius: 32px; }
+    .modal-overlay.open { display: flex; }
+    .modal-sheet { background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 20px 16px 32px; animation: slideUp 0.25s ease; }
+    @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-handle { width: 36px; height: 4px; background: #E4E7EC; border-radius: 2px; margin: 0 auto 16px; }
+    .modal-title { font-size: 14px; font-weight: 700; color: #101828; margin-bottom: 4px; }
+    .modal-sub { font-size: 11px; color: #667085; margin-bottom: 16px; }
+    .modal-section { font-size: 10px; font-weight: 700; color: #98A2B3; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; margin-top: 14px; }
+    .modal-preview { background: #F8F9FC; border-radius: 8px; border: 1px solid #E4E7EC; padding: 14px; font-size: 12px; color: #344054; line-height: 1.7; margin-bottom: 4px; }
+    .modal-preview strong { color: #101828; }
+    .modal-edit-note { font-size: 10px; color: #98A2B3; margin-bottom: 14px; }
+    .modal-submit { width: 100%; padding: 13px; border-radius: 10px; background: #4B5B8C; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer; }
+    .modal-cancel { width: 100%; padding: 10px; border-radius: 10px; background: none; border: none; color: #667085; font-size: 12px; cursor: pointer; margin-top: 6px; }
+    .lang-notice {
+      display: flex; align-items: center; gap: 8px;
+      background: #FFF8F0; border: 1px solid #FECDCA; border-radius: 8px;
+      padding: 9px 12px; margin-bottom: 12px;
+      font-size: 11px; color: #B54708; font-weight: 600;
+    }
+
+    /* ── SUCCESS TOAST ── */
+    .toast {
+      position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: #101828; color: #fff;
+      font-size: 12px; font-weight: 600;
+      padding: 10px 18px; border-radius: 20px;
+      white-space: nowrap; z-index: 60;
+      opacity: 0; transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+
+    /* ── ADJUSTER SHEET ── */
+    .adj-sheet-name { font-size: 15px; font-weight: 700; color: #101828; margin-bottom: 2px; }
+    .adj-sheet-role { font-size: 11px; color: #667085; margin-bottom: 14px; }
+    .adj-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #F2F4F7; }
+    .adj-icon { font-size: 16px; width: 28px; text-align: center; flex-shrink: 0; }
+    .adj-label { font-size: 9px; color: #98A2B3; text-transform: uppercase; letter-spacing: 0.05em; }
+    .adj-value { font-size: 12px; color: #101828; font-weight: 500; flex: 1; }
+    .adj-actions { display: flex; gap: 8px; margin-top: 16px; }
+    .adj-action-btn { flex: 1; padding: 11px; border-radius: 10px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; }
+    .adj-btn-call { background: #ECFDF5; color: #027A48; }
+    .adj-btn-claim { background: #4B5B8C; color: #fff; }
+
+    /* ── INBOX ── */
+    .inbox-filter-row {
+      display: flex; gap: 6px; padding: 10px 14px;
+      overflow-x: auto; background: #fff;
+      border-bottom: 1px solid #EAECF0; flex-shrink: 0;
+    }
+    .inbox-filter-row::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+      white-space: nowrap; cursor: pointer; border: 1.5px solid #E4E7EC;
+      background: #fff; color: #667085; transition: all 0.12s;
+    }
+    .filter-chip.on { background: #4B5B8C; color: #fff; border-color: #4B5B8C; }
+
+    .email-card {
+      margin: 0 12px 6px;
+      background: #fff; border-radius: 12px;
+      border: 1px solid #EAECF0; overflow: hidden;
+      cursor: pointer; transition: all 0.12s;
+    }
+    .email-card:active { background: #F9FAFB; }
+    .email-card.unread { border-left: 3px solid #4B5B8C; }
+    .email-card.urgent { border-left: 3px solid #F04438; }
+    .email-header { padding: 12px 14px 8px; display: flex; gap: 10px; align-items: flex-start; }
+    .email-from-dot {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .email-meta { flex: 1; min-width: 0; }
+    .email-from { font-size: 12px; font-weight: 700; color: #101828; }
+    .email-case { font-size: 10px; color: #667085; margin-top: 1px; }
+    .email-time { font-size: 9px; color: #98A2B3; white-space: nowrap; }
+    .email-subject { font-size: 12px; font-weight: 600; color: #101828; padding: 0 14px 4px; }
+    .email-preview { font-size: 11px; color: #667085; padding: 0 14px 10px; line-height: 1.4; }
+    .email-footer {
+      padding: 8px 14px 10px;
+      border-top: 1px solid #F2F4F7;
+      display: flex; gap: 6px; align-items: center;
+    }
+    .ai-tag {
+      font-size: 9px; font-weight: 700; color: #6941C6;
+      background: #F9F5FF; padding: 2px 7px; border-radius: 20px;
+    }
+    .email-action-btn {
+      font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 6px;
+      border: none; cursor: pointer; white-space: nowrap;
+    }
+    .btn-view-email { background: #F2F4F7; color: #344054; }
+
+    /* ── AI SUMMARY SHEET ── */
+    .ai-summary-box {
+      background: #F9F5FF; border-radius: 10px; border: 1px solid #E9D7FE;
+      padding: 14px; margin-bottom: 14px;
+    }
+    .ai-summary-header { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    .ai-summary-label { font-size: 11px; font-weight: 700; color: #6941C6; }
+    .ai-summary-text { font-size: 12px; color: #344054; line-height: 1.6; }
+    .ai-todo-box {
+      background: #F0FDF4; border-radius: 10px; border: 1px solid #A9EFC5;
+      padding: 14px; margin-bottom: 14px;
+    }
+    .ai-todo-label { font-size: 11px; font-weight: 700; color: #027A48; margin-bottom: 8px; }
+    .ai-todo-item {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 7px 0; border-bottom: 1px solid #D1FADF; font-size: 12px; color: #344054;
+    }
+    .ai-todo-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .ai-todo-check {
+      width: 16px; height: 16px; border-radius: 4px;
+      border: 1.5px solid #6CE9A6; flex-shrink: 0; margin-top: 1px;
+    }
+    .email-raw-box {
+      background: #F8F9FC; border-radius: 8px; border: 1px solid #E4E7EC;
+      padding: 12px; font-size: 11px; color: #667085; line-height: 1.7;
+      margin-bottom: 14px; white-space: pre-wrap;
+    }
+    .modal-submit-row { display: flex; gap: 8px; }
+    .modal-submit-half { flex: 1; padding: 12px; border-radius: 10px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; }
+    .btn-add-todo { background: #4B5B8C; color: #fff; }
+    .btn-archive  { background: #F2F4F7; color: #344054; }
+
+    /* ── CASE SELECTOR (AI 이메일 매칭) ── */
+    .case-selector {
+      background: #F8F9FC; border-radius: 8px; border: 1px solid #E4E7EC;
+      padding: 10px 12px; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer;
+    }
+    .case-selector-label { font-size: 10px; color: #98A2B3; text-transform: uppercase; letter-spacing: .06em; }
+    .case-selector-value { font-size: 12px; font-weight: 700; color: #101828; flex: 1; }
+    .case-selector-arrow { font-size: 12px; color: #4B5B8C; }
+  </style>
+</head>
+<body>
+
+<div class="demo-label">CM 업무 흐름 시연 v6 — 클릭으로 진행</div>
+
+<div class="phone">
+
+  <!-- ════════════════════════════════ -->
+  <!-- SCREEN 1: Daily Queue (홈)      -->
+  <!-- ════════════════════════════════ -->
+  <div class="screen active" id="screen-home">
+    <div class="nav" style="padding-top:38px;">
+      <div>
+        <div class="nav-title">오늘의 업무</div>
+        <div class="nav-sub">2026년 5월 30일 · Sarah Klein</div>
+      </div>
+      <div class="nav-right">
+        <div class="nav-bell" onclick="goTo('screen-inbox')">
+          🔔<div class="bell-dot"></div>
+        </div>
+        <div class="nav-avatar">SK</div>
+      </div>
+    </div>
+
+    <div class="scroll-body">
+
+      <!-- ★ 액션 큐 (cross-case, 오늘 처리 필요) -->
+      <div class="date-strip">오늘 처리 필요</div>
+      <div class="action-queue">
+        <div class="aq-header">
+          <div>
+            <div class="aq-title">액션 큐</div>
+            <div class="aq-subtitle">케이스 전체 기준 · 우선순위 순</div>
+          </div>
+        </div>
+        <div class="aq-row" onclick="goTo('screen-inbox')">
+          <div class="aq-dot aq-dot-red"></div>
+          <div class="aq-label">이메일 즉시 처리 필요</div>
+          <div class="aq-count aq-count-red">3건</div>
+          <div class="aq-arrow">›</div>
+        </div>
+        <div class="aq-row" onclick="goTo('screen-detail')">
+          <div class="aq-dot aq-dot-red"></div>
+          <div class="aq-label">Thank You Letter 미발송</div>
+          <div class="aq-count aq-count-red">1건</div>
+          <div class="aq-arrow">›</div>
+        </div>
+        <div class="aq-row">
+          <div class="aq-dot aq-dot-amber"></div>
+          <div class="aq-label">오늘 팔로우업 예정</div>
+          <div class="aq-count aq-count-amber">4건</div>
+          <div class="aq-arrow">›</div>
+        </div>
+        <div class="aq-row">
+          <div class="aq-dot aq-dot-amber"></div>
+          <div class="aq-label">ACK D+30 임박</div>
+          <div class="aq-count aq-count-amber">2건</div>
+          <div class="aq-arrow">›</div>
+        </div>
+        <div class="aq-row">
+          <div class="aq-dot aq-dot-blue"></div>
+          <div class="aq-label">SOL 60일 이내</div>
+          <div class="aq-count aq-count-blue">1건</div>
+          <div class="aq-arrow">›</div>
+        </div>
+      </div>
+
+      <!-- 알림 -->
+      <div class="date-strip" style="margin-top:4px;">새 알림</div>
+
+      <!-- 이메일 요약 배너 -->
+      <div class="notif-banner" onclick="goTo('screen-inbox')" style="border-color:#F04438;">
+        <div class="notif-icon" style="background:#FEF3F2;">📧</div>
+        <div class="notif-content">
+          <div class="notif-type" style="color:#B42318;">읽지 않은 이메일</div>
+          <div class="notif-title">12통 미확인</div>
+          <div class="notif-body">AI 요약 준비 완료 · 즉시 처리 필요 3건 포함</div>
+        </div>
+        <div class="notif-time">방금</div>
+        <div class="notif-arrow">›</div>
+      </div>
+
+      <!-- 케이스 배정 알림 -->
+      <div class="notif-banner" onclick="goTo('screen-detail')" style="margin-top:0;">
+        <div class="notif-icon">📁</div>
+        <div class="notif-content">
+          <div class="notif-type">신규 케이스 배정</div>
+          <div class="notif-title">Maria Gonzalez</div>
+          <div class="notif-body">Auto Accident · State Farm · 🇪🇸 Spanish<br>지금 바로 Thank You Letter를 보내주세요</div>
+        </div>
+        <div class="notif-time">방금</div>
+        <div class="notif-arrow">›</div>
+      </div>
+
+      <!-- 기존 케이스 -->
+      <div class="section-header">진행 중 케이스 <span style="color:#4B5B8C;font-weight:700;">8</span></div>
+
+      <div class="case-card new-case" onclick="goTo('screen-detail')">
+        <div class="new-badge">NEW</div>
+        <div class="case-name">Maria Gonzalez</div>
+        <div class="case-meta">Auto Accident · DOL 05/10/26 · State Farm</div>
+        <div class="case-chips">
+          <span class="chip chip-red">Thank You Letter 필요</span>
+          <span class="chip chip-amber">SOL D-680</span>
+          <span class="chip chip-orange">🇪🇸 ES</span>
+        </div>
+      </div>
+
+      <div class="case-card">
+        <div class="case-name">James Kim</div>
+        <div class="case-meta">Slip & Fall · DOL 03/02/26 · Allstate</div>
+        <div class="case-chips">
+          <span class="chip chip-amber">ACK 대기 D+18</span>
+          <span class="chip chip-blue">의료기록수집</span>
+        </div>
+      </div>
+
+      <div class="case-card">
+        <div class="case-name">Rosa Martinez</div>
+        <div class="case-meta">Auto Accident · DOL 01/15/26 · GEICO</div>
+        <div class="case-chips">
+          <span class="chip chip-green">Demand 준비</span>
+          <span class="chip chip-red">SOL D-42</span>
+        </div>
+      </div>
+
+      <div class="case-card">
+        <div class="case-name">David Chen</div>
+        <div class="case-meta">Premises Liability · DOL 11/20/25</div>
+        <div class="case-chips">
+          <span class="chip chip-blue">보험사 연락 중</span>
+          <span class="chip chip-gray">Liability 확인 중</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!-- SCREEN 2: Email Inbox           -->
+  <!-- ════════════════════════════════ -->
+  <div class="screen" id="screen-inbox">
+    <div class="nav" style="padding-top:38px;">
+      <div class="nav-back" onclick="goTo('screen-home')">‹</div>
+      <div style="flex:1; margin-left:8px;">
+        <div class="nav-title">이메일 받은편지함</div>
+        <div class="nav-sub">AI 요약 · 미읽음 12통</div>
+      </div>
+      <div class="nav-avatar">SK</div>
+    </div>
+
+    <!-- 필터 -->
+    <div class="inbox-filter-row">
+      <div class="filter-chip on">전체 12</div>
+      <div class="filter-chip">즉시처리 3</div>
+      <div class="filter-chip">보험사</div>
+      <div class="filter-chip">병원</div>
+      <div class="filter-chip">고객</div>
+      <div class="filter-chip">기타</div>
+    </div>
+
+    <div class="scroll-body" style="padding-bottom:20px;">
+      <div class="date-strip" style="padding-top:12px;">오늘 · 즉시 처리 필요</div>
+
+      <!-- 이메일 1: 보험사 — Liability 답변 -->
+      <div class="email-card urgent" onclick="openEmailDetail('liability')">
+        <div class="email-header">
+          <div class="email-from-dot" style="background:#B42318;">SF</div>
+          <div class="email-meta">
+            <div class="email-from">Tom Reid · State Farm</div>
+            <div class="email-case">📁 Rosa Martinez · BI #4421</div>
+          </div>
+          <div class="email-time">10:32</div>
+        </div>
+        <div class="email-subject">Re: Liability Decision — Martinez Claim</div>
+        <div class="email-preview">We have completed our investigation and are prepared to accept partial liability at 70%...</div>
+        <div class="email-footer">
+          <div class="ai-tag">✦ AI 요약</div>
+          <span style="flex:1; font-size:10px; color:#B42318; font-weight:600;">Liability 70% 인정 — 협상 필요</span>
+          <button class="email-action-btn btn-view-email">열기</button>
+        </div>
+      </div>
+
+      <!-- 이메일 2: 병원 — 의료기록 도착 -->
+      <div class="email-card urgent" onclick="openEmailDetail('records')">
+        <div class="email-header">
+          <div class="email-from-dot" style="background:#027A48;">CS</div>
+          <div class="email-meta">
+            <div class="email-from">Cedars-Sinai Records Dept</div>
+            <div class="email-case">📁 James Kim · Medical Records</div>
+          </div>
+          <div class="email-time">09:15</div>
+        </div>
+        <div class="email-subject">Medical Records — Kim, James (DOB 1988-03-12)</div>
+        <div class="email-preview">Please find attached the requested medical records and itemized billing statements...</div>
+        <div class="email-footer">
+          <div class="ai-tag">✦ AI 요약</div>
+          <span style="flex:1; font-size:10px; color:#027A48; font-weight:600;">의료기록 도착 — 할 일 자동 추가</span>
+          <button class="email-action-btn btn-view-email">열기</button>
+        </div>
+      </div>
+
+      <!-- 이메일 3: 고객 — 불만 -->
+      <div class="email-card urgent" onclick="openEmailDetail('complaint')">
+        <div class="email-header">
+          <div class="email-from-dot" style="background:#F79009;">MG</div>
+          <div class="email-meta">
+            <div class="email-from">Maria Gonzalez (고객)</div>
+            <div class="email-case">📁 Maria Gonzalez · 신규 배정</div>
+          </div>
+          <div class="email-time">08:47</div>
+        </div>
+        <div class="email-subject">질문 있어요 / I have a question</div>
+        <div class="email-preview">Hola, no he recibido información sobre mi caso. ¿Cuándo me van a contactar?...</div>
+        <div class="email-footer">
+          <div class="ai-tag">✦ AI 요약</div>
+          <span style="flex:1; font-size:10px; color:#B54708; font-weight:600;">연락 미수신 문의 — Thank You Letter 미발송</span>
+          <button class="email-action-btn btn-view-email">열기</button>
+        </div>
+      </div>
+
+      <div class="date-strip">어제 · 확인 필요</div>
+
+      <!-- 이메일 4: 보험사 ACK -->
+      <div class="email-card unread" onclick="openEmailDetail('ack')">
+        <div class="email-header">
+          <div class="email-from-dot" style="background:#4B5B8C;">AL</div>
+          <div class="email-meta">
+            <div class="email-from">Allstate Claims · Jenny Park</div>
+            <div class="email-case">📁 James Kim · BI #3312</div>
+          </div>
+          <div class="email-time">어제 16:20</div>
+        </div>
+        <div class="email-subject">Re: Medical Records Authorization — Kim</div>
+        <div class="email-preview">Thank you for your submission. We have received your authorization form and will process...</div>
+        <div class="email-footer">
+          <div class="ai-tag">✦ AI 요약</div>
+          <span style="flex:1; font-size:10px; color:#027A48; font-weight:600;">ACK 수신 확인 — 30일 대기 시작</span>
+          <button class="email-action-btn btn-view-email">열기</button>
+        </div>
+      </div>
+
+      <!-- 이메일 5: PD 수리완료 -->
+      <div class="email-card unread" onclick="openEmailDetail('pd')">
+        <div class="email-header">
+          <div class="email-from-dot" style="background:#6941C6;">AB</div>
+          <div class="email-meta">
+            <div class="email-from">ABC Auto Body Shop</div>
+            <div class="email-case">📁 David Chen · PD #5502</div>
+          </div>
+          <div class="email-time">어제 11:05</div>
+        </div>
+        <div class="email-subject">Repair Complete — Chen Vehicle Ready for Pickup</div>
+        <div class="email-preview">We are pleased to inform you that the vehicle has been fully repaired and is ready for pickup...</div>
+        <div class="email-footer">
+          <div class="ai-tag">✦ AI 요약</div>
+          <span style="flex:1; font-size:10px; color:#027A48; font-weight:600;">차량 수리 완료 — PD 클레임 종결 가능</span>
+          <button class="email-action-btn btn-view-email">열기</button>
+        </div>
+      </div>
+
+      <div class="date-strip">이전 · 처리 완료</div>
+
+      <div class="email-card" style="opacity:0.6;" onclick="openEmailDetail('ack')">
+        <div class="email-header">
+          <div class="email-from-dot" style="background:#98A2B3;">GC</div>
+          <div class="email-meta">
+            <div class="email-from">GEICO Claims</div>
+            <div class="email-case">📁 Rosa Martinez · PD #4421-PD</div>
+          </div>
+          <div class="email-time">05/28</div>
+        </div>
+        <div class="email-subject">Coverage Confirmation — Martinez</div>
+        <div class="email-preview">This confirms full coverage under policy #GC-882341...</div>
+        <div class="email-footer">
+          <div class="ai-tag">✦ AI 요약</div>
+          <span style="flex:1; font-size:10px; color:#98A2B3;">커버리지 확인 완료 — 처리됨</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!-- SCREEN 3: Case Detail           -->
+  <!-- ════════════════════════════════ -->
+  <div class="screen" id="screen-detail">
+    <!-- NAV -->
+    <div class="nav" style="padding-top:38px; padding-bottom:11px;">
+      <div class="nav-back" onclick="goTo('screen-home')">‹</div>
+      <div style="flex:1; margin-left:8px;">
+        <div class="nav-title" style="font-size:15px;">Maria Gonzalez</div>
+        <div class="nav-sub">Auto Accident · DOL 05/10/26 · Sarah Klein</div>
+      </div>
+      <div class="nav-lang">🇪🇸 ES</div>
+    </div>
+
+    <!-- STAGE BAR -->
+    <div class="stage-bar">
+      <div class="stages-row">
+        <div class="stage-col">
+          <div class="stage-dot active" style="font-size:8px;">NOW</div>
+          <div class="stage-name active">보험사<br>연락</div>
+        </div>
+        <div class="stage-line-wrap"><div class="stage-line"></div></div>
+        <div class="stage-col">
+          <div class="stage-dot pending">2</div>
+          <div class="stage-name">의료기록<br>수집</div>
+        </div>
+        <div class="stage-line-wrap"><div class="stage-line"></div></div>
+        <div class="stage-col">
+          <div class="stage-dot pending">3</div>
+          <div class="stage-name">Demand<br>이관</div>
+        </div>
+        <div class="stage-line-wrap"><div class="stage-line"></div></div>
+        <div class="stage-col">
+          <div class="stage-dot pending">4</div>
+          <div class="stage-name">협상<br>완료</div>
+        </div>
+        <div class="stage-line-wrap"><div class="stage-line"></div></div>
+        <div class="stage-col">
+          <div class="stage-dot pending">5</div>
+          <div class="stage-name">합의<br>종결</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DUAL TRACK CHIPS -->
+    <div class="track-chips">
+      <div class="track-row">
+        <div class="track-label">BI</div>
+        <span class="chip chip-amber clickable" onclick="openAdjuster('bi')">⚠️ 클레임 번호 미확보 ▸</span>
+        <span class="chip chip-amber">SOL D-680</span>
+      </div>
+      <div class="track-row">
+        <div class="track-label">PD</div>
+        <span class="chip chip-amber clickable" onclick="openAdjuster('pd')">⚠️ 클레임 번호 미확보 ▸</span>
+        <span class="chip chip-amber">SOL D-770</span>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs-row">
+      <button class="tab-btn active" onclick="switchTab('todo', this)">할 일</button>
+      <button class="tab-btn" onclick="switchTab('timeline', this)">타임라인</button>
+      <button class="tab-btn" onclick="switchTab('docs', this)">문서</button>
+    </div>
+
+    <div class="scroll-body">
+      <div class="detail-body">
+
+        <!-- ===== TAB: 할 일 ===== -->
+        <div class="tab-panel active" id="panel-todo">
+
+          <!-- 🔴 최우선: Thank You Letter -->
+          <div class="section-label">🔴 즉시 처리</div>
+          <div class="urgent-banner" id="tyl-banner">
+            <div class="urgent-icon">✉️</div>
+            <div class="urgent-text">
+              <div class="urgent-label">최우선 · 배정 즉시 · 🇪🇸 Spanish</div>
+              <div class="urgent-title">Thank You Letter</div>
+              <div class="urgent-sub">스페인어 템플릿 자동 적용</div>
+            </div>
+            <button class="urgent-btn" onclick="openEmailModal()">보내기</button>
+          </div>
+
+          <!-- ★ Adjuster 미확보 데드락 해소 배너 -->
+          <div class="deadlock-banner" id="deadlock-banner">
+            <div class="deadlock-icon">⚠️</div>
+            <div class="deadlock-text">
+              <div class="deadlock-label">BI · PD 클레임 번호 미확보</div>
+              <div class="deadlock-msg">③ 보험사 연락 진행 전 클레임 번호를 먼저 확보하세요.</div>
+              <div class="deadlock-actions">
+                <button class="deadlock-btn deadlock-btn-primary" onclick="openClaimInput('bi')">BI 전화 연결</button>
+                <button class="deadlock-btn deadlock-btn-primary" onclick="openClaimInput('pd')">PD 전화 연결</button>
+                <button class="deadlock-btn deadlock-btn-secondary" onclick="openClaimInput('enter')">번호 직접 입력</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 📌 고객 팔로우업 -->
+          <div class="section-label" style="margin-top:4px;">📌 고객 관리 (상시)</div>
+          <div class="pinned-card">
+            <div class="pinned-header" onclick="toggleEl('pinned-body','pinned-chev')">
+              <span style="font-size:13px;">👤</span>
+              <div class="pinned-title">고객 팔로우업</div>
+              <div class="pinned-badge badge-new">첫 연락 예정</div>
+              <div class="pinned-chevron open" id="pinned-chev">▼</div>
+            </div>
+            <div class="pinned-body" id="pinned-body">
+              <div class="check-item">
+                <div class="pri-dot pri-high"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div class="check-text">치료 계획(Plan) 확인</div>
+                <button class="action-btn btn-call">전화</button>
+              </div>
+              <div class="check-item">
+                <div class="pri-dot pri-high"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div style="flex:1;">
+                  <div class="check-text">치료 진행 상황 팔로우업</div>
+                  <div class="check-sub">최대 치료 받을 수 있도록 관리</div>
+                </div>
+                <button class="action-btn btn-call">전화</button>
+              </div>
+              <div class="check-item">
+                <div class="pri-dot pri-mid"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div class="check-text">고객 불편사항 / 추가 요청 접수</div>
+                <button class="action-btn btn-req">메모</button>
+              </div>
+            </div>
+            <div class="pinned-footer">
+              <div class="cadence-label">팔로우업 주기</div>
+              <select class="cadence-select">
+                <option>3일마다</option>
+                <option selected>7일마다</option>
+                <option>14일마다</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ★ PD 병렬 트랙 (BI와 동시 시작) -->
+          <div class="section-label" style="margin-top:4px;">🚗 PD 트랙 (BI와 병렬 진행)</div>
+          <div class="parallel-section">
+            <div class="parallel-header" onclick="toggleEl('pd-parallel-body','pd-parallel-chev')">
+              <div style="font-size:14px;">🚗</div>
+              <div class="parallel-title">PD 클레임 (차량)</div>
+              <div class="parallel-tag">병렬</div>
+              <div class="parallel-badge">4개 남음</div>
+              <div class="parallel-chevron open" id="pd-parallel-chev">▼</div>
+            </div>
+            <div class="parallel-body" id="pd-parallel-body">
+              <div class="check-item">
+                <div class="pri-dot pri-high"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div style="flex:1;">
+                  <div class="check-text">차량 점검(Inspection) 일정 조율</div>
+                  <div class="check-sub">배정 즉시 진행 — 보관료 누적 방지</div>
+                </div>
+                <button class="action-btn btn-call">전화</button>
+              </div>
+              <div class="check-item">
+                <div class="pri-dot pri-high"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div style="flex:1;">
+                  <div class="check-text">Loss of Use (렌트카) 보상 확인</div>
+                  <div class="check-sub">기한 초과 시 고객 부담 발생</div>
+                </div>
+                <button class="action-btn btn-check">확인</button>
+              </div>
+              <div class="check-item">
+                <div class="pri-dot pri-mid"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div class="check-text">수리 진행 / Total Loss 여부 판정</div>
+                <button class="action-btn btn-view">보기</button>
+              </div>
+              <div class="check-item">
+                <div class="pri-dot pri-low"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div class="check-text">차량 내 물품 확인 (카시트 등)</div>
+                <button class="action-btn btn-check">확인</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 할 일 -->
+          <div class="section-label" style="margin-top:4px;">할 일</div>
+
+          <!-- ② 예외 사항 체크 (배정 직후) -->
+          <div class="accordion" id="acc-exc">
+            <div class="accordion-header" onclick="toggleEl('acc-exc-body','acc-exc-chev')">
+              <div class="acc-icon">⚠️</div>
+              <div class="acc-title">② 예외 사항 체크</div>
+              <div class="acc-badge">2개 남음</div>
+              <div class="acc-chevron open" id="acc-exc-chev">▼</div>
+            </div>
+            <div class="accordion-body" id="acc-exc-body">
+              <div class="check-item">
+                <div class="pri-dot pri-high"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div style="flex:1;">
+                  <div class="check-text">DMV 사건보고 및 자료 요청</div>
+                  <div class="check-sub">SR-1, Prop 213, SRS, SR-19, Logan 조회</div>
+                </div>
+                <button class="action-btn btn-view">양식</button>
+              </div>
+              <div class="check-item">
+                <div class="pri-dot pri-high"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div style="flex:1;">
+                  <div class="check-text">정부보험 여부 확인</div>
+                  <div class="check-sub">Medicare / Medi-Cal → 해당 시 Medical Collection 전달</div>
+                </div>
+                <button class="action-btn btn-check" onclick="openHandoff('medical')">확인</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ③ 보험사 연락 -->
+          <div class="accordion" id="acc-ins">
+            <div class="accordion-header" onclick="toggleEl('acc-ins-body','acc-ins-chev')">
+              <div class="acc-icon">📞</div>
+              <div class="acc-title">③ 보험사 연락</div>
+              <div class="acc-badge">5개 남음</div>
+              <div class="acc-chevron" id="acc-ins-chev">▼</div>
+            </div>
+            <div class="accordion-body" id="acc-ins-body" style="display:none;">
+              <div class="check-item">
+                <div class="pri-dot pri-high"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div class="check-text">BI 클레임 번호 확보 및 Adjuster 연락</div>
+                <button class="action-btn btn-call">전화</button>
+              </div>
+              <div class="check-item">
+                <div class="pri-dot pri-high"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div class="check-text">PD 클레임 번호 확보 및 Adjuster 연락</div>
+                <button class="action-btn btn-call">전화</button>
+              </div>
+              <div class="check-item">
+                <div class="pri-dot pri-mid"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div class="check-text">양쪽 보험사에 클레임 서류 전달</div>
+                <button class="action-btn btn-send">전달</button>
+              </div>
+              <div class="check-item">
+                <div class="pri-dot pri-mid"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div class="check-text">커버리지(Coverage) 유무 확인 요청</div>
+                <button class="action-btn btn-check">확인</button>
+              </div>
+              <div class="check-item">
+                <div class="pri-dot pri-mid"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div class="check-text">Liability 인정 여부 확인 요청</div>
+                <button class="action-btn btn-check">확인</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ④ 보험사 1차 답변 검토 -->
+          <div class="accordion" id="acc-resp">
+            <div class="accordion-header" onclick="toggleEl('acc-resp-body','acc-resp-chev')">
+              <div class="acc-icon">📬</div>
+              <div class="acc-title">④ 보험사 답변 검토</div>
+              <div class="acc-badge">3개 남음</div>
+              <div class="acc-chevron" id="acc-resp-chev">▼</div>
+            </div>
+            <div class="accordion-body" id="acc-resp-body" style="display:none;">
+              <div class="check-item">
+                <div class="pri-dot pri-high"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div class="check-text">Liability Letter / Coverage Letter 수신</div>
+                <button class="action-btn btn-view">문서</button>
+              </div>
+              <div class="check-item">
+                <div class="pri-dot pri-high"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div class="check-text">커버리지 있음/없음 확인</div>
+                <button class="action-btn btn-check">확인</button>
+              </div>
+              <div class="check-item">
+                <div class="pri-dot pri-high"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div style="flex:1;">
+                  <div class="check-text">Liability 인정 여부 최종 확인</div>
+                  <div class="check-sub">인정 → 계속 진행 · Deny → Litigation 이관</div>
+                </div>
+                <button class="action-btn btn-check">확인</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ⑤ 의료기록 요청 -->
+          <div class="accordion" id="acc-med">
+            <div class="accordion-header" onclick="toggleEl('acc-med-body','acc-med-chev')">
+              <div class="acc-icon">📋</div>
+              <div class="acc-title">⑤ 의료기록 요청</div>
+              <div class="acc-badge">2개 남음</div>
+              <div class="acc-chevron" id="acc-med-chev">▼</div>
+            </div>
+            <div class="accordion-body" id="acc-med-body" style="display:none;">
+              <div class="check-item">
+                <div class="pri-dot pri-mid"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div class="check-text">Medical Records (진료기록) 요청</div>
+                <button class="action-btn btn-send">요청</button>
+              </div>
+              <div class="check-item">
+                <div class="pri-dot pri-mid"></div>
+                <div class="check-box" onclick="checkItem(this)"></div>
+                <div style="flex:1;">
+                  <div class="check-text">Billing (의료비 청구서) 요청</div>
+                </div>
+                <button class="action-btn btn-send">요청</button>
+              </div>
+              <div class="check-item" style="background:#F0FDF4;">
+                <div class="pri-dot" style="background:#0D9488;"></div>
+                <div style="flex:1; font-size:11px; color:#027A48; font-weight:600;">기록 수신 후 → Medical Collection 이관</div>
+                <button class="action-btn btn-handoff" onclick="openHandoff('medical-records')">→ 이관</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 완료 로그 -->
+          <div class="section-label" style="margin-top:4px;">완료</div>
+          <div class="done-card" id="done-card">
+            <div class="done-header" onclick="toggleEl('done-body','done-chev')">
+              <div style="font-size:14px;">✅</div>
+              <div class="done-title">완료된 항목</div>
+              <div class="done-count" id="done-count">0개</div>
+              <div class="done-chevron open" id="done-chev">▼</div>
+            </div>
+            <div class="done-body" id="done-body">
+              <div id="done-list" style="display:none;"></div>
+              <div id="done-empty" style="padding:14px 13px; font-size:11px; color:#98A2B3;">
+                아직 완료된 항목이 없습니다
+              </div>
+            </div>
+          </div>
+
+          <!-- AI 추가 할 일 영역 -->
+          <div id="ai-added-todos" style="display:none;">
+            <div class="section-label" style="margin-top:4px; color:#6941C6;">✦ AI 추가 할 일</div>
+          </div>
+
+        </div><!-- /panel-todo -->
+
+        <!-- ===== TAB: 타임라인 ===== -->
+        <div class="tab-panel" id="panel-timeline">
+          <div class="section-label">최근 활동</div>
+          <div id="timeline-list">
+            <div style="padding:20px 0; text-align:center; font-size:11px; color:#98A2B3;">
+              아직 활동 기록이 없습니다.<br>Thank You Letter를 발송하면 여기에 기록됩니다.
+            </div>
+          </div>
+          <div class="tl-add-row">
+            <button class="action-btn btn-call" style="flex:1;padding:10px;">+ 통화 기록</button>
+            <button class="action-btn btn-req"  style="flex:1;padding:10px;">+ 이메일</button>
+            <button class="action-btn btn-log"  style="flex:1;padding:10px;">+ 메모</button>
+          </div>
+        </div>
+
+        <!-- ===== TAB: 문서 ===== -->
+        <div class="tab-panel" id="panel-docs">
+          <div class="section-label">의료기록 수신 현황</div>
+          <div style="background:#fff; border-radius:10px; border:1px solid #E4E7EC; padding:20px; text-align:center;">
+            <div style="font-size:24px; margin-bottom:8px;">📂</div>
+            <div style="font-size:12px; font-weight:600; color:#344054; margin-bottom:4px;">아직 요청된 문서가 없습니다</div>
+            <div style="font-size:11px; color:#98A2B3;">보험사 연락 후 의료기록 요청 단계로 이동합니다</div>
+          </div>
+        </div>
+
+      </div><!-- /detail-body -->
+    </div><!-- /scroll-body -->
+  </div><!-- /screen-detail -->
+
+  <!-- ════════════════════════════════ -->
+  <!-- MODAL: 이메일 템플릿 (스페인어) -->
+  <!-- ════════════════════════════════ -->
+  <div class="modal-overlay" id="modal-email" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Thank You Letter 발송</div>
+      <div class="modal-sub">발송 전 내용을 확인해주세요</div>
+
+      <div class="lang-notice">
+        🇪🇸 스페인어 템플릿 자동 적용됨 · Maria Gonzalez
+      </div>
+
+      <div class="modal-section">받는 사람</div>
+      <div style="font-size:12px; color:#344054; font-weight:600; margin-bottom:12px;">
+        Maria Gonzalez &lt;maria.g@email.com&gt;
+      </div>
+
+      <div class="modal-section">이메일 미리보기</div>
+      <div class="modal-preview">
+<strong>Asunto:</strong> [Confirmación de su caso] Estimada María Gonzalez
+
+Estimada Sra. Gonzalez,
+
+Mi nombre es Sarah Klein y seré la administradora de su caso.
+
+Nos encargaremos de su caso con todo el cuidado que merece. Por favor, no dude en contactarnos si tiene alguna pregunta.
+
+Administradora: Sarah Klein
+Teléfono: (310) 555-0100
+
+Atentamente,
+[Law Firm Name]</div>
+      <div class="modal-edit-note">* 내용 수정이 필요하면 탭하여 편집하세요</div>
+
+      <button class="modal-submit" onclick="sendEmail()">✉️ 스페인어로 발송하기</button>
+      <button class="modal-cancel" onclick="closeModal()">취소</button>
+    </div>
+  </div>
+
+  <!-- Adjuster 시트 (미확보 → 전화/입력 액션 포함) -->
+  <div class="modal-overlay" id="modal-adj" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div id="adj-content"></div>
+      <button class="modal-cancel" onclick="closeModal()">닫기</button>
+    </div>
+  </div>
+
+  <!-- 클레임 번호 입력 시트 -->
+  <div class="modal-overlay" id="modal-claim" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div id="claim-content"></div>
+      <button class="modal-cancel" onclick="closeModal()">취소</button>
+    </div>
+  </div>
+
+  <!-- 부서 이관 시트 -->
+  <div class="modal-overlay" id="modal-handoff" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div id="handoff-content"></div>
+      <button class="modal-cancel" onclick="closeModal()">닫기</button>
+    </div>
+  </div>
+
+  <!-- AI 이메일 요약 시트 -->
+  <div class="modal-overlay" id="modal-email-detail" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh; overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div id="email-detail-content"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+</div><!-- /phone -->
+
+<script>
+  /* ── 화면 전환 ── */
+  function goTo(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+  }
+
+  /* ── 탭 전환 ── */
+  function switchTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  /* ── 아코디언 ── */
+  function toggleEl(bodyId, chevId) {
+    const body = document.getElementById(bodyId);
+    const chev = document.getElementById(chevId);
+    if (!body) return;
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    if (chev) chev.classList.toggle('open', !isOpen);
+  }
+
+  /* ── 체크박스 ── */
+  function checkItem(box) {
+    const isDone = box.dataset.checked === '1';
+    if (isDone) {
+      box.dataset.checked = '0';
+      box.innerHTML = '';
+      box.style.background = '';
+      box.style.borderColor = '#D0D5DD';
+      box.style.color = '';
+      const txt = box.nextElementSibling;
+      if (txt && txt.classList) txt.classList.remove('struck');
+    } else {
+      box.dataset.checked = '1';
+      box.innerHTML = '✓';
+      box.style.background = '#0D9488';
+      box.style.borderColor = '#0D9488';
+      box.style.color = '#fff';
+      const txt = box.nextElementSibling;
+      if (txt && txt.classList && txt.classList.contains('check-text')) txt.classList.add('struck');
+    }
+  }
+
+  /* ── 이메일 모달 ── */
+  function openEmailModal() {
+    document.getElementById('modal-email').classList.add('open');
+  }
+
+  /* ── 이메일 발송 ── */
+  let doneCount = 0;
+  function sendEmail() {
+    closeModal();
+
+    const banner = document.getElementById('tyl-banner');
+    if (banner) {
+      banner.style.transition = 'opacity 0.3s';
+      banner.style.opacity = '0';
+      setTimeout(() => banner.remove(), 300);
+    }
+
+    doneCount++;
+    document.getElementById('done-count').textContent = doneCount + '개';
+    const emptyEl = document.getElementById('done-empty');
+    if (emptyEl) emptyEl.style.display = 'none';
+    const doneList = document.getElementById('done-list');
+    doneList.style.display = 'block';
+    const now = new Date();
+    const timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+    doneList.insertAdjacentHTML('afterbegin', `
+      <div class="done-item">
+        <div class="done-check">✓</div>
+        <div style="flex:1;">
+          <div class="done-text-main">Thank You Letter 발송 (🇪🇸 Spanish)</div>
+          <div class="done-meta">초기 클라이언트 연락 · 스페인어 템플릿</div>
+        </div>
+        <div class="done-time">오늘 ${timeStr}</div>
+      </div>
+    `);
+
+    const tlList = document.getElementById('timeline-list');
+    tlList.innerHTML = `
+      <div class="timeline-item">
+        <div class="tl-icon-wrap tl-email">📤</div>
+        <div class="tl-content">
+          <div class="tl-header">
+            <div class="tl-type">이메일 발송</div>
+            <div class="tl-from">→ Maria Gonzalez 🇪🇸</div>
+            <div class="tl-time">오늘 ${timeStr}</div>
+          </div>
+          <div class="tl-subject">Thank You Letter — 담당 CM 소개 (Español)</div>
+          <div class="tl-body-text">케이스 배정 확인 및 담당 CM 소개 이메일 발송 완료 (스페인어)</div>
+        </div>
+      </div>
+    `;
+
+    showToast('✉️ Thank You Letter 발송 완료 (🇪🇸 Spanish)');
+  }
+
+  /* ── Toast ── */
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  /* ── 모달 닫기 ── */
+  function closeModal(e) {
+    if (!e || e.target === e.currentTarget) {
+      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+    }
+  }
+
+  /* ── 이메일 상세 / AI 요약 ── */
+  const emailData = {
+    liability: {
+      from: 'Tom Reid · State Farm',
+      case: 'Rosa Martinez · BI #4421',
+      subject: 'Re: Liability Decision — Martinez Claim',
+      time: '오늘 10:32',
+      matchedCase: 'Rosa Martinez',
+      raw: `Dear Ms. Klein,
+
+We have completed our investigation of the above-referenced claim. After careful review, State Farm is prepared to accept partial liability at 70% on behalf of our insured.
+
+We believe the claimant bears 30% comparative fault based on the following: traffic signal data and witness statements indicate claimant entered the intersection 1.2 seconds after signal change.
+
+Please have your office respond with a settlement demand at your earliest convenience.
+
+Tom Reid
+State Farm Claims | (213) 555-0182`,
+      aiSummary: 'State Farm이 Liability 70% 인정. 우리 측 책임 30% 주장 (신호 위반 주장). 협상 시작 가능. Demand 발송 전 변호사 검토 권장.',
+      aiTodos: [
+        { text: 'Liability Letter 파일 저장 (문서 탭)', tag: '문서' },
+        { text: '변호사에게 70% 인정 내용 공유', tag: '팀내부' },
+        { text: 'Demand Package 준비 → Demand 부서 이관', tag: '할일', handoff: 'demand' },
+        { text: '30% 과실 주장 반박 자료 수집', tag: '할일' }
+      ]
+    },
+    records: {
+      from: 'Cedars-Sinai Records Dept',
+      case: 'James Kim · Medical Records',
+      subject: 'Medical Records — Kim, James (DOB 1988-03-12)',
+      time: '오늘 09:15',
+      matchedCase: 'James Kim',
+      raw: `Dear Case Manager,
+
+Please find attached the requested medical records and itemized billing statements for the above-referenced patient.
+
+Documents included:
+- Emergency visit 03/05/26: Diagnosis cervical strain, lumbar sprain
+- PT sessions 03/10–04/28/26: 18 sessions
+- Itemized billing: $24,840.00
+
+Please confirm receipt.
+
+Medical Records Department
+Cedars-Sinai Medical Center`,
+      aiSummary: '의료기록 및 빌링 도착. 총 $24,840 청구. ER + PT 18회. Medical Collection 부서에 즉시 전달 필요. 기록 누락 여부 확인 후 추가 요청 검토.',
+      aiTodos: [
+        { text: '의료기록 수신 확인 체크 (할 일 완료 처리)', tag: '완료처리' },
+        { text: 'Medical Collection 부서에 파일 전달', tag: '할일', handoff: 'medical-records' },
+        { text: '누락 기록 여부 검토 (Kaiser 기록 아직 미수신)', tag: '확인필요' },
+        { text: '문서 탭에 기록 링크 추가', tag: '문서' }
+      ]
+    },
+    complaint: {
+      from: 'Maria Gonzalez (고객)',
+      case: 'Maria Gonzalez · 신규 배정',
+      subject: '질문 있어요 / I have a question',
+      time: '오늘 08:47',
+      matchedCase: 'Maria Gonzalez',
+      raw: `Hola,
+
+No he recibido ninguna información sobre mi caso desde el accidente. Nadie me ha contactado todavía. ¿Cuándo me van a llamar? Estoy muy preocupada.
+
+[번역: 사고 이후 제 케이스에 대해 아무 연락도 받지 못했어요. 아직 아무도 연락을 안 해줬어요. 언제 전화해 주실 건가요? 매우 걱정됩니다.]
+
+Gracias,
+Maria Gonzalez`,
+      aiSummary: '고객이 연락 미수신으로 불안해하고 있음. Thank You Letter 미발송 상태. 🇪🇸 Spanish 응대 필요. 즉시 연락하여 담당 CM 소개 및 프로세스 설명 필요.',
+      aiTodos: [
+        { text: '🔴 Thank You Letter 즉시 발송 (케이스 상세로 이동)', tag: '긴급' },
+        { text: '스페인어로 전화 또는 이메일 답장', tag: '긴급' },
+        { text: '고객 불안 해소 — 케이스 진행 현황 설명', tag: '할일' }
+      ]
+    },
+    ack: {
+      from: 'Allstate Claims · Jenny Park',
+      case: 'James Kim · BI #3312',
+      subject: 'Re: Medical Records Authorization — Kim',
+      time: '어제 16:20',
+      matchedCase: 'James Kim',
+      raw: `Dear Ms. Klein,
+
+Thank you for your submission. We have received your authorization form and medical records request for the above claimant.
+
+Our team will begin processing within 5 business days. You will receive a formal acknowledgment letter within 30 days per California regulations.
+
+Jenny Park
+Allstate Claims | (818) 555-0341`,
+      aiSummary: 'Allstate가 의료기록 요청 수령 확인. 30일 처리 예정 (CA 규정 기준). ACK 타이머 시작. D+30 (06/29) 미응답 시 리마인더 자동 발송 예약.',
+      aiTodos: [
+        { text: 'ACK 수신 확인 체크 처리', tag: '완료처리' },
+        { text: 'D+30 (06/29) ACK 리마인더 자동 예약', tag: '예약' }
+      ]
+    },
+    pd: {
+      from: 'ABC Auto Body Shop',
+      case: 'David Chen · PD #5502',
+      subject: 'Repair Complete — Chen Vehicle Ready for Pickup',
+      time: '어제 11:05',
+      matchedCase: 'David Chen',
+      raw: `Dear Ms. Klein,
+
+We are pleased to inform you that Mr. Chen's vehicle (2019 Toyota Camry, VIN: 4T1B11HK3KU275861) has been fully repaired and is ready for pickup.
+
+Total repair cost: $8,240.00 (covered by State Farm PD claim)
+Rental car return: Required within 2 days of pickup
+
+Please notify your client to arrange pickup at their earliest convenience.
+
+ABC Auto Body | (323) 555-0788`,
+      aiSummary: '차량 수리 완료. $8,240 청구 (State Farm PD 클레임 적용). 렌트카 픽업 후 2일 이내 반납 필요. 고객에게 픽업 일정 즉시 안내 필요.',
+      aiTodos: [
+        { text: '고객(David Chen)에게 차량 픽업 안내 전화', tag: '할일' },
+        { text: '렌트카 반납 기한 확인 (픽업 후 2일 이내)', tag: '확인필요' },
+        { text: 'PD 클레임 수리 완료 체크 처리', tag: '완료처리' },
+        { text: 'Loss of Use 보상 최종 확인', tag: '할일' }
+      ]
+    }
+  };
+
+  const tagColors = {
+    '긴급':   { bg: '#FEF3F2', color: '#B42318' },
+    '할일':   { bg: '#EEF2FF', color: '#3D4E7A' },
+    '완료처리':{ bg: '#ECFDF5', color: '#027A48' },
+    '확인필요':{ bg: '#FFFAEB', color: '#B54708' },
+    '문서':   { bg: '#F0FDF4', color: '#0D9488' },
+    '팀내부': { bg: '#F9F5FF', color: '#6941C6' },
+    '예약':   { bg: '#F2F4F7', color: '#667085' }
+  };
+
+  let currentEmailType = null;
+
+  function openEmailDetail(type) {
+    currentEmailType = type;
+    const e = emailData[type];
+    const todosHtml = e.aiTodos.map(t => {
+      const tc = tagColors[t.tag] || tagColors['할일'];
+      const handoffBtn = t.handoff
+        ? `<button onclick="openHandoff('${t.handoff}')" style="font-size:9px;font-weight:700;padding:3px 7px;border-radius:6px;border:none;cursor:pointer;background:#101828;color:#fff;white-space:nowrap;margin-left:4px;">→ 이관</button>`
+        : '';
+      return `<div class="ai-todo-item">
+        <div class="ai-todo-check"></div>
+        <div style="flex:1;">${t.text}</div>
+        <span style="font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px;background:${tc.bg};color:${tc.color};white-space:nowrap;">${t.tag}</span>
+        ${handoffBtn}
+      </div>`;
+    }).join('');
+
+    document.getElementById('email-detail-content').innerHTML = `
+      <div style="font-size:11px;color:#667085;margin-bottom:4px;">${e.from}</div>
+      <div style="font-size:13px;font-weight:700;color:#101828;margin-bottom:2px;">${e.subject}</div>
+      <div style="font-size:10px;color:#98A2B3;margin-bottom:12px;">${e.case} · ${e.time}</div>
+
+      <div class="case-selector" onclick="showToast('케이스 변경: AI 매칭 수정 가능')">
+        <div style="flex:1;">
+          <div class="case-selector-label">📁 케이스 매칭</div>
+          <div class="case-selector-value">${e.matchedCase}</div>
+        </div>
+        <div class="case-selector-arrow">▾</div>
+      </div>
+
+      <div class="ai-summary-box">
+        <div class="ai-summary-header">
+          <span style="font-size:14px;">✦</span>
+          <div class="ai-summary-label">AI 요약</div>
+        </div>
+        <div class="ai-summary-text">${e.aiSummary}</div>
+      </div>
+
+      <div class="ai-todo-box">
+        <div class="ai-todo-label">📋 AI 추천 할 일</div>
+        ${todosHtml}
+      </div>
+
+      <div style="font-size:10px;font-weight:700;color:#98A2B3;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">원문</div>
+      <div class="email-raw-box">${e.raw}</div>
+
+      <div class="modal-submit-row">
+        <button class="modal-submit-half btn-add-todo" onclick="addTodosAndClose()">할 일에 추가</button>
+        <button class="modal-submit-half btn-archive" onclick="closeModal()">보관</button>
+      </div>
+      <button class="modal-cancel" onclick="closeModal()">닫기</button>
+    `;
+    document.getElementById('modal-email-detail').classList.add('open');
+  }
+
+  function addTodosAndClose() {
+    closeModal();
+    if (!currentEmailType) return;
+    const e = emailData[currentEmailType];
+
+    const container = document.getElementById('ai-added-todos');
+    container.style.display = 'block';
+
+    e.aiTodos.forEach(t => {
+      const tc = tagColors[t.tag] || tagColors['할일'];
+      container.insertAdjacentHTML('beforeend', `
+        <div class="accordion" style="border-color:#E9D7FE;">
+          <div style="display:flex;align-items:center;gap:9px;padding:10px 13px;">
+            <div class="pri-dot" style="background:#6941C6;"></div>
+            <div class="check-box" onclick="checkItem(this)"></div>
+            <div style="flex:1;font-size:12px;color:#344054;">${t.text}</div>
+            <span style="font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px;background:${tc.bg};color:${tc.color};white-space:nowrap;">${t.tag}</span>
+          </div>
+        </div>
+      `);
+    });
+
+    showToast('✅ 케이스 할 일에 추가됨');
+    currentEmailType = null;
+  }
+
+  /* ── Adjuster 시트 (미확보 상태 → 액션 포함) ── */
+  const adjusters = {
+    bi: { track: 'BI 담당', name: '미배정', role: 'State Farm · BI Adjuster', claim: '미확보', phone: 'State Farm BI: (213) 555-0100', email: '—', note: 'BI 클레임 번호를 확보한 후 직접 입력하거나, 지금 바로 보험사에 전화하여 확보하세요.' },
+    pd: { track: 'PD 담당', name: '미배정', role: 'State Farm · PD Adjuster', claim: '미확보', phone: 'State Farm PD: (213) 555-0200', email: '—', note: 'PD 클레임 번호를 확보한 후 직접 입력하거나, 지금 바로 보험사에 전화하여 확보하세요.' }
+  };
+
+  function openAdjuster(type) {
+    const a = adjusters[type];
+    document.getElementById('adj-content').innerHTML = `
+      <div style="font-size:10px;font-weight:700;color:#98A2B3;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">${a.track}</div>
+      <div class="adj-sheet-name">${a.name}</div>
+      <div class="adj-sheet-role">${a.role}</div>
+      <div class="adj-row">
+        <div class="adj-icon">📋</div>
+        <div><div class="adj-label">Claim</div><div class="adj-value" style="color:#F79009;">${a.claim}</div></div>
+      </div>
+      <div class="adj-row">
+        <div class="adj-icon">📞</div>
+        <div><div class="adj-label">보험사 전화</div><div class="adj-value">${a.phone}</div></div>
+      </div>
+      <div style="margin-top:12px;padding:10px 12px;background:#FFFAEB;border-radius:8px;border:1px solid #FEC84B;font-size:11px;color:#B54708;">${a.note}</div>
+      <div class="adj-actions">
+        <button class="adj-action-btn adj-btn-call" onclick="showToast('📞 ${a.phone} 연결 중...')">📞 지금 전화</button>
+        <button class="adj-action-btn adj-btn-claim" onclick="openClaimInput('${type}')">번호 직접 입력</button>
+      </div>
+    `;
+    document.getElementById('modal-adj').classList.add('open');
+  }
+
+  /* ── 클레임 번호 입력 ── */
+  function openClaimInput(track) {
+    closeModal();
+    const label = track === 'bi' ? 'BI' : track === 'pd' ? 'PD' : '';
+    const title = track === 'enter' ? '클레임 번호 입력' : `${label} 클레임 번호 입력`;
+    document.getElementById('claim-content').innerHTML = `
+      <div class="modal-title">${title}</div>
+      <div class="modal-sub">보험사로부터 받은 클레임 번호를 입력하세요</div>
+      ${track === 'enter' ? `
+        <div style="margin-bottom:10px;">
+          <div style="font-size:10px;color:#98A2B3;font-weight:700;text-transform:uppercase;margin-bottom:6px;">트랙 선택</div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="this.style.background='#4B5B8C';this.style.color='#fff';document.querySelectorAll('.track-sel').forEach(b=>b!==this&&(b.style.background='',b.style.color=''))" class="track-sel" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #E4E7EC;background:#fff;font-size:12px;font-weight:700;cursor:pointer;">BI</button>
+            <button onclick="this.style.background='#4B5B8C';this.style.color='#fff';document.querySelectorAll('.track-sel').forEach(b=>b!==this&&(b.style.background='',b.style.color=''))" class="track-sel" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #E4E7EC;background:#fff;font-size:12px;font-weight:700;cursor:pointer;">PD</button>
+          </div>
+        </div>
+      ` : ''}
+      <div style="margin-bottom:14px;">
+        <div style="font-size:10px;color:#98A2B3;font-weight:700;text-transform:uppercase;margin-bottom:6px;">클레임 번호</div>
+        <input id="claim-input" type="text" placeholder="예: SF-2026-00123456" style="width:100%;padding:12px;border:1.5px solid #E4E7EC;border-radius:8px;font-size:14px;font-weight:600;color:#101828;outline:none;" />
+      </div>
+      <button class="modal-submit" onclick="saveClaimNumber('${track}')">저장하기</button>
+    `;
+    document.getElementById('modal-claim').classList.add('open');
+  }
+
+  function saveClaimNumber(track) {
+    const val = document.getElementById('claim-input').value.trim();
+    if (!val) { showToast('클레임 번호를 입력해주세요'); return; }
+    closeModal();
+
+    const trackLabel = track === 'pd' ? 'PD' : 'BI';
+    const trackRow = document.querySelectorAll('.track-row')[track === 'pd' ? 1 : 0];
+    if (trackRow) {
+      const chip = trackRow.querySelector('.chip');
+      if (chip) {
+        chip.textContent = `✅ ${trackLabel} #${val} ▸`;
+        chip.className = 'chip chip-green clickable';
+        chip.onclick = () => openAdjusterFilled(track, val);
+      }
+    }
+
+    const deadlockBanner = document.getElementById('deadlock-banner');
+    if (deadlockBanner) {
+      deadlockBanner.style.transition = 'opacity 0.3s';
+      deadlockBanner.style.opacity = '0';
+      setTimeout(() => deadlockBanner.remove(), 300);
+    }
+
+    showToast(`✅ ${trackLabel} 클레임 번호 저장: ${val}`);
+  }
+
+  function openAdjusterFilled(track, claimNum) {
+    const a = adjusters[track];
+    const label = track === 'bi' ? 'BI' : 'PD';
+    document.getElementById('adj-content').innerHTML = `
+      <div style="font-size:10px;font-weight:700;color:#98A2B3;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">${a.track}</div>
+      <div class="adj-sheet-name">Adjuster 배정 대기</div>
+      <div class="adj-sheet-role">${a.role}</div>
+      <div class="adj-row">
+        <div class="adj-icon">📋</div>
+        <div><div class="adj-label">Claim</div><div class="adj-value" style="color:#027A48;font-weight:700;">${claimNum}</div></div>
+      </div>
+      <div class="adj-row">
+        <div class="adj-icon">📞</div>
+        <div><div class="adj-label">보험사 전화</div><div class="adj-value">${a.phone}</div></div>
+      </div>
+      <div style="margin-top:12px;padding:10px 12px;background:#ECFDF5;border-radius:8px;font-size:11px;color:#027A48;">클레임 번호가 저장되었습니다. Adjuster 배정 후 추가 정보를 업데이트하세요.</div>
+      <div class="adj-actions">
+        <button class="adj-action-btn adj-btn-call" onclick="showToast('📞 보험사 연결 중...')">📞 지금 전화</button>
+      </div>
+    `;
+    document.getElementById('modal-adj').classList.add('open');
+  }
+
+  /* ── 부서 이관 시트 ── */
+  const handoffData = {
+    'demand': {
+      title: 'Demand 부서 이관',
+      dept: 'Demand Department',
+      desc: 'Liability 인정 확인 후 Demand Package를 준비하여 Demand 부서에 이관합니다.',
+      items: ['Liability Letter 첨부', 'Medical Records & Billing 첨부', '케이스 요약 메모 작성'],
+      color: '#4B5B8C'
+    },
+    'medical-records': {
+      title: 'Medical Collection 이관',
+      dept: 'Medical Collection Department',
+      desc: '의료기록 수신 완료 후 Medical Collection 부서에 파일을 전달합니다.',
+      items: ['의료기록 파일 첨부', 'Billing 청구서 첨부', '의료기관 정보 포함'],
+      color: '#0D9488'
+    },
+    'medical': {
+      title: 'Medical Collection — 정부보험 안내',
+      dept: 'Medical Collection Department',
+      desc: 'Medicare / Medi-Cal 해당 고객 정보를 Medical Collection 부서에 전달합니다.',
+      items: ['정부보험 유형 명시 (Medicare / Medi-Cal)', '고객 보험 카드 사본 첨부', 'Lien 처리 여부 확인 요청'],
+      color: '#F79009'
+    }
+  };
+
+  function openHandoff(type) {
+    closeModal();
+    const h = handoffData[type];
+    if (!h) return;
+    const checkItems = h.items.map(i =>
+      `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F2F4F7;font-size:12px;color:#344054;">
+        <div style="width:16px;height:16px;border-radius:4px;border:1.5px solid #D0D5DD;flex-shrink:0;"></div>
+        ${i}
+      </div>`
+    ).join('');
+    document.getElementById('handoff-content').innerHTML = `
+      <div style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:${h.color}22;color:${h.color};margin-bottom:10px;">→ ${h.dept}</div>
+      <div class="modal-title">${h.title}</div>
+      <div class="modal-sub">${h.desc}</div>
+      <div style="margin:14px 0;">${checkItems}</div>
+      <button class="modal-submit" style="background:${h.color};" onclick="confirmHandoff('${type}')">이관 완료 처리</button>
+    `;
+    document.getElementById('modal-handoff').classList.add('open');
+  }
+
+  function confirmHandoff(type) {
+    closeModal();
+    const h = handoffData[type];
+    showToast(`✅ ${h.dept} 이관 완료`);
+
+    doneCount++;
+    document.getElementById('done-count').textContent = doneCount + '개';
+    const emptyEl = document.getElementById('done-empty');
+    if (emptyEl) emptyEl.style.display = 'none';
+    const doneList = document.getElementById('done-list');
+    doneList.style.display = 'block';
+    const now = new Date();
+    const timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+    doneList.insertAdjacentHTML('afterbegin', `
+      <div class="done-item">
+        <div class="done-check">✓</div>
+        <div style="flex:1;">
+          <div class="done-text-main">${h.title}</div>
+          <div class="done-meta">${h.dept}</div>
+        </div>
+        <div class="done-time">오늘 ${timeStr}</div>
+      </div>
+    `);
+  }
+</script>
+</body>
+</html>
