@@ -61,8 +61,8 @@ export function MattersPage() {
           <h1 className="text-lg font-semibold text-gray-800">Matters</h1>
           <p className="text-xs text-gray-400 mt-0.5">Manage all case files and litigation</p>
         </div>
-        <button className="flex items-center gap-1.5 h-[32px] text-xs font-medium text-white bg-[#2c5282] hover:bg-[#2a4a73] transition-colors rounded-lg px-3.5">
-          <Plus size={12} />
+        <button className="flex items-center gap-1.5 h-[30px] text-xs font-medium text-white bg-gray-800 hover:bg-gray-900 transition-colors rounded px-3">
+          <Plus size={11} />
           New Matter
         </button>
       </div>
@@ -78,8 +78,8 @@ export function MattersPage() {
             className="pl-8 h-[34px] text-xs border-gray-200"
           />
         </div>
-        <button className="flex items-center gap-1.5 text-xs text-gray-500 bg-white border border-gray-200 rounded-lg px-3 h-[34px] hover:bg-gray-50 transition-colors">
-          <SlidersHorizontal size={12} />
+        <button className="flex items-center gap-1.5 text-xs text-gray-500 bg-white border border-gray-200 rounded px-3 h-[34px] hover:bg-gray-50 transition-colors">
+          <SlidersHorizontal size={11} />
           Filter
         </button>
       </div>
@@ -91,15 +91,15 @@ export function MattersPage() {
           { label: 'In Litigation',   value: stats.litigation },
           { label: 'Settlement Phase', value: stats.settlement },
         ].map((s) => (
-          <div key={s.label} className="bg-white border border-gray-100 rounded-lg px-5 py-4">
-            <div className="text-2xl font-semibold text-gray-800">{s.value}</div>
-            <div className="text-xs text-gray-400 mt-0.5">{s.label}</div>
+          <div key={s.label} className="bg-white border border-gray-100 rounded px-5 py-3.5">
+            <div className="text-xl font-semibold text-gray-800 tabular-nums">{s.value}</div>
+            <div className="text-[11px] text-gray-400 mt-0.5">{s.label}</div>
           </div>
         ))}
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-gray-100 rounded-lg overflow-hidden">
+      <div className="bg-white border border-gray-100 rounded overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-100">

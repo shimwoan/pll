@@ -4,7 +4,7 @@ import { Layout } from '@/components/Layout'
 import { CategoryBadge } from '@/components/CategoryBadge'
 import { caseApi, emailApi, type CaseDetail, type Email } from '@/lib/api'
 import { useEmailStore } from '@/store/emailStore'
-import { ChevronRight, Check, Pin, Mail, CheckCircle2, X, Search, Plus, FileText, Phone, ArrowRightLeft, AlertTriangle, Paperclip } from 'lucide-react'
+import { ChevronRight, Check, Pin, Mail, CheckCircle2, X, Search, Plus, FileText, Send, Upload, Clock, Eye, MessageSquare } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const EMAIL_CATEGORIES = ['Response Required', 'Document Submission', 'Confirm Reply', 'Needs Review', 'For Reference', 'Unclassified']
@@ -61,21 +61,26 @@ function StageTracker({ stage }: { stage: string }) {
           <div key={s} className="flex items-center flex-1 last:flex-none">
             <div className="flex flex-col items-center gap-0.5 min-w-0">
               <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 ${
-                done ? 'bg-blue-600 border-blue-600 text-white' :
-                active ? 'border-blue-600 bg-white text-blue-600' :
+                done ? 'bg-[#4B6CB7] border-[#4B6CB7] text-white' :
+                active ? 'border-[#4B6CB7] bg-white text-[#4B6CB7]' :
                 'border-gray-200 bg-white text-gray-300'
               }`}>
                 {done ? <Check size={10} strokeWidth={3} /> : <span className="text-[9px]">{i + 1}</span>}
               </div>
               <span className={`text-[12px] text-center leading-tight whitespace-nowrap ${
-                active ? 'font-semibold text-blue-600' : done ? 'text-gray-400' : 'text-gray-300'
+                active ? 'font-semibold text-[#4B6CB7]' : done ? 'text-gray-400' : 'text-gray-300'
               }`}>
                 {s}
                 {active && <><br /><span className="font-normal text-[9px]">In Progress</span></>}
               </span>
+              {active && i < STAGES.length - 1 && (
+                <button className="mt-1 text-[9px] text-[#4B6CB7] border border-[#4B6CB7] rounded px-1.5 py-0.5 hover:bg-[#4B6CB7] hover:text-white transition-colors whitespace-nowrap">
+                  Next →
+                </button>
+              )}
             </div>
             {i < STAGES.length - 1 && (
-              <div className={`flex-1 h-px mx-1 mb-3 ${i < current ? 'bg-blue-600' : 'bg-gray-200'}`} />
+              <div className={`flex-1 h-px mx-1 mb-3 ${i < current ? 'bg-[#4B6CB7]' : 'bg-gray-200'}`} />
             )}
           </div>
         )
@@ -129,22 +134,22 @@ function StageChecklist({ stage, dynamicItems = [] }: { stage: string; dynamicIt
   const toggle = (id: string) => setChecked((prev) => ({ ...prev, [id]: !prev[id] }))
 
   return (
-    <div className="bg-white border border-gray-100 rounded-lg px-5 py-4 mb-0">
-      <div className="font-semibold text-sm text-gray-800 mb-0.5">Status Checklist</div>
-      <div className="text-xs text-gray-400 mb-3">{stage} — required actions</div>
+    <div className="bg-white border border-gray-100 rounded px-4 py-3.5 mb-0">
+      <div className="text-xs font-medium text-gray-700 mb-0.5">Checklist</div>
+      <div className="text-[11px] text-gray-400 mb-3">{stage}</div>
       <div className="flex flex-col gap-2">
         {dynamicItems.map(({ id, label, isNew }) => (
           <button
             key={id}
             onClick={() => toggle(id)}
-            className={`flex items-center gap-3 text-left group ${isNew ? 'checklist-item-new' : ''}`}
+            className={`flex items-center gap-2.5 text-left group ${isNew ? 'checklist-item-new' : ''}`}
           >
-            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-              checked[id] ? 'bg-red-500 border-red-500' : 'border-red-300 bg-white group-hover:border-red-400'
+            <div className={`w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0 transition-colors ${
+              checked[id] ? 'bg-gray-800 border-gray-800' : 'border-red-300 bg-white group-hover:border-red-400'
             }`}>
-              {checked[id] && <Check size={9} strokeWidth={3} className="text-white" />}
+              {checked[id] && <Check size={8} strokeWidth={3} className="text-white" />}
             </div>
-            <span className={`text-sm transition-colors ${checked[id] ? 'line-through text-gray-400' : 'text-gray-800 font-medium'}`}>
+            <span className={`text-xs transition-colors ${checked[id] ? 'line-through text-gray-300' : 'text-gray-700'}`}>
               {label}
             </span>
           </button>
@@ -153,14 +158,14 @@ function StageChecklist({ stage, dynamicItems = [] }: { stage: string; dynamicIt
           <button
             key={id}
             onClick={() => toggle(id)}
-            className="flex items-center gap-3 text-left group"
+            className="flex items-center gap-2.5 text-left group"
           >
-            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-              checked[id] ? 'bg-blue-600 border-blue-600' : 'border-gray-300 bg-white group-hover:border-blue-400'
+            <div className={`w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0 transition-colors ${
+              checked[id] ? 'bg-gray-800 border-gray-800' : 'border-gray-300 bg-white group-hover:border-gray-500'
             }`}>
-              {checked[id] && <Check size={9} strokeWidth={3} className="text-white" />}
+              {checked[id] && <Check size={8} strokeWidth={3} className="text-white" />}
             </div>
-            <span className={`text-sm transition-colors ${checked[id] ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+            <span className={`text-xs transition-colors ${checked[id] ? 'line-through text-gray-300' : 'text-gray-600'}`}>
               {label}
             </span>
           </button>
@@ -295,22 +300,6 @@ const DEMO_TIMELINE: TimelineEntry[] = [
   },
 ]
 
-const TIMELINE_ICON: Record<TimelineEntry['type'], { icon: React.ReactNode; dot: string }> = {
-  stage:    { icon: <ArrowRightLeft size={10} />, dot: 'bg-blue-500 ring-blue-200' },
-  call:     { icon: <Phone size={10} />,          dot: 'bg-emerald-500 ring-emerald-200' },
-  document: { icon: <Paperclip size={10} />,      dot: 'bg-violet-500 ring-violet-200' },
-  alert:    { icon: <AlertTriangle size={10} />,  dot: 'bg-amber-400 ring-amber-200' },
-}
-
-const STAGE_COLOR: Record<string, string> = {
-  'Intake':             'text-slate-600 bg-slate-50 border-slate-200',
-  'Claim Open':         'text-indigo-600 bg-indigo-50 border-indigo-200',
-  'Medical Collection': 'text-sky-600 bg-sky-50 border-sky-200',
-  'Demand':             'text-yellow-700 bg-yellow-50 border-yellow-200',
-  'Negotiation':        'text-teal-600 bg-teal-50 border-teal-200',
-  'Settlement':         'text-green-600 bg-green-50 border-green-200',
-  'Litigation':         'text-red-500 bg-red-50 border-red-200',
-}
 
 function TimelineFiles({ files }: { files: TimelineFile[] }) {
   return (
@@ -326,87 +315,151 @@ function TimelineFiles({ files }: { files: TimelineFile[] }) {
   )
 }
 
+function CallSummaryField({ summary }: { summary: string }) {
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState(summary)
+  const [saved, setSaved] = useState(value)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  const handleEdit = () => {
+    setEditing(true)
+    setTimeout(() => textareaRef.current?.focus(), 0)
+  }
+
+  const handleSave = () => {
+    setSaved(value)
+    setEditing(false)
+  }
+
+  const handleCancel = () => {
+    setValue(saved)
+    setEditing(false)
+  }
+
+  return (
+    <div className="border-l-2 border-gray-200 pl-3 py-0.5">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[10px] text-gray-400 uppercase tracking-wider">Summary</span>
+        {!editing && (
+          <button
+            onClick={handleEdit}
+            className="text-[10px] text-gray-400 hover:text-gray-700 transition-colors"
+          >
+            Edit
+          </button>
+        )}
+      </div>
+      {editing ? (
+        <>
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            rows={4}
+            className="w-full text-xs text-gray-700 leading-relaxed bg-gray-50 border border-gray-200 rounded px-2 py-1.5 resize-none focus:outline-none focus:ring-1 focus:ring-gray-300"
+          />
+          <div className="flex gap-2 mt-1.5">
+            <button
+              onClick={handleSave}
+              className="text-[11px] font-medium text-white bg-gray-800 hover:bg-gray-900 rounded px-2.5 py-1 transition-colors"
+            >
+              Save
+            </button>
+            <button
+              onClick={handleCancel}
+              className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      ) : (
+        <p className="text-xs text-gray-600 leading-relaxed">{saved}</p>
+      )}
+    </div>
+  )
+}
+
+const TYPE_LABEL: Record<TimelineEntry['type'], string> = {
+  stage:    'Stage',
+  call:     'Call',
+  document: 'Documents',
+  alert:    'Alert',
+}
+
+const TYPE_COLOR: Record<TimelineEntry['type'], string> = {
+  stage:    'text-[#4B6CB7]',
+  call:     'text-[#0D9488]',
+  document: 'text-violet-400',
+  alert:    'text-amber-500',
+}
+
+const TYPE_DOT: Record<TimelineEntry['type'], string> = {
+  stage:    'bg-[#4B6CB7]',
+  call:     'bg-[#0D9488]',
+  document: 'bg-violet-400',
+  alert:    'bg-amber-400',
+}
+
 function Timeline() {
   return (
-    <div className="bg-white border border-gray-100 rounded-lg flex flex-col">
+    <div className="bg-white border border-gray-100 rounded flex flex-col">
       <div className="sticky top-0 bg-white z-10 px-5 pt-5 pb-3 border-b border-gray-100">
-        <div className="font-semibold text-sm text-gray-800 mb-0.5">Timeline</div>
-        <div className="text-xs text-gray-400">Case activity — stage transitions, calls, documents, alerts</div>
+        <div className="text-sm font-medium text-gray-800">Timeline</div>
+        <div className="text-xs text-gray-400 mt-0.5">Stage transitions, calls, documents, alerts</div>
       </div>
       <div className="overflow-y-auto px-5 py-4">
-      <div className="relative">
-        <div className="absolute left-[6px] top-2 bottom-2 w-px bg-gray-100" />
-        <div className="flex flex-col gap-3">
-          {[...DEMO_TIMELINE].reverse().map((t, i) => {
-            const { dot } = TIMELINE_ICON[t.type]
-            const dateStr = new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-            return (
-              <div key={i} className="relative flex gap-3">
-                <div className={`w-3.5 h-3.5 rounded-full border-2 border-white ring-1 shrink-0 mt-1 z-10 ${dot}`} />
-                <div className="flex-1 border border-gray-100 rounded-lg p-3 min-w-0">
-                  {/* Header row */}
-                  <div className="flex items-start justify-between gap-2 mb-1.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {t.type === 'stage' && (
-                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${STAGE_COLOR[t.stage] ?? 'text-gray-600 bg-gray-50 border-gray-200'}`}>
-                          → {t.stage}
+        <div className="relative">
+          <div className="absolute left-[5px] top-2 bottom-2 w-px bg-gray-100" />
+          <div className="flex flex-col gap-0">
+            {[...DEMO_TIMELINE].reverse().map((t, i) => {
+              const dateStr = new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+              return (
+                <div key={i} className="relative flex gap-4 pb-4">
+                  <div className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 z-10 ${TYPE_DOT[t.type]}`} />
+                  <div className="flex-1 min-w-0">
+                    {/* Header */}
+                    <div className="flex items-baseline justify-between gap-2 mb-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className={`text-[11px] font-semibold ${TYPE_COLOR[t.type]}`}>
+                          {t.type === 'call' ? `Call · ${t.duration}` :
+                           t.type === 'stage' ? `→ ${t.stage}` :
+                           TYPE_LABEL[t.type]}
                         </span>
-                      )}
-                      {t.type === 'call' && (
-                        <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                          Call · {t.duration}
-                        </span>
-                      )}
-                      {t.type === 'document' && (
-                        <span className="text-[11px] font-semibold text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-full">
-                          Documents Received
-                        </span>
-                      )}
-                      {t.type === 'alert' && (
-                        <span className="text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                          Alert
-                        </span>
-                      )}
-                      {t.type === 'call' && (
-                        <span className="text-[11px] text-gray-500">w/ {t.with}</span>
-                      )}
+                        {t.type === 'call' && (
+                          <span className="text-[11px] text-gray-400">w/ {t.with}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[10px] text-gray-300 tabular-nums">Day {t.day}</span>
+                        <span className="text-[10px] text-gray-400">{dateStr}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[10px] text-gray-400">Day {t.day}</span>
-                      <span className="text-[10px] text-gray-400">{dateStr}</span>
-                    </div>
-                  </div>
 
-                  {/* Content */}
-                  {(t.type === 'stage' || t.type === 'document') && t.note && (
-                    <p className="text-xs text-gray-600 leading-relaxed">{t.note}</p>
-                  )}
-                  {t.type === 'call' && (
-                    <div className="bg-emerald-50 border border-emerald-100 rounded-md px-3 py-2">
-                      <div className="text-[10px] font-semibold text-emerald-500 uppercase tracking-wide mb-1">Call Summary</div>
-                      <p className="text-xs text-gray-700 leading-relaxed">{t.summary}</p>
-                    </div>
-                  )}
-                  {t.type === 'alert' && (
-                    <p className="text-xs text-amber-700 leading-relaxed">{t.message}</p>
-                  )}
+                    {/* Content */}
+                    {(t.type === 'stage' || t.type === 'document') && t.note && (
+                      <p className="text-xs text-gray-500 leading-relaxed">{t.note}</p>
+                    )}
+                    {t.type === 'call' && (
+                      <CallSummaryField summary={t.summary} />
+                    )}
+                    {t.type === 'alert' && (
+                      <p className="text-xs text-amber-600 leading-relaxed">{t.message}</p>
+                    )}
 
-                  {/* Files */}
-                  {'files' in t && t.files && t.files.length > 0 && <TimelineFiles files={t.files} />}
+                    {/* Files */}
+                    {'files' in t && t.files && t.files.length > 0 && <TimelineFiles files={t.files} />}
 
-                  {/* Handler */}
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center text-[9px] font-semibold text-blue-600 shrink-0">
-                      {t.handler === 'System' ? '⚙' : initials(t.handler)}
+                    {/* Handler */}
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <span className="text-[10px] text-gray-300">{t.handler}</span>
                     </div>
-                    <span className="text-[11px] text-gray-400">{t.handler}</span>
                   </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
-      </div>
       </div>
     </div>
   )
@@ -421,18 +474,16 @@ const DEMO_NOTICES = [
 
 function ImportantNotice() {
   return (
-    <div className="bg-amber-50 border border-amber-100 rounded-lg p-4 mb-2">
+    <div className="bg-white border border-gray-100 rounded px-4 py-3.5 mb-2">
       <div className="flex items-center gap-2 mb-2.5">
-        <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-          <Pin size={12} className="text-amber-500" />
-        </div>
-        <span className="text-sm font-semibold text-gray-800">Important Notices</span>
+        <Pin size={11} className="text-amber-400 shrink-0" />
+        <span className="text-xs font-medium text-gray-700">Notices</span>
       </div>
       <div className="flex flex-col gap-1.5">
         {DEMO_NOTICES.map((n, i) => (
-          <div key={i} className="flex items-center gap-2.5 bg-white border border-amber-100 rounded-lg px-3 py-2">
-            <span className="w-4 h-4 rounded-full bg-amber-100 text-amber-600 text-[10px] font-semibold flex items-center justify-center shrink-0">{i + 1}</span>
-            <span className="text-xs text-gray-700">{n}</span>
+          <div key={i} className="flex items-start gap-2">
+            <span className="text-[10px] text-gray-300 mt-0.5 tabular-nums shrink-0">{i + 1}</span>
+            <span className="text-xs text-gray-600 leading-snug">{n}</span>
           </div>
         ))}
       </div>
@@ -446,12 +497,12 @@ const MEMO_EMAIL_SUB_TABS = ['All', 'Response Required', 'Document Submission', 
 type MemoEmailSubTab = typeof MEMO_EMAIL_SUB_TABS[number]
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Settlement: 'bg-blue-50 text-blue-600',
-  Medical:    'bg-green-50 text-green-600',
-  Client:     'bg-orange-50 text-orange-500',
-  Insurance:  'bg-purple-50 text-purple-600',
-  Police:     'bg-red-50 text-red-500',
-  Strategy:   'bg-teal-50 text-teal-600',
+  Settlement: 'bg-slate-50 text-[#4B6CB7]',
+  Medical:    'bg-teal-50 text-[#0D9488]',
+  Client:     'bg-orange-50 text-orange-400',
+  Insurance:  'bg-indigo-50 text-indigo-400',
+  Police:     'bg-rose-50 text-rose-400',
+  Strategy:   'bg-teal-50 text-teal-500',
   Other:      'bg-gray-100 text-gray-500',
 }
 
@@ -487,7 +538,7 @@ function MemoEmailsTab({ emails }: { emails: Email[] }) {
           <div className="text-base font-semibold text-gray-900">Memo & Emails</div>
           <div className="text-xs text-gray-400 mt-0.5">All case-related memos and email records</div>
         </div>
-        <button className="flex items-center gap-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors rounded-lg px-4 py-2">
+        <button className="flex items-center gap-1.5 text-sm font-medium text-white bg-[#4B6CB7] hover:bg-[#3d5a9e] transition-colors rounded-lg px-4 py-2">
           <Plus size={14} />
           New Memo
         </button>
@@ -501,7 +552,7 @@ function MemoEmailsTab({ emails }: { emails: Email[] }) {
             onClick={() => setSubTab(tab)}
             className={`pb-2 text-sm font-medium transition-colors ${
               subTab === tab
-                ? 'text-blue-600 border-b-2 border-blue-600 -mb-px'
+                ? 'text-[#4B6CB7] border-b-2 border-[#4B6CB7] -mb-px'
                 : 'text-gray-500 hover:text-gray-800'
             }`}
           >
@@ -517,7 +568,7 @@ function MemoEmailsTab({ emails }: { emails: Email[] }) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search memos and emails..."
-          className="w-full h-8 pl-8 pr-3 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-300"
+          className="w-full h-8 pl-8 pr-3 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-[#4B6CB7]/40"
         />
       </div>
 
@@ -552,7 +603,7 @@ function MemoEmailsTab({ emails }: { emails: Email[] }) {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         <Pin size={11} className="text-amber-400 shrink-0" />
-                        <Mail size={13} className="text-blue-400 shrink-0" />
+                        <Mail size={13} className="text-[#4B6CB7] opacity-70 shrink-0" />
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -619,44 +670,40 @@ function EmailPanel({ emails, selected, onSelect, onConfirmed }: {
   const restList = selected ? pending.filter((e) => e.id !== selected.id) : pending
 
   return (
-    <div className="bg-white border border-gray-100 rounded-lg overflow-hidden mb-3">
+    <div className="bg-white border border-gray-100 rounded overflow-hidden mb-3">
 
       {/* ── Pinned preview card ── */}
       {selected && (
-        <div className="bg-blue-50 border-b-2 border-blue-500 px-4 py-3">
+        <div className="border-b border-gray-100 px-4 py-3">
           <div className="flex items-start justify-between gap-2 mb-2">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 mb-1">
-                <Pin size={10} className="text-blue-500 shrink-0" />
-                <span className="text-[10px] font-semibold text-blue-500 uppercase tracking-wide">New Email</span>
-              </div>
-              <div className="text-sm font-semibold text-gray-800 truncate">{selected.subject}</div>
+              <div className="text-[10px] text-gray-400 mb-0.5">New Email</div>
+              <div className="text-sm font-medium text-gray-800 truncate">{selected.subject}</div>
             </div>
             <button
               onClick={() => onSelect(null)}
-              className="text-gray-500 hover:text-gray-800 transition-colors p-0.5"
+              className="text-gray-300 hover:text-gray-600 transition-colors p-0.5"
             >
-              <X size={15} />
+              <X size={14} />
             </button>
           </div>
 
           {selected.aiSummary && (
-            <div className="flex items-baseline gap-1.5 bg-white border border-blue-100 rounded-md px-3 py-2 mb-2">
-              <span className="text-[10px] font-semibold text-blue-400 uppercase tracking-wide shrink-0">AI Summary «</span>
-              <p className="text-[12px] text-gray-600 leading-snug">{selected.aiSummary}</p>
+            <div className="border-l-2 border-gray-200 pl-3 py-0.5 mb-2">
+              <p className="text-[11px] text-gray-500 leading-snug">{selected.aiSummary}</p>
             </div>
           )}
 
-          <div className="text-[13px] leading-snug whitespace-pre-wrap bg-white rounded-md px-3 py-2 mb-3 max-h-[356px] overflow-y-auto" style={{ color: '#242424' }}>
+          <div className="text-[12px] leading-relaxed whitespace-pre-wrap bg-gray-50 border border-gray-100 rounded px-3 py-2 mb-3 max-h-[356px] overflow-y-auto text-gray-700">
             {(selected.body || selected.bodyPreview).replace(/\n{2,}/g, '\n\n')}
           </div>
 
           <div className="flex items-center gap-2">
             <Select value={category} onValueChange={(v) => { if (v) setCategory(v) }}>
-              <SelectTrigger className="h-7 text-xs w-44 border-blue-200 !bg-white">
+              <SelectTrigger className="h-7 text-xs w-44 border-gray-200 !bg-white">
                 <span className="flex items-center gap-1 truncate">
                   {isAiSuggested && (
-                    <span className="text-[10px] font-semibold text-blue-400 shrink-0">AI:</span>
+                    <span className="text-[10px] text-gray-400 shrink-0">AI</span>
                   )}
                   <span>{category}</span>
                 </span>
@@ -670,10 +717,10 @@ function EmailPanel({ emails, selected, onSelect, onConfirmed }: {
             <button
               onClick={handleConfirm}
               disabled={confirming || selected.status === 'CONFIRMED'}
-              className="flex items-center gap-1.5 h-7 text-[11px] font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-md px-3 transition-colors"
+              className="flex items-center gap-1.5 h-7 text-[11px] font-medium text-white bg-gray-800 hover:bg-gray-900 disabled:opacity-40 rounded px-3 transition-colors"
             >
               <CheckCircle2 size={11} />
-              {selected.status === 'CONFIRMED' ? 'Confirmed' : confirming ? 'Processing...' : 'Confirm'}
+              {selected.status === 'CONFIRMED' ? 'Confirmed' : confirming ? 'Saving...' : 'Confirm'}
             </button>
           </div>
         </div>
@@ -683,15 +730,15 @@ function EmailPanel({ emails, selected, onSelect, onConfirmed }: {
       {restList.length > 0 && (
       <button
         onClick={() => setListOpen((v) => !v)}
-        className="w-full px-4 py-3 flex items-center gap-2 hover:bg-gray-50 transition-colors"
+        className="w-full px-4 py-2.5 flex items-center gap-2 hover:bg-gray-50 transition-colors border-t border-gray-50"
       >
-        <Mail size={13} className="text-gray-400" />
-        <span className="text-sm font-semibold text-gray-800">
-          {selected ? 'Another Unclassified Emails' : 'Unclassified Emails'}
+        <Mail size={12} className="text-gray-300" />
+        <span className="text-xs text-gray-600">
+          {selected ? 'Other unclassified' : 'Unclassified emails'}
         </span>
-        <span className="text-xs text-gray-400">{restList.length} pending</span>
-        <span className="ml-auto text-[10px] text-blue-500">
-          {listOpen ? '▲ Collapse' : '▼ Expand'}
+        <span className="text-[10px] text-gray-400 tabular-nums">{restList.length}</span>
+        <span className="ml-auto text-[10px] text-gray-300">
+          {listOpen ? '▲' : '▼'}
         </span>
       </button>
       )}
@@ -742,13 +789,18 @@ function CaseSummary({ c }: { c: CaseDetail }) {
     { label: 'Claim Numbers', value: c.claimNumbers.join(', ') || '—' },
   ]
   return (
-    <div className="bg-white border border-gray-100 rounded-lg p-5">
-      <div className="font-semibold text-sm text-gray-800 mb-4">Case Summary</div>
-      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+    <div className="bg-white border border-gray-100 rounded p-4">
+      <div className="text-xs font-medium text-gray-700 mb-3">Case Summary</div>
+      <div className="flex flex-col gap-2.5">
         {items.map(({ label, value }) => (
-          <div key={label}>
-            <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{label}</div>
-            <div className="text-xs font-medium text-gray-800">{value}</div>
+          <div key={label} className="flex items-baseline justify-between gap-4">
+            <span className="flex items-center gap-1 text-[11px] text-gray-400 shrink-0">
+              {label === 'Client Name' && (
+                <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 inline-block" />
+              )}
+              {label}
+            </span>
+            <span className="text-[11px] text-gray-700 text-right">{value}</span>
           </div>
         ))}
       </div>
@@ -775,9 +827,271 @@ const DETAIL_TABS = [
   { label: 'Documents',      active: false },
   { label: 'Tasks & Review', active: false },
   { label: 'Memo & Emails',  active: true },
+  { label: 'Retainer',       active: true },
   { label: 'Litigation',     active: false },
   { label: 'Fee',            active: false },
 ]
+
+// ── Retainer Tab ───────────────────────────────────────────────────────────
+
+type RetainerMethod = 'send' | 'upload'
+type DeliveryMethod = 'email' | 'sms'
+
+interface RetainerRecord {
+  date: string
+  method: 'email' | 'sms' | 'upload'
+  sentTo: string
+  status: 'sent' | 'signed' | 'pending'
+  filename: string
+}
+
+const MOCK_HISTORY: RetainerRecord[] = [
+  { date: '05/28/2026', method: 'email', sentTo: 'sarah.kim@email.com', status: 'sent',   filename: 'Retainer_Kim.pdf' },
+  { date: '05/15/2026', method: 'upload', sentTo: 'In-person',          status: 'signed', filename: 'Retainer_v1_Kim.pdf' },
+]
+
+function RetainerTab({ clientName }: { clientName: string }) {
+  const [method, setMethod] = useState<RetainerMethod>('send')
+  const [delivery, setDelivery] = useState<DeliveryMethod>('email')
+  const [email, setEmail] = useState('sarah.kim@email.com')
+  const [phone, setPhone] = useState('')
+  const [dragOver, setDragOver] = useState(false)
+
+  const statusBadge = (s: RetainerRecord['status']) => {
+    if (s === 'signed')  return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-600"><Check size={9} strokeWidth={3} />Signed</span>
+    if (s === 'sent')    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-600">Sent</span>
+    return                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-600"><Clock size={9} />Pending</span>
+  }
+
+  const methodIcon = (m: RetainerRecord['method']) => {
+    if (m === 'email')  return <Mail size={12} className="text-gray-400" />
+    if (m === 'sms')    return <MessageSquare size={12} className="text-gray-400" />
+    return                     <Upload size={12} className="text-gray-400" />
+  }
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-base font-semibold text-gray-900">Retainer Agreement</div>
+          <div className="text-xs text-gray-400 mt-0.5">Send for signature or upload signed copy</div>
+        </div>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600">
+          <Clock size={11} />
+          Pending Signature
+        </span>
+      </div>
+
+      {/* DocuSeal info */}
+      <div className="flex items-center gap-2 bg-[#eff4ff] border border-[#c7d7f9] rounded-lg px-3 py-2 text-xs text-[#3b5fc9] mb-4">
+        <FileText size={13} className="shrink-0" />
+        <span>Powered by <strong>DocuSeal</strong> — HIPAA-compliant eSignature. BAA on file.</span>
+      </div>
+
+      {/* Method selector */}
+      <div className="flex gap-3 mb-4">
+        <button
+          onClick={() => setMethod('send')}
+          className={`flex-1 flex items-center gap-3 border-2 rounded-xl px-4 py-3 transition-all ${
+            method === 'send' ? 'border-[#4B6CB7] bg-[#eff4ff]' : 'border-gray-200 hover:border-[#4B6CB7] hover:bg-[#f8faff]'
+          }`}
+        >
+          <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${method === 'send' ? 'bg-[#4B6CB7] text-white' : 'bg-gray-100 text-gray-500'}`}>
+            <Send size={16} />
+          </div>
+          <div className="text-left">
+            <div className="text-sm font-semibold text-gray-900">Send to Client</div>
+            <div className="text-xs text-gray-500">Email or SMS via DocuSeal</div>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setMethod('upload')}
+          className={`flex-1 flex items-center gap-3 border-2 rounded-xl px-4 py-3 transition-all ${
+            method === 'upload' ? 'border-[#4B6CB7] bg-[#eff4ff]' : 'border-gray-200 hover:border-[#4B6CB7] hover:bg-[#f8faff]'
+          }`}
+        >
+          <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${method === 'upload' ? 'bg-[#4B6CB7] text-white' : 'bg-gray-100 text-gray-500'}`}>
+            <Upload size={16} />
+          </div>
+          <div className="text-left">
+            <div className="text-sm font-semibold text-gray-900">Already Signed</div>
+            <div className="text-xs text-gray-500">Upload signed PDF from in-person meeting</div>
+          </div>
+        </button>
+      </div>
+
+      {/* Send form */}
+      {method === 'send' && (
+        <div className="border border-gray-200 rounded-xl p-5 bg-gray-50 mb-4">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 mb-4">
+            <Send size={12} />
+            Send Retainer for Signature
+          </div>
+
+          {/* Delivery toggle */}
+          <div className="flex gap-2 mb-4">
+            {(['email', 'sms'] as const).map((d) => (
+              <button
+                key={d}
+                onClick={() => setDelivery(d)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                  delivery === d ? 'bg-[#4B6CB7] text-white border-[#4B6CB7]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                {d === 'email' ? <Mail size={11} /> : <MessageSquare size={11} />}
+                {d === 'email' ? 'Email' : 'SMS'}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-2.5 mb-2.5">
+            <div className="flex-1 flex flex-col gap-1">
+              <label className="text-[11px] text-gray-500 font-medium">Client Name</label>
+              <input
+                className="h-8 px-2.5 text-xs border border-gray-200 rounded-lg bg-white text-gray-700 outline-none focus:ring-1 focus:ring-[#4B6CB7]/40 focus:border-[#4B6CB7]"
+                value={clientName}
+                readOnly
+              />
+            </div>
+            <div className="flex-1 flex flex-col gap-1">
+              <label className="text-[11px] text-gray-500 font-medium">
+                {delivery === 'email' ? 'Email' : 'Phone'}
+              </label>
+              {delivery === 'email' ? (
+                <input
+                  className="h-8 px-2.5 text-xs border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:ring-1 focus:ring-[#4B6CB7]/40 focus:border-[#4B6CB7]"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              ) : (
+                <input
+                  className="h-8 px-2.5 text-xs border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:ring-1 focus:ring-[#4B6CB7]/40 focus:border-[#4B6CB7]"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+1 (555) 000-0000"
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1 mb-4">
+            <label className="text-[11px] text-gray-500 font-medium">Template</label>
+            <input
+              className="h-8 px-2.5 text-xs border border-gray-200 rounded-lg bg-gray-100 text-gray-500 outline-none"
+              value="Standard PI Retainer Agreement"
+              readOnly
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <button className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#4B6CB7] hover:bg-[#3d5a9e] text-white text-xs font-semibold rounded-lg transition-colors">
+              <Send size={12} />
+              Send via DocuSeal
+            </button>
+            <button className="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-lg border border-gray-200 transition-colors">
+              <Eye size={12} />
+              Preview
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Upload form */}
+      {method === 'upload' && (
+        <div className="border border-gray-200 rounded-xl p-5 bg-gray-50 mb-4">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 mb-4">
+            <Upload size={12} />
+            Upload Signed Retainer
+          </div>
+
+          <div
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => { e.preventDefault(); setDragOver(false) }}
+            className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer flex flex-col items-center gap-2 mb-4 ${
+              dragOver ? 'border-[#4B6CB7] bg-[#eff4ff]' : 'border-gray-300 hover:border-[#4B6CB7] hover:bg-[#f8faff]'
+            }`}
+          >
+            <FileText size={28} className="text-gray-300" />
+            <div className="text-xs font-medium text-gray-700">Drop signed PDF here, or click to browse</div>
+            <div className="text-[11px] text-gray-400">PDF only · Max 20MB</div>
+          </div>
+
+          <div className="flex gap-2.5 mb-4">
+            <div className="flex-1 flex flex-col gap-1">
+              <label className="text-[11px] text-gray-500 font-medium">Date Signed</label>
+              <input
+                type="date"
+                className="h-8 px-2.5 text-xs border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:ring-1 focus:ring-[#4B6CB7]/40 focus:border-[#4B6CB7]"
+                defaultValue={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+            <div className="flex-1 flex flex-col gap-1">
+              <label className="text-[11px] text-gray-500 font-medium">Signed By</label>
+              <input
+                className="h-8 px-2.5 text-xs border border-gray-200 rounded-lg bg-white text-gray-700 outline-none focus:ring-1 focus:ring-[#4B6CB7]/40 focus:border-[#4B6CB7]"
+                value={clientName}
+                readOnly
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <button className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#4B6CB7] hover:bg-[#3d5a9e] text-white text-xs font-semibold rounded-lg transition-colors">
+              <Upload size={12} />
+              Upload & Save
+            </button>
+            <button
+              onClick={() => setMethod('send')}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-lg border border-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="text-xs font-semibold text-gray-700 mb-2">Signature History</div>
+      <div className="border border-gray-100 rounded-xl overflow-hidden bg-white">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-gray-100">
+              <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Date</th>
+              <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Method</th>
+              <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Sent To</th>
+              <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Status</th>
+              <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Document</th>
+            </tr>
+          </thead>
+          <tbody>
+            {MOCK_HISTORY.map((r, i) => (
+              <tr key={i} className="border-b border-gray-50 last:border-0">
+                <td className="px-4 py-2.5 text-xs text-gray-700">{r.date}</td>
+                <td className="px-4 py-2.5">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                    {methodIcon(r.method)}
+                    {r.method === 'email' ? 'Email' : r.method === 'sms' ? 'SMS' : 'Upload'}
+                  </div>
+                </td>
+                <td className="px-4 py-2.5 text-xs text-gray-600">{r.sentTo}</td>
+                <td className="px-4 py-2.5">{statusBadge(r.status)}</td>
+                <td className="px-4 py-2.5">
+                  <span className="inline-flex items-center gap-1.5 bg-gray-100 rounded px-2 py-0.5 text-[11px] text-gray-600">
+                    <FileText size={10} />
+                    {r.filename}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
 
 export function MatterDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -844,45 +1158,45 @@ export function MatterDetailPage() {
       </div>
 
       {/* Header + Stage tracker */}
-      <div className="bg-white border border-gray-100 rounded-lg px-6 py-4 mb-2">
+      <div className="bg-white border border-gray-100 rounded px-6 py-4 mb-2">
         <div className="flex items-start justify-between gap-6 mb-4">
           <div className="flex-1">
-            <div className="text-xl font-bold text-gray-900 mb-1.5">{caseTitle}</div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-50 text-green-600">Active</span>
+            <div className="text-lg font-semibold text-gray-900 tracking-tight">{caseTitle}</div>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-[11px] text-[#0D9488]">Active</span>
             </div>
           </div>
           <div className="flex items-center gap-8 shrink-0">
-            <div className="text-center">
-              <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Date of Loss</div>
-              <div className="text-xs font-medium text-gray-800">{fmt(c.dateOfLoss)}</div>
+            <div>
+              <div className="text-[10px] text-gray-400 mb-0.5">Date of Loss</div>
+              <div className="text-xs text-gray-700">{fmt(c.dateOfLoss)}</div>
             </div>
-            <div className="w-px h-8 bg-gray-100" />
-            <div className="text-center">
-              <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">SOL</div>
-              <div className="text-xs font-medium text-gray-800">{fmt(c.dueDate)}</div>
+            <div className="w-px h-6 bg-gray-100" />
+            <div>
+              <div className="text-[10px] text-gray-400 mb-0.5">SOL</div>
+              <div className="text-xs text-gray-700">{fmt(c.dueDate)}</div>
               {days !== null && (
-                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full mt-0.5 inline-block ${days < 90 ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600'}`}>
+                <span className={`text-[10px] tabular-nums ${days < 90 ? 'text-red-500' : 'text-gray-400'}`}>
                   {days > 0 ? `${days}d left` : `${Math.abs(days)}d overdue`}
                 </span>
               )}
             </div>
-            <div className="w-px h-8 bg-gray-100" />
-            <div className="text-center">
-              <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Case Manager</div>
-              <div className="text-xs font-medium text-gray-800">{c.handler}</div>
+            <div className="w-px h-6 bg-gray-100" />
+            <div>
+              <div className="text-[10px] text-gray-400 mb-0.5">Case Manager</div>
+              <div className="text-xs text-gray-700">{c.handler}</div>
             </div>
-            <div className="w-px h-8 bg-gray-100" />
-            <div className="text-center">
-              <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Attorney</div>
-              <div className="text-xs font-medium text-gray-800">—</div>
+            <div className="w-px h-6 bg-gray-100" />
+            <div>
+              <div className="text-[10px] text-gray-400 mb-0.5">Attorney</div>
+              <div className="text-xs text-gray-700">—</div>
             </div>
-            <button className="text-xs text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors">
-              Edit Matter
+            <button className="text-xs text-gray-500 border border-gray-200 rounded px-3 py-1.5 hover:bg-gray-50 transition-colors">
+              Edit
             </button>
           </div>
         </div>
-        <div className="border-t border-gray-100 pt-2">
+        <div className="border-t border-gray-100 pt-3">
           <StageTracker stage={c.stage} />
         </div>
       </div>
@@ -896,7 +1210,7 @@ export function MatterDetailPage() {
               onClick={() => setActiveTab(label)}
               className={`px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === label
-                  ? 'text-blue-600 border-b-2 border-blue-600 -mb-px'
+                  ? 'text-[#4B6CB7] border-b-2 border-[#4B6CB7] -mb-px'
                   : 'text-gray-500 hover:text-gray-800'
               }`}
             >
@@ -917,6 +1231,8 @@ export function MatterDetailPage() {
       {/* Tab body */}
       {activeTab === 'Memo & Emails' ? (
         <MemoEmailsTab emails={c.emails} />
+      ) : activeTab === 'Retainer' ? (
+        <RetainerTab clientName={c.clientName} />
       ) : (
         <div className="grid grid-cols-[1fr_560px] gap-4">
           {/* Left: Timeline */}
