@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>CM — Maria Gonzalez</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F7F8FA;
+      max-width: 430px;
+      margin: 0 auto;
+      border-left: 1px solid #E4E7EC;
+      border-right: 1px solid #E4E7EC;
+      display: flex;
+      flex-direction: column;
+    }
+    #scroll-root {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: none;
+    }
+
+    /* HEADER */
+    .page-header {
+      background: #fff;
+      padding: 16px 16px 14px;
+      border-bottom: 1px solid #EAECF0;
+      position: sticky; top: 0; z-index: 30;
+    }
+    .header-top { display: flex; align-items: center; gap: 10px; }
+    .back-btn { font-size: 20px; color: #667085; text-decoration: none; flex-shrink: 0; line-height: 1; }
+    .page-title { font-size: 16px; font-weight: 700; color: #101828; letter-spacing: -0.01em; flex: 1; }
+    .nav-lang {
+      font-size: 10px; font-weight: 600;
+      background: #F9FAFB; color: #667085;
+      padding: 4px 9px; border-radius: 5px;
+      border: 1px solid #E4E7EC; flex-shrink: 0;
+    }
+    .nav-sol {
+      font-size: 11px; font-weight: 700;
+      color: #667085; flex-shrink: 0; margin-left: auto;
+    }
+
+    /* STAGE BAR */
+    .stage-bar { padding: 10px 10px 8px; background: #fff; border-bottom: 1px solid #EAECF0; }
+    .stages-row { display: flex; align-items: flex-start; }
+    .stage-col { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; }
+    .stage-dot { width: 18px; height: 18px; border-radius: 50%; font-size: 7px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .dot-done    { background: #344054; color: #fff; }
+    .dot-active  { background: #4B5B8C; color: #fff; font-size: 7px; width: 20px; height: 20px; box-shadow: 0 0 0 3px #D6DBF0; }
+    .dot-pending { background: #F9FAFB; color: #D0D5DD; border: 1.5px solid #E4E7EC; }
+    .dot-next    { background: #F9FAFB; color: #C0C7D4; border: 1.5px dashed #D0D5DD; }
+    .stage-line-wrap { flex: 1; display: flex; align-items: center; padding-top: 9px; min-width: 4px; }
+    .stage-line { width: 100%; height: 1.5px; background: #E4E7EC; }
+    .stage-line.done { background: #344054; }
+    .stage-name { font-size: 9px; color: #98A2B3; margin-top: 3px; text-align: center; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120%; padding: 0 1px; }
+    .stage-name.active { color: #4B5B8C; font-weight: 700; white-space: normal; }
+    .stage-name.done   { color: #344054; }
+    .stage-name.next-dept { color: #C0C7D4; }
+
+    /* STATUS BAR */
+    .status-bar { background: #fff; border-bottom: 1px solid #EAECF0; overflow: hidden; }
+    .status-row { display: flex; align-items: center; gap: 6px; padding: 7px 14px; cursor: default; }
+    .status-row.collapsed { display: none; }
+    .status-bar .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #F04438; flex-shrink: 0; }
+    .status-bar .status-dot.ok { background: #12B76A; }
+    .status-bar .status-dot.pending { background: #F79009; }
+    .status-bar .status-text { font-size: 11px; color: #344054; font-weight: 500; flex: 1; }
+    .status-bar .status-sol { font-size: 10px; color: #98A2B3; flex-shrink: 0; }
+    .status-bar .status-more { font-size: 10px; color: #98A2B3; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+    .status-bar .status-more svg { transition: transform .2s; }
+    .status-bar.expanded .status-row { display: flex; }
+    .status-divider { height: 1px; background: #F9FAFB; margin: 0 14px; }
+    .chip {
+      font-size: 10px; font-weight: 500;
+      padding: 3px 8px; border-radius: 5px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #F9FAFB; color: #475467;
+      border: 1px solid #E4E7EC;
+    }
+    .chip svg { color: #98A2B3; }
+    .chip.chip-warn { color: #B42318; border-color: #FECDCA; background: #FEF3F2; }
+    .chip.chip-warn svg { color: #B42318; }
+    .chip.chip-done { color: #027A48; border-color: #D1FADF; background: #F6FEF9; }
+    .chip.chip-done svg { color: #027A48; }
+
+    /* TABS */
+    .tabs-row { background: #fff; border-bottom: 1.5px solid #EAECF0; display: flex; position: sticky; top: 0; z-index: 20; }
+    .tab-btn { flex: 1; text-align: center; padding: 10px 4px; font-size: 11px; font-weight: 600; color: #98A2B3; border: none; border-bottom: 2px solid transparent; margin-bottom: -1.5px; background: none; cursor: pointer; }
+    .tab-btn.active { color: #344054; border-bottom-color: #344054; }
+
+    /* BODY */
+    .tab-panel { display: none; padding: 12px 12px 80px; flex-direction: column; gap: 7px; }
+    .tab-panel.active { display: flex; }
+
+    /* SECTION LABEL */
+    .section-label {
+      font-size: 10px; font-weight: 600; color: #98A2B3;
+      letter-spacing: .06em; text-transform: uppercase;
+      padding: 6px 2px 3px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .section-label svg { color: #C0C7D4; }
+    .section-label.lbl-urgent { color: #B42318; }
+    .section-label.lbl-urgent svg { color: #B42318; }
+
+    /* CARD BASE */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #E4E7EC;
+      overflow: hidden;
+    }
+
+    /* URGENT BANNER — only colored element */
+    .urgent-banner {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #EAECF0;
+      border-left: 2px solid #F04438;
+      padding: 13px 13px 13px 14px;
+      display: flex; align-items: center; gap: 11px;
+    }
+    .urgent-icon-wrap { flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px; background: #FEF3F2; display: flex; align-items: center; justify-content: center; color: #F04438; }
+    .urgent-text { flex: 1; }
+    .urgent-label { font-size: 9px; font-weight: 700; color: #B42318; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 3px; }
+    .urgent-title { font-size: 14px; font-weight: 700; color: #101828; }
+    .urgent-sub { font-size: 12px; color: #98A2B3; margin-top: 2px; }
+    .urgent-btn {
+      font-size: 11px; font-weight: 600; padding: 8px 14px;
+      border-radius: 7px; background: #4B5B8C; color: #fff;
+      border: none; cursor: pointer; flex-shrink: 0;
+    }
+
+    /* DEADLOCK — subtle warning */
+    .deadlock-banner {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #E4E7EC;
+      border-left: 2px solid #F79009;
+      padding: 12px 13px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .deadlock-icon-wrap { color: #F79009; flex-shrink: 0; margin-top: 1px; }
+    .deadlock-text { flex: 1; }
+    .deadlock-label { font-size: 9px; font-weight: 700; color: #667085; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 3px; }
+    .deadlock-msg { font-size: 11px; color: #344054; line-height: 1.5; margin-bottom: 9px; }
+    .deadlock-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .dbtn { font-size: 10px; font-weight: 600; padding: 6px 12px; border-radius: 6px; border: 1px solid #E4E7EC; cursor: pointer; background: #F9FAFB; color: #344054; }
+    .dbtn-primary { background: #344054; color: #fff; border-color: #344054; }
+
+    /* ACCORDION / CARD HEADER */
+    .card-header { display: flex; align-items: center; gap: 9px; padding: 12px 13px; cursor: pointer; }
+    .card-icon { color: #98A2B3; flex-shrink: 0; }
+    .card-title { flex: 1; font-size: 12px; font-weight: 600; color: #344054; }
+    .card-badge {
+      font-size: 10px; font-weight: 500;
+      background: #F9FAFB; color: #667085;
+      padding: 2px 8px; border-radius: 4px;
+      border: 1px solid #E4E7EC;
+      white-space: nowrap;
+    }
+    .card-chev { color: #C0C7D4; transition: transform .2s; flex-shrink: 0; }
+    .card-chev.open { transform: rotate(180deg); }
+    .card-body { border-top: 1px solid #F2F4F7; }
+
+    /* PINNED CARD — only slight distinction */
+    .pinned-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #E4E7EC;
+      border-left: 2px solid #4B5B8C;
+      overflow: hidden;
+    }
+    .pinned-footer { padding: 8px 13px; border-top: 1px solid #F2F4F7; display: flex; align-items: center; gap: 8px; }
+    .cadence-label { font-size: 10px; color: #98A2B3; flex: 1; }
+    .cadence-select { font-size: 10px; font-weight: 500; color: #344054; background: #F9FAFB; border: 1px solid #E4E7EC; border-radius: 5px; padding: 3px 8px; cursor: pointer; }
+
+    /* CHECK ITEM */
+    .check-item { display: flex; align-items: flex-start; gap: 10px; padding: 11px 13px; border-bottom: 1px solid #F9FAFB; }
+    .check-item:last-child { border-bottom: none; }
+    .pri-dot { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+    .check-text { flex: 1; font-size: 12px; color: #344054; line-height: 1.4; }
+    .check-sub { font-size: 10px; color: #98A2B3; margin-top: 2px; }
+    .check-text.struck { color: #C0C7D4; text-decoration: line-through; }
+
+    .action-btn {
+      font-size: 10px; font-weight: 500; padding: 5px 10px; border-radius: 6px;
+      border: 1px solid #E4E7EC; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      background: #F9FAFB; color: #475467; align-self: flex-start;
+    }
+    .action-btn.primary { background: #344054; color: #fff; border-color: #344054; }
+    .action-btn.danger  { background: #fff; color: #B42318; border-color: #FECDCA; }
+
+    /* HANDOFF ROW */
+    .handoff-row { display: flex; align-items: center; gap: 9px; padding: 10px 13px; background: #FAFAFA; border-top: 1px solid #F2F4F7; }
+    .handoff-text { flex: 1; font-size: 11px; color: #667085; }
+
+    /* DONE CARD */
+    .done-card { background: #fff; border-radius: 10px; border: 1px solid #E4E7EC; overflow: hidden; }
+    .done-title { flex: 1; font-size: 12px; font-weight: 600; color: #344054; }
+    .done-count { font-size: 10px; font-weight: 500; background: #F9FAFB; color: #667085; padding: 2px 8px; border-radius: 4px; border: 1px solid #E4E7EC; }
+    .done-item { display: flex; align-items: flex-start; gap: 9px; padding: 10px 13px; border-bottom: 1px solid #F9FAFB; }
+    .done-item:last-child { border-bottom: none; }
+    .done-check {
+      width: 16px; height: 16px; border-radius: 4px;
+      background: #344054; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .done-text { font-size: 11px; color: #98A2B3; text-decoration: line-through; flex: 1; }
+    .done-meta { font-size: 9px; color: #C0C7D4; margin-top: 1px; }
+    .done-time { font-size: 9px; color: #C0C7D4; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
+
+    /* TIMELINE */
+    /* Timeline vertical line layout */
+    #timeline-list { position: relative; padding-left: 28px; }
+    #timeline-list::before { content:''; position:absolute; left:11px; top:0; bottom:0; width:2px; background:#BFCFFF; }
+    .tl-row { position: relative; margin-bottom: 8px; }
+    .tl-row::before { content:''; position:absolute; left:-21px; top:8px; width:10px; height:10px; border-radius:50%; background:#4B5B8C; z-index:1; }
+    .tl-row.stage-row::before { background:#2D3FBF; }
+    .tl-date-group { position:relative; font-size:10px; font-weight:700; color:#98A2B3; letter-spacing:.06em; text-transform:uppercase; padding:2px 0 6px; margin-top:8px; }
+    .tl-item { background:#fff; border-radius:10px; border:1px solid #E4E7EC; padding:12px 13px; }
+    .tl-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+    .tl-meta-label { font-size:10px; color:#98A2B3; margin-bottom:2px; }
+    .tl-meta-value { font-size:12px; font-weight:600; color:#101828; }
+    .tl-meta-date { font-size:11px; color:#344054; font-weight:500; }
+    .tl-divider { height:1px; background:#F2F4F7; margin:8px 0; }
+    .tl-body { font-size:11px; color:#667085; line-height:1.5; }
+    .tl-subject { font-size:12px; font-weight:600; color:#101828; margin-bottom:2px; }
+    .tl-attachments { display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
+    .tl-attach-btn { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:500; color:#4B5B8C; background:#F0F2FF; border:1px solid #D9DDFF; border-radius:6px; padding:4px 8px; cursor:pointer; text-decoration:none; white-space:nowrap; }
+    .tl-attach-btn:active { background:#E4E7FF; }
+    .tl-decision { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:600; padding:3px 8px; border-radius:12px; margin-top:5px; }
+    .tl-decision.admit { background:#ECFDF3; color:#027A48; }
+    .tl-decision.deny  { background:#FEF2F2; color:#B42318; }
+    .tl-decision.pending { background:#F2F4F7; color:#667085; }
+    .tl-add-row { display:none; }
+
+    /* ADDED TASKS */
+    .added-section { background: #fff; border-radius: 10px; border: 1px solid #E4E7EC; overflow: hidden; }
+    .added-header {
+      padding: 10px 13px; border-bottom: 1px solid #F2F4F7;
+      font-size: 10px; font-weight: 600; color: #667085;
+      letter-spacing: .05em; text-transform: uppercase;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .added-header svg { color: #C0C7D4; }
+
+    /* MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 50; align-items: flex-end; justify-content: center; max-width: 430px; margin: 0 auto; }
+    .modal-overlay.open { display: flex; }
+    .modal-sheet { background: #fff; width: 100%; border-radius: 16px 16px 0 0; padding: 20px 16px 40px; animation: slideUp .22s ease; max-height: 92vh; overflow-y: auto; }
+    @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-handle { width: 32px; height: 3px; background: #E4E7EC; border-radius: 2px; margin: 0 auto 10px; }
+    .modal-title { font-size: 15px; font-weight: 700; color: #101828; margin-bottom: 4px; }
+    .modal-sub { font-size: 11px; color: #98A2B3; margin-bottom: 16px; }
+    .modal-section { font-size: 9px; font-weight: 700; color: #98A2B3; text-transform: uppercase; letter-spacing: .07em; margin: 14px 0 6px; }
+    .lang-notice { display: flex; align-items: center; gap: 7px; background: #F9FAFB; border: 1px solid #E4E7EC; border-radius: 8px; padding: 10px 13px; margin-bottom: 12px; font-size: 11px; color: #475467; }
+    .lang-notice svg { color: #98A2B3; flex-shrink: 0; }
+    .email-preview { background: #F9FAFB; border-radius: 8px; border: 1px solid #E4E7EC; padding: 16px; font-size: 12px; color: #344054; line-height: 1.2; margin-bottom: 4px; white-space: pre-line; }
+    .email-preview p { margin-bottom: 14px; }
+    .email-preview strong { color: #101828; display: block; margin-top: 16px; }
+    .modal-edit-note { font-size: 10px; color: #C0C7D4; margin-bottom: 14px; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .modal-submit {
+      flex: 1; padding: 13px; border-radius: 9px;
+      background: #4B5B8C; color: #fff; font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .modal-cancel { flex: 1; padding: 13px; border-radius: 9px; background: #F2F4F7; border: none; color: #667085; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .attach-card { display:flex; align-items:center; gap:9px; background:#F9FAFB; border:1px solid #E4E7EC; border-radius:8px; padding:10px 12px; cursor:pointer; transition: background .12s; position:relative; }
+    .attach-card:active { background:#EEF2FF; }
+    .attach-preview-hint { font-size:10px; color:#B42318; font-weight:600; margin-top:2px; }
+
+    /* PDF preview modal */
+    .pdf-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:100; align-items:flex-end; justify-content:center; max-width:430px; margin:0 auto; }
+    .pdf-overlay.open { display:flex; }
+    .pdf-sheet { background:#fff; width:100%; border-radius:16px 16px 0 0; padding:0; animation: slideUp .22s ease; max-height:94vh; display:flex; flex-direction:column; overflow:hidden; }
+    .pdf-header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px; border-bottom:1px solid #EAECF0; flex-shrink:0; }
+    .pdf-title { font-size:13px; font-weight:700; color:#101828; }
+    .pdf-close { font-size:18px; color:#98A2B3; background:none; border:none; cursor:pointer; padding:2px 6px; }
+    .pdf-body { flex:1; overflow-y:auto; padding:16px; background:#F0F2F5; }
+    .pdf-page { background:#fff; border-radius:4px; box-shadow:0 1px 6px rgba(0,0,0,.12); padding:28px 24px; font-family:'Times New Roman',serif; font-size:11px; line-height:1.7; color:#1a1a1a; }
+    .pdf-letterhead { text-align:center; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid #888; }
+    .pdf-logo { font-size:22px; font-weight:700; letter-spacing:-1px; border:2px solid #888; display:inline-block; padding:4px 10px; margin-bottom:6px; }
+    .pdf-firm { font-size:16px; font-weight:400; letter-spacing:2px; }
+    .pdf-addr { font-size:9px; color:#555; margin-top:6px; }
+    .pdf-date { text-align:center; margin:18px 0 14px; font-size:11px; }
+    .pdf-client-addr { font-size:11px; margin-bottom:16px; }
+    .pdf-ref { text-align:center; font-weight:700; text-decoration:underline; margin-bottom:16px; font-size:11px; }
+    .pdf-body-text { font-size:11px; text-align:justify; }
+    .pdf-body-text p { margin-bottom:12px; }
+    .pdf-done-btn { flex-shrink:0; padding:14px 16px calc(14px + env(safe-area-inset-bottom)); border-top:1px solid #EAECF0; }
+    .pdf-done-btn button { width:100%; padding:13px; border-radius:9px; background:#1E2D5E; color:#fff; font-size:13px; font-weight:600; border:none; cursor:pointer; }
+
+    /* CLAIM INPUT */
+    .confirm-sel { font-size:11px;font-weight:500;padding:7px 12px;border-radius:7px;border:1.5px solid #E4E7EC;background:#F9FAFB;color:#344054;cursor:pointer; }
+    .confirm-sel.active { background:#101828;color:#fff;border-color:#101828; }
+    .claim-input { width: 100%; padding: 12px 13px; border: 1.5px solid #E4E7EC; border-radius: 8px; font-size: 14px; font-weight: 500; color: #101828; outline: none; font-family: 'Inter', sans-serif; background: #F9FAFB; }
+    .claim-input:focus { border-color: #4B5B8C; background: #fff; }
+
+    /* INSURER COMM — thread-based layout */
+    .ins-card { background: #fff; border-radius: 10px; border: 1px solid #E4E7EC; overflow: hidden; }
+    .ins-track-header {
+      padding: 10px 13px; display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid #F2F4F7;
+    }
+    .ins-track-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #98A2B3; }
+    .ins-track-name { font-size: 12px; font-weight: 600; color: #344054; flex: 1; }
+    .ins-track-sub { font-size: 10px; color: #98A2B3; }
+
+    .thread-item { border-bottom: 1px solid #F2F4F7; }
+    .thread-item:last-child { border-bottom: none; }
+    .thread-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 13px; cursor: pointer;
+    }
+    .thread-status { flex-shrink: 0; }
+    .ts-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .ts-none    { background: #E4E7EC; }
+    .ts-wait    { background: #F79009; }
+    .ts-action  { background: #1E2D5E; }
+    .ts-done    { background: #12B76A; }
+    .thread-main { flex: 1; min-width: 0; }
+    .thread-title { font-size: 12px; color: #344054; font-weight: 500; line-height: 1.3; }
+    .thread-title.done { color: #C0C7D4; text-decoration: line-through; font-weight: 400; }
+    .thread-meta { font-size: 10px; color: #98A2B3; margin-top: 2px; }
+    .thread-meta.warn  { color: #B54708; }
+    .thread-meta.alert { color: #4B5B8C; font-weight: 600; }
+    .thread-chev { color: #D0D5DD; transition: transform .2s; flex-shrink: 0; }
+    .thread-chev.open { transform: rotate(180deg); }
+
+    .thread-detail {
+      display: none;
+      background: #F9FAFB;
+      border-top: 1px solid #F2F4F7;
+      padding: 12px 13px;
+      flex-direction: column; gap: 8px;
+    }
+    .thread-detail.open { display: flex; }
+
+    /* email exchange log inside thread */
+    .exchange { display: flex; flex-direction: column; gap: 5px; }
+    .exch-row { display: flex; gap: 8px; align-items: flex-start; }
+    .exch-dir {
+      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+      padding: 2px 6px; border-radius: 3px; flex-shrink: 0; margin-top: 1px;
+      min-width: 30px; text-align: center;
+    }
+    .exch-out { background: #EFF4FF; color: #3538CD; }
+    .exch-in  { background: #F2F4F7; color: #667085; }
+    .exch-body { flex: 1; font-size: 11px; color: #344054; line-height: 1.4; }
+    .exch-time { font-size: 9px; color: #C0C7D4; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+
+    .thread-action-row { display: flex; gap: 6px; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid #EAECF0; margin-top: 2px; }
+    .thread-note {
+      font-size: 10px; color: #667085; line-height: 1.5;
+      background: #fff; border: 1px solid #EAECF0; border-radius: 6px;
+      padding: 8px 10px;
+    }
+
+    /* TOAST */
+    .confirm-overlay { position:fixed;inset:0;background:rgba(16,24,40,.4);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;pointer-events:none;padding:0 32px; }
+    .confirm-overlay.open { opacity:1;pointer-events:all; }
+    .confirm-sheet { background:#fff;border-radius:14px;width:100%;max-width:320px;overflow:hidden;transform:scale(.95);transition:transform .15s; }
+    .confirm-overlay.open .confirm-sheet { transform:scale(1); }
+    .confirm-body { padding:20px 20px 16px;text-align:center; }
+    .confirm-title { font-size:13px;font-weight:700;color:#101828;margin-bottom:4px; }
+    .confirm-sub { font-size:11px;color:#667085;line-height:1.5; }
+    .confirm-divider { height:1px;background:#F2F4F7; }
+    .confirm-actions { display:flex; }
+    .confirm-cancel { flex:1;padding:13px;background:none;border:none;border-right:1px solid #F2F4F7;color:#667085;font-size:13px;font-weight:500;cursor:pointer; }
+    .confirm-ok { flex:1;padding:13px;background:none;border:none;color:#1E2D5E;font-size:13px;font-weight:700;cursor:pointer; }
+    .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #fff; color: #344054; font-size: 11px; font-weight: 500; padding: 9px 18px; border-radius: 20px; white-space: nowrap; z-index: 60; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 340px; box-shadow: 0 4px 16px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08); border: 1px solid #F2F4F7; }
+    .toast.show { opacity: 1; pointer-events: all; }
+
+    /* LOR reply inline banner (top of TO DO panel) */
+    .reply-banner {
+      display: none; background: #F8F7FF;
+      border-radius: 10px; border: 1px solid #E9E5FF;
+      padding: 11px 12px 11px 13px;
+      align-items: center; gap: 10px;
+    }
+    .reply-banner.show { display: flex; }
+    .reply-banner-icon { flex-shrink: 0; font-size: 13px; line-height: 1; color: #7C5FBF; }
+    .reply-banner-text { font-size: 11px; color: #344054; line-height: 1.45; flex: 1; }
+    .reply-banner-confirm { font-size: 11px; font-weight: 600; padding: 7px 13px; border-radius: 7px; background: #4B5B8C; color: #fff; border: none; cursor: pointer; flex-shrink: 0; white-space: nowrap; }
+    /* Next-action select inside modal */
+    .next-action-wrap { margin-top: 14px; padding-top: 14px; border-top: 1px solid #F2F4F7; }
+    .next-action-label { font-size: 9px; font-weight: 700; color: #98A2B3; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+    .next-action-label span { background: #F0FDF4; color: #027A48; border: 1px solid #D1FADF; border-radius: 4px; padding: 1px 6px; font-size: 8px; }
+    .next-action-select { width: 100%; padding: 9px 28px 9px 10px; border-radius: 8px; border: 1px solid #E4E7EC; font-size: 12px; color: #344054; background: #fff; appearance: none; -webkit-appearance: none; font-family: inherit; cursor: pointer; }
+    .select-wrap { position: relative; display: block; }
+    .select-wrap::after { content: ''; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid #667085; pointer-events: none; }
+
+    /* STAGE ADVANCE ROW */
+    .stage-advance-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; margin: 4px 0 2px;
+      background: #F9FAFB; border-radius: 9px;
+      border: 1.5px dashed #D0D5DD;
+    }
+    .stage-advance-hint { flex: 1; font-size: 10px; color: #98A2B3; line-height: 1.4; }
+    .stage-advance-btn {
+      flex-shrink: 0; padding: 7px 12px;
+      border-radius: 7px; border: 1.5px solid #344054;
+      background: #344054; color: #fff;
+      font-size: 10px; font-weight: 600; cursor: pointer;
+      white-space: nowrap;
+    }
+    .stage-advance-btn.primary {
+      background: #4B5B8C; border-color: #4B5B8C;
+    }
+    .stage-advance-row.done {
+      background: #F0FAF4; border-color: #A6E4BF; border-style: solid;
+    }
+    .stage-advance-row.done .stage-advance-hint { color: #027A48; }
+    .stage-advance-row.done .stage-advance-btn { display: none; }
+    .stage-advance-row.done::after {
+      content: "Done"; font-size: 10px; font-weight: 700; color: #027A48;
+      padding: 5px 10px; background: #D1FADF; border-radius: 6px;
+    }
+
+    /* SECTION LABEL STATES */
+    .section-label.stage-done {
+      color: #98A2B3;
+    }
+    .section-label.stage-done svg { color: #C0C7D4; }
+    .section-label.stage-active { color: #101828; font-weight: 700; }
+
+    /* DEMO RESET BUTTON */
+    .demo-reset-btn {
+      padding: 5px 10px; border-radius: 6px;
+      border: 1px solid #E4E7EC; background: #F9FAFB;
+      font-size: 9px; font-weight: 600; color: #98A2B3;
+      cursor: pointer; display: flex; align-items: center; gap: 4px;
+      flex-shrink: 0;
+    }
+    .demo-reset-btn:hover { color: #344054; border-color: #D0D5DD; }
+
+    /* SR-1 form styles */
+    .sr1-item { display: flex; gap: 10px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid #F2F4F7; }
+    .sr1-item:last-of-type { border-bottom: none; }
+    .sr1-item-num { width: 22px; height: 22px; border-radius: 50%; background: #F0F4FF; border: 1.5px solid #C7D2F0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px; transition: background .15s, border-color .15s; }
+    .sr1-item-num svg { display: block; }
+    .sr1-item-num .icon-empty { display: block; }
+    .sr1-item-num .icon-done  { display: none; }
+    .sr1-item-num.done { background: #4B5B8C; border-color: #4B5B8C; }
+    .sr1-item-num.done .icon-empty { display: none; }
+    .sr1-item-num.done .icon-done  { display: block; }
+    .sr1-item-body { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+    .sr1-label { font-size: 12px; font-weight: 600; color: #101828; }
+    .sr1-req-star { color: #F04438; }
+    .sr1-hint { font-size: 10px; color: #98A2B3; margin-bottom: 4px; }
+    .sr1-input { width: 100%; padding: 9px 11px; border-radius: 7px; border: 1.5px solid #FDA29B; font-size: 13px; color: #101828; background: #FFF5F5; outline: none; font-family: inherit; }
+    .sr1-input:focus { border-color: #4B5B8C; background: #fff; box-shadow: 0 0 0 2px #D6DBF0; }
+    .sr1-input.filled { border-color: #12B76A; background: #F6FEF9; color: #101828; }
+    .sr1-input.filled::placeholder { color: transparent; }
+  </style>
+</head>
+<body>
+
+  <!-- SVG SPRITE -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+    <symbol id="ic-mail" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="1.5" y="3" width="13" height="10" rx="1.5"/>
+      <polyline points="1.5,3.5 8,9 14.5,3.5"/>
+    </symbol>
+    <symbol id="ic-send" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="14" y1="2" x2="6.5" y2="9.5"/>
+      <polygon points="14,2 9.5,14 6.5,9.5 1.5,6.5" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="ic-alert" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7.15 2.4L1.4 12a1 1 0 00.85 1.5h11.5a1 1 0 00.85-1.5L8.85 2.4a1 1 0 00-1.7 0z"/>
+      <line x1="8" y1="6.5" x2="8" y2="9.5"/>
+      <circle cx="8" cy="11.5" r=".5" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="ic-user" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="8" cy="5.5" r="3"/>
+      <path d="M2.5 14c0-2.76 2.46-5 5.5-5s5.5 2.24 5.5 5"/>
+    </symbol>
+    <symbol id="ic-phone" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5.5 1.5H3a1.5 1.5 0 00-1.5 1.5c0 6.075 4.925 11 11 11a1.5 1.5 0 001.5-1.5v-2.5l-3-1.5-1 1a8.001 8.001 0 01-4-4l1-1L5.5 1.5z"/>
+    </symbol>
+    <symbol id="ic-car" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2.5 9.5L4 5h8l1.5 4.5"/>
+      <rect x="1.5" y="9.5" width="13" height="3" rx="1"/>
+      <circle cx="4.5" cy="13.5" r="1.25"/>
+      <circle cx="11.5" cy="13.5" r="1.25"/>
+      <line x1="2" y1="9.5" x2="14" y2="9.5"/>
+    </symbol>
+    <symbol id="ic-inbox" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1.5 9h3.5l1.5 2.5h3L11 9h3.5"/>
+      <path d="M3.7 4h8.6L14.5 9v3.5a1 1 0 01-1 1h-11a1 1 0 01-1-1V9L3.7 4z"/>
+    </symbol>
+    <symbol id="ic-file" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9.5 1.5H4a1 1 0 00-1 1v11a1 1 0 001 1h8a1 1 0 001-1V5.5L9.5 1.5z"/>
+      <polyline points="9.5,1.5 9.5,5.5 13.5,5.5"/>
+      <line x1="5" y1="8.5" x2="11" y2="8.5"/>
+      <line x1="5" y1="11" x2="8" y2="11"/>
+    </symbol>
+    <symbol id="ic-check" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="2.5,8.5 6,12 13.5,4"/>
+    </symbol>
+    <symbol id="ic-check-circle" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="8" cy="8" r="6.5"/>
+      <polyline points="5,8 7,10.5 11,5.5"/>
+    </symbol>
+    <symbol id="ic-folder" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1.5 4.5a1 1 0 011-1H6l2 2h6.5a1 1 0 011 1v6a1 1 0 01-1 1H2.5a1 1 0 01-1-1V4.5z"/>
+    </symbol>
+    <symbol id="ic-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="4,6 8,10 12,6"/>
+    </symbol>
+    <symbol id="ic-clipboard" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="10" height="12" rx="1.5"/>
+      <path d="M6 3V2a1 1 0 011-1h2a1 1 0 011 1v1"/>
+      <line x1="5.5" y1="7.5" x2="10.5" y2="7.5"/>
+      <line x1="5.5" y1="10" x2="8.5" y2="10"/>
+    </symbol>
+    <symbol id="ic-zap" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="9,1.5 2.5,9 8,9 7,14.5 13.5,7 8,7"/>
+    </symbol>
+    <symbol id="ic-pin" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.5 1.5L14.5 5.5 12 8l-.5 3.5L9 14 7 12l-3 3M4 8L2.5 6.5l4-4"/>
+      <line x1="2.5" y1="13.5" x2="5.5" y2="10.5"/>
+    </symbol>
+    <symbol id="ic-list" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="6" y1="4" x2="13.5" y2="4"/>
+      <line x1="6" y1="8" x2="13.5" y2="8"/>
+      <line x1="6" y1="12" x2="13.5" y2="12"/>
+      <polyline points="2.5,3 3.5,4 5.5,2"/>
+      <polyline points="2.5,7 3.5,8 5.5,6"/>
+      <polyline points="2.5,11 3.5,12 5.5,10"/>
+    </symbol>
+    <symbol id="ic-arrow-right" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="2" y1="8" x2="14" y2="8"/>
+      <polyline points="9,3 14,8 9,13"/>
+    </symbol>
+  </svg>
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="header-top">
+      <a class="back-btn" href="index.html">‹</a>
+      <div class="page-title">Maria Gonzalez 🇪🇸</div>
+      <div class="nav-sol">SOL D-680</div>
+    </div>
+  </div>
+
+  <div id="scroll-root">
+
+  <!-- STAGE BAR — 3 stages (CM 1~2, next dept 3) -->
+  <div class="stage-bar">
+    <div class="stages-row">
+      <div class="stage-col" id="sb-col-1">
+        <div class="stage-dot dot-active" id="sb-dot-1">1</div>
+        <div class="stage-name active" id="sb-name-1">Claim</div>
+      </div>
+      <div class="stage-line-wrap"><div class="stage-line" id="sb-line-1"></div></div>
+      <div class="stage-col" id="sb-col-2">
+        <div class="stage-dot dot-pending" id="sb-dot-2">2</div>
+        <div class="stage-name" id="sb-name-2">Medical<br>Collection</div>
+      </div>
+      <div class="stage-line-wrap"><div class="stage-line" id="sb-line-2"></div></div>
+      <div class="stage-col">
+        <div class="stage-dot dot-next" id="sb-dot-3">3</div>
+        <div class="stage-name next-dept" id="sb-name-3">Demand</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar" id="status-bar" style="display:none;">
+    <div id="status-rows"></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-row">
+    <button class="tab-btn active" onclick="switchTab('todo',this)">TO DO</button>
+    <button class="tab-btn" onclick="switchTab('timeline',this)">Timeline</button>
+  </div>
+
+  <!-- TAB: TO DO -->
+  <div class="tab-panel active" id="panel-todo">
+
+    <!-- LOR Reply AI Banner -->
+    <div class="reply-banner" id="lor-reply-banner">
+      <div class="reply-banner-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><polyline points="1.5,3.5 8,9 14.5,3.5"/></svg></div>
+      <div class="reply-banner-text"><strong>✦AI</strong> Insurer opened BI/PD claims — enter claim numbers to proceed.</div>
+      <button class="reply-banner-confirm" onclick="handleBannerAction()">Review</button>
+    </div>
+
+    <!-- Stage 1 flat list -->
+    <div class="card" id="stage-1-list">
+
+      <!-- Thank You Letter -->
+      <div class="check-item" id="tyl-banner">
+        <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="flex:1;">
+          <div class="check-text">Thank You Letter</div>
+          <div class="check-sub">Spanish template auto-applied</div>
+        </div>
+        <button class="action-btn" onclick="openEmailModal()">Send</button>
+      </div>
+
+      <!-- SR-1 -->
+      <div class="check-item">
+        <svg class="pri-dot pri-mid" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="flex:1;">
+          <div class="check-text">SR-1</div>
+          <div class="check-sub">DMV traffic accident report</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+            <button class="action-btn" onclick="openSR1Modal()">Download</button>
+            <a href="https://www.dmv.ca.gov/portal/dmv-virtual-office/accident-reporting/" target="_blank" style="font-size:10px;color:#4B5B8C;text-decoration:underline;white-space:nowrap;">dmv.ca.gov →</a>
+          </div>
+        </div>
+        <button id="sr1-done-btn" class="action-btn" onclick="toggleSR1Done()" style="align-self:flex-start;">Done</button>
+      </div>
+
+      <!-- LOR 1st Party -->
+      <div class="check-item">
+        <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="flex:1;">
+          <div class="check-text">Send LOR (1st Party)</div>
+          <div class="check-sub">Client's insurer — LOR reply will include claim #</div>
+        </div>
+        <button id="lor-btn-1st" class="action-btn" onclick="openLorModal('1st')">Send</button>
+      </div>
+
+      <!-- LOR 3rd Party -->
+      <div class="check-item">
+        <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="flex:1;">
+          <div class="check-text">Send LOR (3rd Party)</div>
+          <div class="check-sub">Adverse insurer — LOR reply will include claim #</div>
+        </div>
+        <button id="lor-btn-3rd" class="action-btn" onclick="openLorModal('3rd')">Send</button>
+      </div>
+
+    </div>
+
+
+    <!-- ━━ Stage 2: Medical Collection ━━ -->
+    <div class="section-label" id="stage-label-2" style="margin-top:8px;display:none;">
+      <svg width="11" height="11"><use href="#ic-clipboard"/></svg>
+      Stage 2 · Medical Collection
+    </div>
+
+    <!-- Card 1: Medical Records -->
+    <div class="card" id="stage-2-card-1" style="display:none;">
+      <div class="card-header" onclick="toggleEl('s2-rec-body','s2-rec-chev')">
+        <div class="card-title">① Medical Records</div>
+        <svg class="card-chev open" id="s2-rec-chev" width="14" height="14"><use href="#ic-chevron"/></svg>
+      </div>
+      <div class="card-body" id="s2-rec-body">
+        <div class="check-item">
+          <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">Medical Records 수령 확인</div>
+            <div class="check-sub">진료기록(Medical Records) — 누락 시 의료기관 직접 연락</div>
+          </div>
+          <button class="action-btn" onclick="showToast('Calling')">Call</button>
+        </div>
+        <div class="check-item">
+          <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">Billing 수령 확인</div>
+            <div class="check-sub">의료비 청구서(Billing) — 누락 시 의료기관 직접 연락</div>
+          </div>
+          <button class="action-btn" onclick="showToast('Calling')">Call</button>
+        </div>
+        <div class="check-item">
+          <svg class="pri-dot pri-mid" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">CM 입력 누락 / Form 오발송 / 서명 누락 체크</div>
+            <div class="check-sub">CM이 정보입력 누락한 것, form 오발송, 사인누락 여부 확인</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Treatment Timeline -->
+    <div class="card" id="stage-2-card-2" style="margin-top:7px;display:none;">
+      <div class="card-header" onclick="toggleEl('s2-tl-body','s2-tl-chev')">
+        <div class="card-title">② 치료 타임라인 관리</div>
+        <svg class="card-chev open" id="s2-tl-chev" width="14" height="14"><use href="#ic-chevron"/></svg>
+      </div>
+      <div class="card-body" id="s2-tl-body">
+        <div class="check-item">
+          <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">치료 시작 여부 확인</div>
+            <div class="check-sub">클라이언트가 치료를 실제로 시작했는지 확인</div>
+          </div>
+          <button class="action-btn" onclick="showToast('Calling')">Call</button>
+        </div>
+        <div class="check-item">
+          <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">치료 진행 상황 주기적 체크</div>
+            <div class="check-sub">치료 계속 진행 중인지 — 중단 시 사유 확인</div>
+          </div>
+          <button class="action-btn" onclick="showToast('Calling')">Call</button>
+        </div>
+        <div class="check-item">
+          <svg class="pri-dot pri-mid" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">SOL 기한 관리</div>
+            <div class="check-sub">BI: 사고발생일로부터 2년 · PD: 3년</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Government Insurance (conditional) -->
+    <div class="card" id="stage-2-card-3" style="margin-top:7px;display:none;">
+      <div class="card-header" onclick="toggleEl('s2-gov-body','s2-gov-chev')">
+        <div class="card-title">③ 정부보험 처리 <span style="font-size:9px;font-weight:500;color:#B42318;background:#FEF2F2;border-radius:4px;padding:2px 6px;margin-left:6px;">Medicare / Medi-Cal</span></div>
+        <svg class="card-chev open" id="s2-gov-chev" width="14" height="14"><use href="#ic-chevron"/></svg>
+      </div>
+      <div class="card-body" id="s2-gov-body">
+        <div class="check-item">
+          <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">정부보험 여부 파악</div>
+            <div class="check-sub">병원이 준 서류 통해 Medicare / Medi-Cal 여부 확인</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">정부보험사로부터 서류 수령</div>
+            <div class="check-sub">Medi-Cal: Medical Portal → Step 1~2 → inquiry 후 답변 레터 수령</div>
+          </div>
+          <button class="action-btn" onclick="showToast('Opening portal')">Portal</button>
+        </div>
+        <div class="check-item">
+          <svg class="pri-dot pri-mid" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">서류 검토</div>
+            <div class="check-sub">잘못 들어간 치료, 누락 치료 확인</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: Transfer to Demand -->
+    <div class="card" id="stage-2-card-4" style="margin-top:7px;display:none;">
+      <div class="card-header" onclick="toggleEl('s2-tfr-body','s2-tfr-chev')">
+        <div class="card-title">④ Demand 부서에 자료 전달</div>
+        <svg class="card-chev open" id="s2-tfr-chev" width="14" height="14"><use href="#ic-chevron"/></svg>
+      </div>
+      <div class="card-body" id="s2-tfr-body">
+        <div class="check-item">
+          <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">모든 의료 자료 수집 완료 확인</div>
+            <div class="check-sub">Medical Records + Billing 모두 수령 완료</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">Demand 부서에 의료기록 전달</div>
+            <div class="check-sub">치료 종결(MMI) 또는 예외 사유 확인 후 전달</div>
+          </div>
+          <button class="action-btn" onclick="showToast('Package sent to Demand')">Send</button>
+        </div>
+        <div class="check-item" style="background:#FFFBF0;">
+          <svg class="pri-dot pri-mid" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">예외 — 치료 장기화 시</div>
+            <div class="check-sub">Early settle 시도 · 미처리 Task 생성 후 Demand로 단계 변경</div>
+          </div>
+        </div>
+        <div class="check-item" style="background:#FFFBF0;">
+          <svg class="pri-dot pri-mid" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">예외 — 정부보험 케이스</div>
+            <div class="check-sub">서류 수령 1년+ 소요 · 미처리 Task 생성 후 Demand로 단계 변경</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 2 advance button -->
+    <div class="stage-advance-row" id="advance-2" style="display:none;">
+      <div class="stage-advance-hint">모든 의료 자료 수집 완료 · MMI 확인 → Demand 이관</div>
+      <button class="stage-advance-btn" onclick="advanceStage(2)">Transfer to Demand →</button>
+    </div>
+
+    <!-- Done section -->
+    <div class="section-label" id="done-section-label" style="margin-top:8px;display:none;">
+      <svg width="11" height="11"><use href="#ic-check-circle"/></svg>
+      Done
+    </div>
+    <div class="done-card" id="done-section-card" style="display:none;">
+      <div id="done-body">
+        <div id="done-list"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB: Timeline -->
+  <div class="tab-panel" id="panel-timeline">
+    <div class="section-label">Recent Activity</div>
+    <div id="timeline-list"></div>
+  </div>
+
+
+  </div><!-- /scroll-root -->
+
+  <!-- MODALS -->
+
+  <!-- Thank You Letter -->
+  <div class="modal-overlay" id="modal-email" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Thank You Letter</div>
+
+      <div class="modal-section">To</div>
+      <div style="font-size:12px;color:#344054;font-weight:500;margin-bottom:2px;">Maria Gonzalez &lt;maria.g@email.com&gt;</div>
+
+      <div class="modal-section">Subject</div>
+      <div style="font-size:12px;color:#344054;font-weight:500;margin-bottom:2px;">DOL 05/10/2026 - Maria Gonzalez</div>
+
+      <div class="modal-section">Attachment</div>
+      <div class="attach-card" id="attach-card" onclick="openPdfPreview()">
+        <div style="width:32px;height:32px;background:#FEF3F2;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:600;color:#344054;">Thank You Ltr to C Spanish.pdf</div>
+          <div class="attach-preview-hint" id="attach-badge">Preview Required · 36 KB</div>
+        </div>
+      </div>
+
+      <div class="modal-section">Preview</div>
+      <div class="email-preview"><p>Muchas Gracias por retener nuestros servicios.</p><p>Tu case manager es Sarah Klein. Ella lo va a contactar pronto.</p><p>Gracias,</p><strong>Omar Hernandez</strong>
+Pacific Liberty Law, APC
+1458 S. San Pedro #310
+Los Angeles, CA 90015
+P:213.765.9080 F:213.765.9060
+omar@pacificlibertylaw.com</div>
+
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+        <button class="modal-submit" onclick="sendEmail()">
+          <svg width="14" height="14"><use href="#ic-send"/></svg>
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF Preview Sheet -->
+  <div class="pdf-overlay" id="pdf-overlay" onclick="closePdfPreview(event)">
+    <div class="pdf-sheet" onclick="event.stopPropagation()">
+      <div class="pdf-header">
+        <div class="pdf-title">Thank You Ltr to C Spanish.pdf</div>
+        <button class="pdf-close" onclick="closePdfPreview()">✕</button>
+      </div>
+      <div class="pdf-body">
+        <div class="pdf-page">
+          <div class="pdf-letterhead">
+            <div class="pdf-logo">PL</div>
+            <div class="pdf-firm">Pacific Liberty Law</div>
+            <div class="pdf-addr">1458 S. San Pedro Street, Unit 310, Los Angeles, CA 90015 &nbsp;|&nbsp; Tel: 213-765-9080 &nbsp;|&nbsp; Fax: 213-765-9060 &nbsp;|&nbsp; Email: atty@pacificlibertylaw.com</div>
+          </div>
+          <div class="pdf-date">22 de Mayo del 2026</div>
+          <div class="pdf-client-addr">
+            Maria Gonzalez<br>
+            123 Main Street<br>
+            Los Angeles, CA 90001
+          </div>
+          <div class="pdf-ref">Ref.: Su Accidente del 10 de Mayo del 2026</div>
+          <div class="pdf-body-text">
+            <p>Estimada Sra. Maria Gonzalez,</p>
+            <p>Quisiera aprovechar esta oportunidad para agradecerle por dar a nuestra oficina la oportunidad de representarla en el asunto arriba mencionado. Apreciamos la confianza que usted ha depositado en nuestra oficina.</p>
+            <p>Recuerde que, para lograr los mejores resultados en la representación de usted, dependemos de su cooperación. Lea atentamente y siga siempre estas sencillas instrucciones que se describen a continuación:</p>
+            <p>1. <strong>NO</strong>: discutir el accidente o sus lesiones con nadie, excepto los representantes de este bufete de abogados. Si usted recibe llamadas telefónicas o correspondencia con respecto a su accidente, debe remitirlas a nuestra oficina de inmediato.</p>
+            <p>2. Notifíquenos de cualquier cambio de dirección, número de teléfono, o médico tratante.</p>
+            <p>3. Asista a todas sus citas médicas y siga las instrucciones de su médico.</p>
+            <p>Su case manager es Sarah Klein. Ella lo va a contactar pronto para guiarle durante este proceso.</p>
+            <p>Muchas Gracias por retener nuestros servicios.</p>
+            <p>Atentamente,</p>
+            <p><strong>Omar Hernandez</strong><br>
+            Pacific Liberty Law, APC<br>
+            1458 S. San Pedro #310<br>
+            Los Angeles, CA 90015<br>
+            P: 213.765.9080 &nbsp; F: 213.765.9060<br>
+            omar@pacificlibertylaw.com</p>
+          </div>
+        </div>
+      </div>
+      <div class="pdf-done-btn">
+        <button onclick="markAttachmentViewed()">Done — Back to Email</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOR Modal -->
+  <div class="modal-overlay" id="modal-lor" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="lor-modal-title">LOR (1st Party)</div>
+      <div class="modal-sub" id="lor-modal-sub"></div>
+
+      <div class="modal-section">To</div>
+      <div id="lor-to" style="font-size:12px;color:#344054;font-weight:500;margin-bottom:2px;"></div>
+
+      <div class="modal-section">Subject</div>
+      <div id="lor-subject" style="font-size:12px;color:#344054;font-weight:500;margin-bottom:2px;"></div>
+
+      <div class="modal-section">Attachment</div>
+      <div class="attach-card" id="lor-attach-card" onclick="openLorPdfPreview()">
+        <div style="width:32px;height:32px;background:#EFF4FF;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3538CD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div id="lor-filename" style="font-size:12px;font-weight:600;color:#344054;"></div>
+          <div class="attach-preview-hint" id="lor-attach-badge">Preview Required · 48 KB</div>
+        </div>
+      </div>
+
+      <div class="modal-section">Preview</div>
+      <div class="email-preview" id="lor-email-preview"></div>
+
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+        <button class="modal-submit" id="lor-send-btn" onclick="sendLor()">
+          <svg width="14" height="14"><use href="#ic-send"/></svg>
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOR PDF Preview -->
+  <div class="pdf-overlay" id="lor-pdf-overlay" onclick="closeLorPdfPreview(event)">
+    <div class="pdf-sheet" onclick="event.stopPropagation()">
+      <div class="pdf-header">
+        <div class="pdf-title" id="lor-pdf-title">LOR — 1st Party.pdf</div>
+        <button class="pdf-close" onclick="closeLorPdfPreview()">✕</button>
+      </div>
+      <div class="pdf-body">
+        <div class="pdf-page" id="lor-pdf-page">
+          <!-- injected by JS -->
+        </div>
+      </div>
+      <div class="pdf-done-btn">
+        <button onclick="markLorViewed()">Done — Back to Email</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOR Reply — unified sheet: AI summary + email + confirm form -->
+  <div class="modal-overlay" id="modal-lor-reply" onclick="closeModal(event)">
+    <div class="modal-sheet" style="max-height:92vh;overflow-y:auto;padding-bottom:24px;" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+
+      <!-- AI Summary -->
+      <div style="background:#F8F7FF;border:1px solid #E9E5FF;border-radius:9px;padding:10px 12px;margin-bottom:14px;">
+        <div style="font-size:9px;font-weight:700;color:#7C5FBF;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;">✦ AI Summary</div>
+        <div style="font-size:11px;color:#344054;line-height:1.5;">Insurer opened BI/PD claims, coverage &amp; liability both pending — enter claim numbers to proceed.</div>
+      </div>
+
+      <!-- Email -->
+      <div style="font-size:9px;font-weight:700;color:#98A2B3;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">New Email · 3rd Party Insurer</div>
+      <div style="font-size:13px;font-weight:700;color:#101828;margin-bottom:2px;">Re: LOR — Jorge Yonel Jr Ontiveros</div>
+      <div style="font-size:11px;color:#98A2B3;margin-bottom:12px;">adjuster.3rd@statefarm.com · Today</div>
+      <div class="email-preview" style="margin-bottom:18px;">Dear Pacific Liberty Law,
+
+Thank you for your Letter of Representation dated today.
+
+We have opened the following claim(s) for the above-referenced matter:
+
+  BI Claim #: SF-2026-BI-884421
+  PD Claim #: SF-2026-PD-884422
+
+Coverage is currently under review. We will provide a Coverage determination within 15 business days.
+
+Liability is currently under investigation pending our review of the accident report and statements.
+
+Please direct all future correspondence to:
+  Sarah Mitchell — BI Adjuster
+  (800) 555-0300 · sarah.mitchell@statefarm.com
+
+Sincerely,
+State Farm Insurance</div>
+
+      <!-- Divider -->
+      <div style="height:1px;background:#F2F4F7;margin:0 -16px 18px;"></div>
+
+      <!-- Confirm form -->
+      <div class="modal-section">BI Claim #</div>
+      <input class="claim-input" id="confirm-bi" value="SF-2026-BI-884421" style="margin-bottom:12px;">
+
+      <div class="modal-section">PD Claim #</div>
+      <input class="claim-input" id="confirm-pd" value="SF-2026-PD-884422" style="margin-bottom:12px;">
+
+      <div class="modal-section">Coverage Status</div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;" id="coverage-btns">
+        <button class="confirm-sel" onclick="selectConfirm('coverage','Confirmed',this)">Confirmed</button>
+        <button class="confirm-sel" onclick="selectConfirm('coverage','Pending',this)">Pending</button>
+        <button class="confirm-sel" onclick="selectConfirm('coverage','Denied',this)">Denied</button>
+      </div>
+
+      <div class="modal-section">Liability Status</div>
+      <div class="select-wrap" style="margin-bottom:20px;"><select class="next-action-select" id="liability-select" onchange="confirmData.liability=this.value">
+        <option value="Pending / Under Investigation" selected>Pending / Under Investigation</option>
+        <option value="Accepted">Accepted / Accepted Liability</option>
+        <option value="Denied">Denied / Liability Denied</option>
+        <option value="Partial Liability">Partial Liability / Comparative Negligence</option>
+        <option value="Need More Information">Need More Information</option>
+        <option value="Disputed Liability">Disputed Liability</option>
+      </select></div>
+
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+        <button class="modal-submit" onclick="saveLorConfirm()">Save to System</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Adjuster Sheet -->
+  <div class="modal-overlay" id="modal-adj" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div id="adj-content"></div>
+      <button class="modal-cancel" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+
+  <!-- Claim Number Input -->
+  <div class="modal-overlay" id="modal-claim" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div id="claim-content"></div>
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Transfer Sheet -->
+  <div class="modal-overlay" id="modal-handoff" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div id="handoff-content"></div>
+      <button class="modal-cancel" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+
+  <!-- SR-1 Form Sheet -->
+  <div class="modal-overlay" id="modal-sr1" onclick="closeModal(event)">
+    <div class="modal-sheet" style="max-height:92vh;overflow-y:auto;" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div style="padding:0 2px 2px;">
+        <div style="font-size:9px;font-weight:700;color:#98A2B3;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">DMV · CA</div>
+        <div class="modal-title" style="margin-bottom:2px;">SR-1 Traffic Accident Report</div>
+        <div class="modal-sub" style="margin-bottom:16px;">Fill in the 3 fields below — all other known info will be auto-filled into the PDF.</div>
+
+        <!-- 1 -->
+        <div class="sr1-item">
+          <div class="sr1-item-num">
+            <svg class="icon-empty" width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="3" stroke="#4B5B8C" stroke-width="1.5"/></svg>
+            <svg class="icon-done"  width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.2l2 2 4-4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="sr1-item-body">
+            <label class="sr1-label">Accident Location <span class="sr1-req-star">*</span></label>
+            <div class="sr1-hint">Intersection or street address where the accident occurred</div>
+            <input class="sr1-input sr1-required" placeholder="e.g. Main St &amp; 5th Ave, Los Angeles, CA" data-field="ACCIDENT LOCATION" data-req/>
+          </div>
+        </div>
+
+        <!-- 2 -->
+        <div class="sr1-item">
+          <div class="sr1-item-num">
+            <svg class="icon-empty" width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="3" stroke="#4B5B8C" stroke-width="1.5"/></svg>
+            <svg class="icon-done"  width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.2l2 2 4-4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="sr1-item-body">
+            <label class="sr1-label">Client's Driver License # <span class="sr1-req-star">*</span></label>
+            <div class="sr1-hint">Maria Gonzalez — CA Driver License number</div>
+            <input class="sr1-input sr1-required" placeholder="e.g. D1234567" data-field="DRIVER LICENSE NUMBER.0" data-req/>
+          </div>
+        </div>
+
+        <!-- 3 -->
+        <div class="sr1-item">
+          <div class="sr1-item-num">
+            <svg class="icon-empty" width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="3" stroke="#4B5B8C" stroke-width="1.5"/></svg>
+            <svg class="icon-done"  width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5.2l2 2 4-4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="sr1-item-body">
+            <label class="sr1-label">Other Party's Driver Name <span class="sr1-req-star">*</span></label>
+            <div class="sr1-hint">As listed on the police report</div>
+            <input class="sr1-input sr1-required" placeholder="e.g. John Smith" data-field="DRIVERS NAME.1" data-req/>
+          </div>
+        </div>
+
+        <!-- Required fields notice -->
+        <div id="sr1-notice" style="display:none;margin-top:10px;padding:9px 12px;background:#FEF3F2;border-radius:7px;border:1px solid #FECDCA;font-size:11px;color:#B42318;font-weight:600;">
+          Complete all 3 fields to enable download.
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:14px;">
+          <button class="modal-cancel" style="flex:1;" onclick="closeModal()">Cancel</button>
+          <button id="sr1-download-btn" class="modal-submit" style="flex:2;opacity:.4;cursor:not-allowed;" onclick="downloadSR1()" disabled>
+            Download SR-1
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Dialog -->
+  <div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-sheet">
+      <div class="confirm-body">
+        <div class="confirm-title" id="confirm-title"></div>
+        <div class="confirm-sub" id="confirm-sub"></div>
+      </div>
+      <div class="confirm-divider"></div>
+      <div class="confirm-actions">
+        <button class="confirm-cancel" id="confirm-cancel">Cancel</button>
+        <button class="confirm-ok" id="confirm-ok"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+
+<script>
+  const confirmAlert = ({ title, text, confirmText = 'Send' }) => new Promise(resolve => {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-sub').textContent = text || '';
+    document.getElementById('confirm-ok').textContent = confirmText;
+    const overlay = document.getElementById('confirm-overlay');
+    overlay.classList.add('open');
+    const ok = document.getElementById('confirm-ok');
+    const cancel = document.getElementById('confirm-cancel');
+    const close = (val) => { overlay.classList.remove('open'); ok.onclick = null; cancel.onclick = null; resolve(val); };
+    ok.onclick = () => close(true);
+    cancel.onclick = () => close(false);
+  });
+
+  const ic = (id, size) =>
+    `<svg width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0;vertical-align:middle;"><use href="#${id}"/></svg>`;
+
+  let currentStage = 1;
+  let doneCount = 0;
+
+  // Single latest status — always replaced, never stacked
+  let currentStatus = null;
+
+  function renderStatusBar() {
+    const bar = document.getElementById('status-bar');
+    const container = document.getElementById('status-rows');
+    if (!bar || !container) return;
+
+    if (!currentStatus) {
+      bar.style.display = 'none';
+      container.innerHTML = '';
+      return;
+    }
+
+    bar.style.display = 'block';
+    const item = currentStatus;
+    const dotClass = 'status-dot' + (item.ok ? ' ok' : item.pending ? ' pending' : '');
+    const daysHtml = item.days ? `<div class="status-sol">${item.days}</div>` : '';
+    container.innerHTML = `<div class="status-row">
+      <div class="${dotClass}"></div>
+      <div class="status-text">${item.text}</div>
+      ${daysHtml}
+    </div>`;
+  }
+
+  function setStatus(text, ok, id, days, pending) {
+    const isPending = pending !== undefined ? pending : (!ok);
+    currentStatus = { text, ok: !!ok, pending: isPending, days: days || null };
+    renderStatusBar();
+  }
+
+  function removeStatus(id) {
+    currentStatus = null;
+    renderStatusBar();
+  }
+
+  // keep legacy statusItems ref harmless
+  const statusItems = { length: 0, findIndex: () => -1, splice: () => {}, push: () => {} };
+
+  const STAGE_LABELS = ['', 'Claim', 'Medical Collection'];
+  const STAGE_HINT_TEXTS = [
+    '',
+    'Claim # obtained · LOR sent · Coverage confirmed → next stage',
+    'Client treatment concluded (MMI) · PD resolved → transfer to Demand'
+  ];
+
+  function advanceStage(from) {
+    if (from !== currentStage) {
+      showToast('Please complete the current stage (' + STAGE_LABELS[currentStage] + ') first');
+      return;
+    }
+    const to = from + 1;
+    currentStage = to;
+
+    // Stage bar update (stages 1–2 are CM stages, 3 is Demand/next dept)
+    for (let i = 1; i <= 2; i++) {
+      const dot = document.getElementById('sb-dot-' + i);
+      const name = document.getElementById('sb-name-' + i);
+      const line = document.getElementById('sb-line-' + i);
+      if (!dot) continue;
+      if (i < to) {
+        dot.className = 'stage-dot dot-done';
+        dot.innerHTML = ic('ic-check', 9);
+        if (name) { name.className = 'stage-name done'; }
+        if (line) { line.classList.add('done'); }
+      } else if (i === to) {
+        dot.className = 'stage-dot dot-active';
+        dot.textContent = i;
+        if (name) { name.className = 'stage-name active'; }
+      } else {
+        dot.className = 'stage-dot dot-pending';
+        dot.textContent = i;
+        if (name) { name.className = 'stage-name'; }
+      }
+    }
+
+    // Stage 3 (Demand) always stays as next-dept
+    const dot3 = document.getElementById('sb-dot-3');
+    const name3el = document.getElementById('sb-name-3');
+    if (dot3) { dot3.className = 'stage-dot dot-next'; dot3.textContent = '3'; }
+    if (name3el) { name3el.className = 'stage-name next-dept'; }
+
+    // Mark previous stage advance row as done
+    const prevRow = document.getElementById('advance-' + from);
+    if (prevRow) prevRow.classList.add('done');
+
+    // Previous stage section label → done style
+    const prevLabel = document.getElementById('stage-label-' + from);
+    if (prevLabel) {
+      prevLabel.classList.remove('lbl-urgent', 'stage-active');
+      prevLabel.classList.add('stage-done');
+    }
+
+    // New current stage label → active highlight
+    const curLabel = document.getElementById('stage-label-' + to);
+    if (curLabel) {
+      curLabel.classList.add('stage-active');
+      curLabel.classList.remove('stage-done');
+    }
+
+    // Timeline entry
+    if (to <= 2) {
+      tlPrepend('ic-arrow-right', 'Stage Advance', STAGE_LABELS[from] + ' complete', '→ ' + STAGE_LABELS[to] + ' started');
+    } else {
+      tlPrepend('ic-arrow-right', 'Case Transfer', 'Demand package ready', 'All CM stages complete · Transferred to Demand');
+    }
+
+    // Reveal next stage content
+    const stageElements = {
+      2: ['stage-label-2', 'stage-2-card-1', 'stage-2-card-2', 'stage-2-card-3', 'stage-2-card-4', 'advance-2']
+    };
+
+    if (stageElements[to]) {
+      stageElements[to].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = '';
+      });
+    }
+
+    // Clear Done section from previous stage
+    const doneList = document.getElementById('done-list');
+    const doneLbl = document.getElementById('done-section-label');
+    const doneCard = document.getElementById('done-section-card');
+    if (doneList) doneList.innerHTML = '';
+    if (doneLbl) doneLbl.style.display = 'none';
+    if (doneCard) doneCard.style.display = 'none';
+    doneCount = 0;
+
+    // Scroll to-do tab to new stage label
+    if (to <= 2) {
+      const targetLabel = document.getElementById('stage-label-' + to);
+      if (targetLabel) setTimeout(() => targetLabel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+
+    showToast(to <= 2 ? (STAGE_LABELS[to] + ' stage started') : 'Demand transfer complete!');
+  }
+
+
+  function showDoneSection() {
+    const lbl = document.getElementById('done-section-label');
+    const card = document.getElementById('done-section-card');
+    if (lbl) lbl.style.removeProperty('display');
+    if (card) card.style.removeProperty('display');
+  }
+
+  function demoReset() {
+    location.reload();
+  }
+
+  function switchTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function toggleEl(bodyId, chevId) {
+    const body = document.getElementById(bodyId);
+    const chev = document.getElementById(chevId);
+    if (!body) return;
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    if (chev) chev.classList.toggle('open', !isOpen);
+  }
+
+  function toggleThread(id) {
+    const detail = document.getElementById(id);
+    const chev = document.getElementById(id + '-chev');
+    if (!detail) return;
+    const isOpen = detail.classList.contains('open');
+    detail.classList.toggle('open', !isOpen);
+    if (chev) chev.classList.toggle('open', !isOpen);
+  }
+
+  function tlPrepend(icon, typeLabel, subject, body) {
+    const tl = document.getElementById('timeline-list');
+    const placeholder = tl.querySelector('[data-tl-empty]');
+    if (placeholder) placeholder.remove();
+    const t = new Date();
+    const ts = t.getHours() + ':' + String(t.getMinutes()).padStart(2, '0');
+    const attachHtml = (opts && opts.attachments) ? `<div class="tl-attachments">${opts.attachments.map(a=>`<a class="tl-attach-btn" href="#" onclick="showToast('Downloading ${a}');return false;"><svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 3v7M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="12" width="10" height="1.5" rx=".75" fill="currentColor"/></svg>${a}</a>`).join('')}</div>` : '';
+    const iconClass = (opts && opts.iconClass) ? ' ' + opts.iconClass : '';
+    const decisionHtml = (opts && opts.decision) ? `<div class="tl-decision ${opts.decision.cls}">${opts.decision.label}</div>` : '';
+    tl.insertAdjacentHTML('afterbegin', `
+      <div class="tl-item">
+        <div class="tl-icon${iconClass}">${ic(icon, 14)}</div>
+        <div class="tl-content">
+          <div class="tl-type">${typeLabel} <span style="color:#C0C7D4;font-weight:400;">· Today ${ts}</span></div>
+          <div class="tl-subject">${subject}</div>
+          <div class="tl-body">${body}</div>
+          ${decisionHtml}${attachHtml}
+        </div>
+      </div>
+    `);
+  }
+
+  function tlItem(typeLabel, date, subject, body, opts) {
+    const isStage = opts && opts.isStage;
+    const attachHtml = (opts && opts.attachments) ? `<div class="tl-attachments">${opts.attachments.map(a=>`<a class="tl-attach-btn" href="#" onclick="showToast('Downloading...');return false;"><svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 3v7M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="12" width="10" height="1.5" rx=".75" fill="currentColor"/></svg>${a}</a>`).join('')}</div>` : '';
+    const decisionHtml = (opts && opts.decision) ? `<div class="tl-decision ${opts.decision.cls}">${opts.decision.label}</div>` : '';
+    const handlerHtml = (opts && opts.handler) ? `<div class="tl-divider"></div><div style="display:flex;align-items:center;gap:7px;"><div style="width:22px;height:22px;border-radius:50%;background:#EEF4FF;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#4B5B8C;flex-shrink:0;">${opts.handler.initials}</div><span style="font-size:11px;color:#344054;">${opts.handler.name}</span></div>` : '';
+    return `<div class="tl-row${isStage ? ' stage-row' : ''}">
+      <div class="tl-item">
+        <div class="tl-header">
+          <div>
+            <div class="tl-meta-label">${typeLabel}</div>
+            <div class="tl-meta-value">${subject}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="tl-meta-label">Date</div>
+            <div class="tl-meta-date">${date}</div>
+          </div>
+        </div>
+        <div class="tl-body">${body}</div>
+        ${decisionHtml}${attachHtml}${handlerHtml}
+      </div>
+    </div>`;
+  }
+
+  function loadSampleTimeline() {
+    const tl = document.getElementById('timeline-list');
+    const html = [];
+
+    html.push(`<div class="tl-date-group">May 2025 — Demand</div>`);
+
+    html.push(tlItem('Case Transfer', 'May 14, 10:02',
+      'Transferred to Demand',
+      'All CM stages complete · Medical records + billing package forwarded',
+      { isStage: true, decision: { cls: 'admit', label: 'Demand package confirmed' }, attachments: ['Demand_Package_Summary.pdf'], handler: { initials: 'SK', name: 'Sarah K.' } }
+    ));
+
+    html.push(`<div class="tl-date-group">Apr 2025 — Medical Collection</div>`);
+
+    html.push(tlItem('Records Received', 'Apr 28, 14:15',
+      'All Records & Billing Collected',
+      'Orthopedic (3 visits) · Chiro (12 visits) · ER (1 visit) — total billing $34,200',
+      { attachments: ['Medical_Records_Summary.pdf', 'Billing_Statement_Final.pdf'], handler: { initials: 'SK', name: 'Sarah K.' } }
+    ));
+
+    html.push(tlItem('Government Insurance', 'Apr 11, 09:40',
+      'Medi-Cal Lien Confirmed — $8,400',
+      'Medi-Cal paid treatment costs · Lien hold placed · Negotiation required at settlement',
+      { decision: { cls: 'pending', label: 'Lien pending resolution' }, attachments: ['MediCal_Lien_Notice.pdf'], handler: { initials: 'SK', name: 'Sarah K.' } }
+    ));
+
+    html.push(tlItem('Records Request', 'Apr 03, 11:22',
+      'Records & Billing Requested — 3 Providers',
+      'Cedars-Sinai ER · LA Orthopedic Center · Pacific Chiropractic',
+      { attachments: ['Records_Request_CedarsSinai.pdf', 'Records_Request_Ortho.pdf', 'Records_Request_Chiro.pdf'], handler: { initials: 'SK', name: 'Sarah K.' } }
+    ));
+
+    html.push(`<div class="tl-date-group">Mar 2025 — Claim</div>`);
+
+    html.push(tlItem('Stage Advance', 'Mar 31, 16:05',
+      'Claim Complete → Medical Collection',
+      'Liability admitted · BI + PD claim numbers confirmed · Coverage verified',
+      { isStage: true, handler: { initials: 'SK', name: 'Sarah K.' } }
+    ));
+
+    html.push(tlItem('Insurer Response', 'Mar 31, 15:48',
+      'Coverage Letter — 3rd Party Insurer',
+      'BI $100k/300k confirmed · PD confirmed · Liability 100% admitted',
+      { decision: { cls: 'admit', label: 'Liability admitted — proceed' }, attachments: ['CoverageLetter_StateFarm_Mar31.pdf'], handler: { initials: 'SK', name: 'Sarah K.' } }
+    ));
+
+    html.push(tlItem('Email Sent', 'Mar 28, 13:10',
+      'Coverage & Liability Request',
+      'To: j.miller@[insurer].com · Requested Coverage Letter + Liability acknowledgment',
+      { attachments: ['Email_CoverageRequest_Mar28.pdf'], handler: { initials: 'SK', name: 'Sarah K.' } }
+    ));
+
+    html.push(tlItem('Claim Numbers Saved', 'Mar 20, 10:30',
+      'BI #24-SF-881234 · PD #24-SF-881235',
+      'Adjuster: James Miller · (800) 555-0192',
+      { handler: { initials: 'SK', name: 'Sarah K.' } }
+    ));
+
+    html.push(tlItem('LOR Sent — 3rd Party', 'Mar 18, 11:05',
+      'Letter of Representation',
+      'To: claims@[insurer].com · Re: DOL 03/15/2025',
+      { attachments: ['LOR_3rdParty.pdf'], handler: { initials: 'SK', name: 'Sarah K.' } }
+    ));
+
+    html.push(tlItem('LOR Sent — 1st Party', 'Mar 18, 11:00',
+      'Letter of Representation',
+      'UM/UIM coverage check initiated',
+      { attachments: ['LOR_1stParty.pdf'], handler: { initials: 'SK', name: 'Sarah K.' } }
+    ));
+
+    html.push(tlItem('Task Complete', 'Mar 17, 14:22',
+      'SR-1 Filed with DMV',
+      'DOL 03/15/2025 · Prop 213 tag applied',
+      { attachments: ['SR1_Filed_Mar17.pdf'], handler: { initials: 'SK', name: 'Sarah K.' } }
+    ));
+
+    html.push(`<div class="tl-date-group">Mar 15, 2025 — Case Opened</div>`);
+
+    html.push(tlItem('Case Created', 'Mar 15, 09:00',
+      'CM Assigned: Sarah K.',
+      'DOL: 03/15/2025 · 3-vehicle collision on I-10 · Jose Gutierrez · Lang: Spanish',
+      { isStage: true, handler: { initials: 'OM', name: 'Omar H.' } }
+    ));
+
+    html.push(tlItem('Email Sent', 'Mar 15, 09:05',
+      'Thank You Letter — Jose Gutierrez (ES)',
+      'Spanish template auto-applied · CM introduction included',
+      { attachments: ['ThankYouLetter_Gutierrez_ES.pdf'], handler: { initials: 'OM', name: 'Omar H.' } }
+    ));
+
+    tl.innerHTML = html.join('');
+  }
+
+  window.addEventListener('DOMContentLoaded', loadSampleTimeline);
+
+  function toggleSR1Done() {
+    const btn = document.getElementById('sr1-done-btn');
+    if (!btn) return;
+    const checkItem = btn.closest('.check-item');
+    const done = btn.dataset.checked === '1';
+    if (done) {
+      btn.dataset.checked = '0';
+      btn.textContent = 'Done';
+      btn.classList.remove('primary');
+      if (checkItem) checkItem.style.removeProperty('display');
+      const existing = document.getElementById('done-sr1');
+      if (existing) existing.remove();
+    } else {
+      btn.dataset.checked = '1';
+      btn.textContent = 'Done ✓';
+      btn.classList.add('primary');
+      if (checkItem) checkItem.style.display = 'none';
+
+      const lbl = document.getElementById('done-section-label');
+      const card = document.getElementById('done-section-card');
+      const doneList = document.getElementById('done-list');
+      if (lbl) lbl.style.removeProperty('display');
+      if (card) card.style.removeProperty('display');
+
+      const t = new Date();
+      const ts = t.getHours() + ':' + String(t.getMinutes()).padStart(2, '0');
+      if (doneList) doneList.insertAdjacentHTML('afterbegin', `
+        <div class="done-item" id="done-sr1">
+          <div class="done-check"><svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l3.5 3.5 6.5-7"/></svg></div>
+          <div style="flex:1;">
+            <div class="done-text">SR-1 Submitted to DMV</div>
+            <div class="done-meta">DMV &amp; Exceptions</div>
+          </div>
+          <div class="done-time">Today ${ts}</div>
+        </div>
+      `);
+    }
+  }
+
+  function recordThreadAction(label, stage) {
+    tlPrepend('ic-send', 'Communication', label, stage || '');
+    showToast(label + ' logged');
+  }
+
+  function openEmailModal() {
+    attachmentViewed = false;
+    const badge = document.getElementById('attach-badge');
+    if (badge) { badge.textContent = 'Preview Required · 36 KB'; badge.style.color = '#B42318'; }
+    document.getElementById('modal-email').classList.add('open');
+  }
+
+  let attachmentViewed = false;
+
+  function openPdfPreview() {
+    document.getElementById('pdf-overlay').classList.add('open');
+  }
+
+  function closePdfPreview(e) {
+    if (e && e.target !== document.getElementById('pdf-overlay')) return;
+    document.getElementById('pdf-overlay').classList.remove('open');
+  }
+
+  function markAttachmentViewed() {
+    attachmentViewed = true;
+    const badge = document.getElementById('attach-badge');
+    if (badge) { badge.textContent = '✓ Previewed · 36 KB'; badge.style.color = '#027A48'; }
+    document.getElementById('pdf-overlay').classList.remove('open');
+  }
+
+  async function sendEmail() {
+    if (!attachmentViewed) {
+      openPdfPreview();
+      return;
+    }
+    closeModal();
+    const banner = document.getElementById('tyl-banner');
+    if (banner) { banner.style.opacity = '0'; banner.style.transition = 'opacity .3s'; setTimeout(() => banner.remove(), 300); }
+
+    doneCount++;
+    showDoneSection();
+    const doneList = document.getElementById('done-list');
+    const t = new Date();
+    const ts = t.getHours() + ':' + String(t.getMinutes()).padStart(2, '0');
+    doneList.insertAdjacentHTML('afterbegin', `
+      <div class="done-item">
+        <div class="done-check">${ic('ic-check', 9)}</div>
+        <div style="flex:1;">
+          <div class="done-text">Thank You Letter sent (Spanish)</div>
+          <div class="done-meta">Initial client contact</div>
+        </div>
+        <div class="done-time">Today ${ts}</div>
+      </div>
+    `);
+
+    tlPrepend('ic-send', 'Email sent → Maria Gonzalez (ES)', 'Thank You Letter — CM intro (Español)', 'Case assignment confirmed, CM introduction email sent');
+    showToast('Thank You Letter sent');
+  }
+
+  // ── LOR Modal ──────────────────────────────────────────────────────────────
+  let lorParty = '1st';
+  let lorViewed = false;
+  const lorSent = { '1st': false, '3rd': false };
+
+  const LOR_DATA = {
+    '1st': {
+      title: 'LOR (1st Party)',
+      sub: 'Letter of Representation — 1st Party (Client\'s Insurer)',
+      to: 'adjuster.1st@infinity.com',
+      subject: 'LOR — Jorge Yonel Jr Ontiveros — DOA 05/13/2026',
+      filename: 'LOR_1st_Party_Ontiveros.pdf',
+      insurer: 'Infinity',
+      insuredLabel: 'Your Insured',
+      insuredName: 'Jorge Yonel Jr Ontiveros',
+      party: '1st Party',
+    },
+    '3rd': {
+      title: 'LOR (3rd Party)',
+      sub: 'Letter of Representation — 3rd Party (Adverse Insurer)',
+      to: 'adjuster.3rd@statefarm.com',
+      subject: 'LOR — Jorge Yonel Jr Ontiveros — DOA 05/13/2026',
+      filename: 'LOR_3rd_Party_Ontiveros.pdf',
+      insurer: 'State Farm',
+      insuredLabel: 'Your Insured',
+      insuredName: 'Jorge Yonel Jr Ontiveros',
+      party: '3rd Party',
+    },
+  };
+
+  function openLorModal(party) {
+    lorParty = party;
+    lorViewed = false;
+    const d = LOR_DATA[party];
+    document.getElementById('lor-modal-title').textContent = d.title;
+    document.getElementById('lor-modal-sub').textContent = '';
+    document.getElementById('lor-to').textContent = d.to;
+    document.getElementById('lor-subject').textContent = d.subject;
+    document.getElementById('lor-filename').textContent = d.filename;
+    const badge = document.getElementById('lor-attach-badge');
+    badge.textContent = 'Preview Required · 48 KB';
+    badge.style.color = '#B42318';
+    document.getElementById('lor-email-preview').innerHTML =
+      `<p>Via Email</p><p>${d.insurer}<br>${d.insuredLabel}: ${d.insuredName}</p><p>Please be advised, this office represents the above-captioned client(s) for injuries from an auto accident on May 13, 2026. Direct all communication to our office.</p><p><strong>Pacific Liberty Law, APC</strong><br>1458 S. San Pedro #310, Los Angeles CA 90015<br>P: 213.765.9080</p>`;
+    document.getElementById('lor-pdf-page').innerHTML = buildLorPdf(d);
+    document.getElementById('lor-pdf-title').textContent = d.filename;
+    document.getElementById('modal-lor').classList.add('open');
+  }
+
+  function buildLorPdf(d) {
+    return `
+      <div class="pdf-letterhead">
+        <div class="pdf-logo">PL</div>
+        <div class="pdf-firm">Pacific Liberty Law</div>
+        <div class="pdf-addr">1458 S. San Pedro Street, Unit 310, Los Angeles, CA 90015 &nbsp;|&nbsp; Tel: 213-765-9080 &nbsp;|&nbsp; Fax: 213-765-9060 &nbsp;|&nbsp; Email: atty@PacificLibertyLaw.com</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin:14px 0 10px;font-size:10px;">
+        <div>VIA EMAIL: ${d.insurer}</div>
+        <div>May 13, 2026</div>
+      </div>
+      <div style="margin-bottom:12px;font-size:10px;line-height:1.8;">
+        ${d.insurer}<br>
+        ${d.insurer} Insurance<br>
+        Adjuster, Claims Department
+      </div>
+      <div style="margin-bottom:12px;font-size:10px;line-height:2;">
+        <strong>Re:</strong>&nbsp;&nbsp;&nbsp;&nbsp;Our Client(s):&nbsp;&nbsp;&nbsp;&nbsp;Jorge Yonel Jr Ontiveros<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${d.insuredLabel}:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${d.insuredName}<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Date of Accident:&nbsp;05/13/2026<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Your Claim No:&nbsp;&nbsp;&nbsp;Pending<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Our File Number:&nbsp;30201
+      </div>
+      <div style="margin-bottom:10px;font-size:10px;">Dear ${d.insurer},</div>
+      <div style="font-size:10px;line-height:1.8;">
+        <p style="text-indent:2em;">Please be advised, this office represents the above-captioned client(s) for injuries from an auto accident on May 13, 2026. Enclosed is the executed designation form. Direct all communication to our office and refrain from contacting our client(s) directly. If recorded statements were taken, please forward them to us.</p>
+        <p style="text-indent:2em;">We request that you provide this office the policy declaration sheet along with the coverage terms that explains the contractual provisions in an insurance policy that denies or restricts coverage for certain perils, persons, property or locations. Further, we respectfully request for coverage confirmation for the subject accident in writing to rule out Proposition 213.</p>
+        <p style="text-indent:2em;">We reserve the right to claim under the medical payments, property damage, uninsured motorist, underinsured motorist, and any other applicable provisions of the policy.</p>
+        <p style="text-indent:2em;">Any and all payments issued pertaining to this subject matter must bear our firm name, <strong>PACIFIC LIBERTY LAW, APC</strong> and payment must be forwarded to our office.</p>
+        <p style="margin-top:14px;">Sincerely,<br><br><strong>Omar Hernandez</strong><br>Pacific Liberty Law, APC</p>
+      </div>`;
+  }
+
+  function openLorPdfPreview() {
+    document.getElementById('lor-pdf-overlay').classList.add('open');
+  }
+
+  function closeLorPdfPreview(e) {
+    if (e && e.target !== document.getElementById('lor-pdf-overlay')) return;
+    document.getElementById('lor-pdf-overlay').classList.remove('open');
+  }
+
+  function markLorViewed() {
+    lorViewed = true;
+    const badge = document.getElementById('lor-attach-badge');
+    badge.textContent = '✓ Previewed · 48 KB';
+    badge.style.color = '#027A48';
+    document.getElementById('lor-pdf-overlay').classList.remove('open');
+  }
+
+  async function sendLor() {
+    if (!lorViewed) { openLorPdfPreview(); return; }
+    const d = LOR_DATA[lorParty];
+    closeModal();
+    const btn = document.getElementById('lor-btn-' + lorParty);
+    if (btn) btn.closest('.check-item').style.display = 'none';
+    lorSent[lorParty] = true;
+    const partyLabel = lorParty === '1st' ? '1st Party' : '3rd Party';
+    setStatus(`LOR sent · awaiting ${partyLabel} response`, false, 'lor-' + lorParty, null, true);
+    if (lorParty === '3rd') startLorPendingTimer();
+    doneCount++;
+    showDoneSection();
+    const doneList = document.getElementById('done-list');
+    const t = new Date();
+    const ts = t.getHours() + ':' + String(t.getMinutes()).padStart(2, '0');
+    doneList.insertAdjacentHTML('afterbegin', `
+      <div class="done-item">
+        <div class="done-check">${ic('ic-check', 9)}</div>
+        <div style="flex:1;">
+          <div class="done-text">LOR sent — ${d.party}</div>
+          <div class="done-meta">${d.insurer} · Insurer Contact</div>
+        </div>
+        <div class="done-time">Today ${ts}</div>
+      </div>
+    `);
+    tlPrepend('ic-send', 'LOR Sent — ' + d.party, d.filename + ' sent to ' + d.insurer, 'Stage 1 · Insurer Contact');
+  }
+
+  // ── LOR Reply flow (3rd party only) ───────────────────────────────────────
+  let lorSentTime = null;
+  let lorDaysTimer = null;
+  const confirmData = { coverage: 'Pending', liability: 'Pending / Under Investigation' };
+
+  function startLorPendingTimer() {
+    lorSentTime = Date.now();
+    clearInterval(lorDaysTimer);
+    setStatus('LOR sent · awaiting 3rd Party response', false, 'lor-3rd', 'Today', true);
+
+    setTimeout(() => {
+      setStatus('Reply received — 3rd Party Insurer', false, 'lor-3rd', 'Today', false);
+      showLorReplyBanner();
+    }, 10000);
+  }
+
+  function showLorReplyBanner() {
+    const banner = document.getElementById('lor-reply-banner');
+    if (banner) banner.classList.add('show');
+    // switch to TO DO tab if not already there
+    const todoPanel = document.getElementById('panel-todo');
+    if (todoPanel && !todoPanel.classList.contains('active')) {
+      const todoBtn = document.querySelectorAll('.tab-btn')[0];
+      if (todoBtn) switchTab('todo', todoBtn);
+    }
+  }
+
+  function hideLorReplyBanner() {
+    const banner = document.getElementById('lor-reply-banner');
+    if (banner) banner.classList.remove('show');
+  }
+
+  function openLorReplyModal() {
+    hideLorReplyBanner();
+    document.getElementById('modal-lor-reply').classList.add('open');
+  }
+
+  function openLorReply() {
+    openLorReplyModal();
+  }
+
+  function handleBannerAction() {
+    hideLorReplyBanner();
+    lorParty = '3rd';
+    openLorConfirm();
+  }
+
+  function handleNextAction() {
+    const sel = document.getElementById('next-action-select');
+    const val = sel ? sel.value : 'enter-claim-info';
+    if (val === 'enter-claim-info') {
+      openLorConfirm();
+    } else {
+      const label = sel ? sel.options[sel.selectedIndex].text.split(' — ')[0] : 'Filed';
+      closeModal();
+      showToast('Filed as: ' + label);
+    }
+  }
+
+  function openLorConfirm() {
+    // pre-select defaults
+    document.querySelectorAll('#coverage-btns .confirm-sel').forEach(b => b.classList.remove('active'));
+    document.querySelector('#coverage-btns .confirm-sel').classList.add('active');
+    confirmData.coverage = 'Confirmed';
+    const liabSel = document.getElementById('liability-select');
+    if (liabSel) liabSel.value = 'Pending / Under Investigation';
+    confirmData.liability = 'Pending / Under Investigation';
+    document.getElementById('modal-lor-reply').classList.add('open');
+  }
+
+  function selectConfirm(field, val, btn) {
+    const group = btn.closest('[id$="-btns"]');
+    group.querySelectorAll('.confirm-sel').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    confirmData[field] = val;
+  }
+
+  function saveLorConfirm() {
+    const bi = document.getElementById('confirm-bi').value.trim();
+    const pd = document.getElementById('confirm-pd').value.trim();
+    closeModal();
+    removeStatus();
+
+    // Stage 1 → 2 전환: Done 초기화 후 advanceStage
+    const dl = document.getElementById('done-list');
+    const dlbl = document.getElementById('done-section-label');
+    const dcard = document.getElementById('done-section-card');
+    if (dl) dl.innerHTML = '';
+    if (dlbl) dlbl.style.display = 'none';
+    if (dcard) dcard.style.display = 'none';
+    doneCount = 0;
+    currentStage = 1;
+    advanceStage(1);
+  }
+
+  function openAdjuster(track) {
+    const label = track === 'bi' ? 'BI' : 'PD';
+    const phone = track === 'bi' ? '(213) 555-0100' : '(213) 555-0200';
+    document.getElementById('adj-content').innerHTML = `
+      <div style="font-size:9px;font-weight:700;color:#98A2B3;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">${label} Adjuster</div>
+      <div style="font-size:16px;font-weight:700;color:#101828;margin-bottom:2px;">Not Assigned</div>
+      <div style="font-size:11px;color:#98A2B3;margin-bottom:16px;">State Farm · ${label} Adjuster</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #F2F4F7;">
+        <span style="color:#98A2B3;">${ic('ic-file',14)}</span>
+        <div><div style="font-size:9px;color:#C0C7D4;text-transform:uppercase;margin-bottom:2px;">Claim</div><div style="font-size:12px;font-weight:600;color:#F79009;">Not obtained</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #F2F4F7;">
+        <span style="color:#98A2B3;">${ic('ic-phone',14)}</span>
+        <div><div style="font-size:9px;color:#C0C7D4;text-transform:uppercase;margin-bottom:2px;">Insurer Phone</div><div style="font-size:12px;color:#344054;">State Farm ${label}: ${phone}</div></div>
+      </div>
+      <div style="margin-top:12px;padding:10px 12px;background:#FFFCF0;border-radius:7px;border:1px solid #F0E0B0;font-size:11px;color:#667085;line-height:1.5;">Enter the claim number directly once obtained, or call the insurer now.</div>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button onclick="showToast('Connecting to State Farm ${label}...')" style="flex:1;padding:11px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid #E4E7EC;cursor:pointer;background:#F9FAFB;color:#344054;display:flex;align-items:center;justify-content:center;gap:6px;">${ic('ic-phone',13)} Call Now</button>
+        <button onclick="closeModal();openClaimInput('${track}')" style="flex:1;padding:11px;border-radius:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:#1E2D5E;color:#fff;">Enter Number</button>
+      </div>
+    `;
+    document.getElementById('modal-adj').classList.add('open');
+  }
+
+  function openClaimInput(track) {
+    closeModal();
+    const label = track === 'bi' ? 'BI' : track === 'pd' ? 'PD' : '';
+    const title = track === 'enter' ? 'Enter Claim Number' : `Enter ${label} Claim Number`;
+    document.getElementById('claim-content').innerHTML = `
+      <div class="modal-title">${title}</div>
+      <div class="modal-sub">Enter the claim number received from the insurer</div>
+      ${track === 'enter' ? `
+        <div style="margin-bottom:14px;">
+          <div class="modal-section" style="margin-top:0;">Select Track</div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="document.querySelectorAll('.track-sel').forEach(b=>{b.style.background='#F9FAFB';b.style.color='#344054';b.style.borderColor='#E4E7EC'});this.style.background='#101828';this.style.color='#fff';this.style.borderColor='#101828'" class="track-sel" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #E4E7EC;background:#F9FAFB;font-size:13px;font-weight:700;cursor:pointer;color:#344054;">BI</button>
+            <button onclick="document.querySelectorAll('.track-sel').forEach(b=>{b.style.background='#F9FAFB';b.style.color='#344054';b.style.borderColor='#E4E7EC'});this.style.background='#101828';this.style.color='#fff';this.style.borderColor='#101828'" class="track-sel" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #E4E7EC;background:#F9FAFB;font-size:13px;font-weight:700;cursor:pointer;color:#344054;">PD</button>
+          </div>
+        </div>
+      ` : ''}
+      <div style="margin-bottom:14px;">
+        <div class="modal-section" style="margin-top:0;">Claim Number</div>
+        <input id="claim-input" type="text" class="claim-input" placeholder="e.g. SF-2026-00123456" />
+      </div>
+      <button class="modal-submit" onclick="saveClaimNumber('${track}')">Save</button>
+    `;
+    document.getElementById('modal-claim').classList.add('open');
+  }
+
+  function saveClaimNumber(track) {
+    const val = document.getElementById('claim-input').value.trim();
+    if (!val) { showToast('Please enter a claim number'); return; }
+    closeModal();
+    const label = track === 'pd' ? 'PD' : 'BI';
+    // Check if both tracks obtained and update status-bar
+    if (!window._claimNums) window._claimNums = {};
+    window._claimNums[track] = val;
+    const both = window._claimNums['bi'] && window._claimNums['pd'];
+    if (both) {
+      setStatus('Pending — awaiting Coverage Letter & Liability decision', false, 'claim', null, true);
+    } else {
+      const otherLabel = track === 'bi' ? 'PD' : 'BI';
+      setStatus(`Pending — ${otherLabel} claim # not yet obtained`, false, 'claim', null, true);
+    }
+    const db = document.getElementById('deadlock-banner');
+    if (db) { db.style.opacity = '0'; db.style.transition = 'opacity .3s'; setTimeout(() => db.remove(), 300); }
+    tlPrepend('ic-file', 'Claim Number Saved', `${label} claim number obtained`, `Claim #: ${val}`);
+    showToast(`${label} claim number saved`);
+  }
+
+  const handoffs = {
+    'demand':          { title: 'Transfer to Demand Department',           dept: 'Demand Department',            desc: 'Prepare and transfer Demand Package after confirming Liability.',                              items: ['Attach Liability Letter', 'Attach Medical Records & Billing', 'Write case summary note'], color: '#344054' },
+    'medical-records': { title: 'Transfer to Medical Collection',          dept: 'Medical Collection Department', desc: 'Forward file to Medical Collection department once medical records are received.',            items: ['Attach medical records file', 'Attach Billing statements', 'Include provider information'], color: '#344054' },
+    'medical':         { title: 'Medical Collection — Government Insurance', dept: 'Medical Collection Department', desc: 'Transfer client information for Medicare / Medi-Cal cases to Medical Collection department.', items: ['Specify government insurance type', 'Attach copy of client insurance card', 'Request Lien handling confirmation'], color: '#344054' }
+  };
+
+  function openHandoff(type) {
+    closeModal();
+    const h = handoffs[type];
+    if (!h) return;
+    const items = h.items.map(i => `
+      <div style="display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid #F9FAFB;font-size:12px;color:#344054;">
+        <div style="width:15px;height:15px;border-radius:4px;border:1.5px solid #D0D5DD;flex-shrink:0;"></div>${i}
+      </div>`).join('');
+    document.getElementById('handoff-content').innerHTML = `
+      <div style="font-size:9px;font-weight:700;color:#98A2B3;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">→ ${h.dept}</div>
+      <div class="modal-title">${h.title}</div>
+      <div class="modal-sub">${h.desc}</div>
+      <div style="margin:14px 0;">${items}</div>
+      <button class="modal-submit" onclick="confirmHandoff('${type}')">Complete Transfer</button>
+    `;
+    document.getElementById('modal-handoff').classList.add('open');
+  }
+
+  function confirmHandoff(type) {
+    closeModal();
+    const h = handoffs[type];
+    doneCount++;
+    showDoneSection();
+    const doneList = document.getElementById('done-list');
+    const t = new Date();
+    const ts = t.getHours() + ':' + String(t.getMinutes()).padStart(2, '0');
+    doneList.insertAdjacentHTML('afterbegin', `
+      <div class="done-item">
+        <div class="done-check">${ic('ic-check', 9)}</div>
+        <div style="flex:1;"><div class="done-text">${h.title}</div><div class="done-meta">${h.dept}</div></div>
+        <div class="done-time">Today ${ts}</div>
+      </div>
+    `);
+    tlPrepend('ic-arrow-right', 'Department Transfer', h.title, h.dept);
+    showToast(`${h.dept} transfer complete`);
+  }
+
+  function closeModal(e) {
+    if (!e || e.target === e.currentTarget) {
+      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+    }
+  }
+
+  /* ── SR-1 ── */
+  let pdfLibReady = false;
+  let sr1PdfBytes = null;
+
+  async function loadSR1Assets() {
+    if (sr1PdfBytes) return;
+    // Load pdf-lib
+    if (!window.PDFLib) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js';
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    // Load PDF file
+    const res = await fetch('../../SR-1-unlocked.pdf');
+    const buf = await res.arrayBuffer();
+    sr1PdfBytes = new Uint8Array(buf);
+    pdfLibReady = true;
+
+    const btn = document.getElementById('sr1-download-btn');
+    if (btn) {
+      btn.textContent = 'Download SR-1';
+      updateSR1DownloadBtn();
+    }
+  }
+
+  function openSR1Modal() {
+    closeModal();
+    document.getElementById('modal-sr1').classList.add('open');
+    // Attach input listeners for validation (once only)
+    document.querySelectorAll('#modal-sr1 [data-req]').forEach(inp => {
+      if (inp.dataset.listenerAttached) return;
+      inp.dataset.listenerAttached = '1';
+      inp.addEventListener('input', () => {
+        // Strip non-Latin characters (WinAnsiEncoding limit)
+        const pos = inp.selectionStart;
+        const cleaned = inp.value.replace(/[^\x00-\xFF]/g, '');
+        if (cleaned !== inp.value) {
+          inp.value = cleaned;
+          try { inp.setSelectionRange(pos - 1, pos - 1); } catch (_) {}
+          showToast('Please type in English only.');
+        }
+        const v = inp.value.trim().length > 0;
+        inp.classList.toggle('filled', v);
+        const num = inp.closest('.sr1-item')?.querySelector('.sr1-item-num');
+        if (num) num.classList.toggle('done', v);
+        updateSR1DownloadBtn();
+      });
+    });
+    loadSR1Assets().catch(() => {
+      const btn = document.getElementById('sr1-download-btn');
+      if (btn) { btn.textContent = 'PDF load failed — refresh'; btn.style.opacity = '1'; }
+    });
+  }
+
+  function updateSR1DownloadBtn() {
+    const btn = document.getElementById('sr1-download-btn');
+    if (!btn) return;
+    const allFilled = [...document.querySelectorAll('#modal-sr1 [data-req]')].every(i => i.value.trim());
+    const ready = pdfLibReady && allFilled;
+    btn.disabled = !ready;
+    btn.style.opacity = ready ? '1' : '.4';
+    btn.style.cursor = ready ? 'pointer' : 'not-allowed';
+    const notice = document.getElementById('sr1-notice');
+    if (notice) notice.style.display = (!pdfLibReady || !allFilled) ? 'block' : 'none';
+    if (!pdfLibReady && allFilled) notice.textContent = 'Loading PDF library…';
+    else if (pdfLibReady && !allFilled) notice.textContent = 'Complete all 3 fields to enable download.';
+  }
+
+  async function downloadSR1() {
+    if (!pdfLibReady || !sr1PdfBytes) { showToast('PDF loading…'); return; }
+    const { PDFDocument } = window.PDFLib;
+    try {
+      const pdfDoc = await PDFDocument.load(sr1PdfBytes, {
+        ignoreEncryption: true,
+        throwOnInvalidObject: false,
+        updateMetadata: false,
+      });
+      const form = pdfDoc.getForm();
+
+      // Read user inputs from the 3 modal fields
+      const userVals = {};
+      document.querySelectorAll('#modal-sr1 [data-field]').forEach(inp => {
+        const val = inp.value.trim();
+        if (val) userVals[inp.dataset.field] = val;
+      });
+
+      // ── Text fields ──
+      const textData = {
+        // Accident info
+        'DATE OF ACCIDENT-MONTH': '05/10/2026',
+        'ACCIDENT LOCATION':  userVals['ACCIDENT LOCATION'] || '5th Ave & Main St, Los Angeles, CA 90015',
+        'HOUR OF ACCIDENT':   '14',
+        '# of vehicles':      '2',
+        'OTHER PROPERTY':     'N/A',
+
+        // Reporting party — Maria Gonzalez
+        'DRIVERS NAME.0':           'Maria Gonzalez',
+        'DRIVER LICENSE NUMBER.0':  userVals['DRIVER LICENSE NUMBER.0'] || 'D8821034',
+        'DATE OF BIRTH-MONTH.0':    '03/14/1988',
+        'DRIVERS STREET ADDRESS.0': '742 Evergreen Terrace',
+        'CITY.0':                   'Los Angeles',
+        'STATE.0':                  'CA',
+        'STATE2.0':                 'CA',
+        'ZIP CODE.0':               '90015',
+        'HOME PREFIX.0':            '213',
+        'HOME PHONE NUMBER.0':      '555-0192',
+        'PHONE NUMBER.0':           'N/A',
+
+        // Reporting party vehicle
+        "REPORTING PARTY'S VEHICLE YEAR": '2019',
+        'VEHICLE LICENSE PLATE':          '8MGZ342',
+        'VEHICLE STATE.0':                'CA',
+        'VEHICLE ID NUMBER111':           '1HGBH41JXMN109186',
+        'VEHICLE OWNER - PERSON OR COMPANY.0':          'Maria Gonzalez',
+        'VEHICLE OWNER - PERSON OR COMPANY ADDRESS.0':  '742 Evergreen Terrace',
+        'VEHICLE OWNER - PERSON OR COMPANY CITY.0':     'Los Angeles',
+        'VEHICLE OWNER - PERSON OR COMPANY STATE.0':    'CA',
+        'VEHICLE OWNER - PERSON OR COMPANY ZIP CODE.0': '90015',
+        'VEHICLE OWNER - PERSON OR COMPANY DOB.0':      '03/14/1988',
+        'INSURANCE CO. NAME.22':  'State Farm',
+        'POLICY NUMBER.0':        'SF-A24-8821034',
+        'POLICY HOLDER NAME.0':   'Maria Gonzalez',
+        'COMPANY NAIC NUMBER.0':  '25178',
+        'POLICY PERIOD FROM.0':   '01/01/2026',
+        'POLICY PERIOD TO.0':     '12/31/2026',
+
+        // Other party
+        'DRIVERS NAME.1':           userVals['DRIVERS NAME.1'] || 'James D. Porter',
+        'DRIVER LICENSE NUMBER.1':  'C4490217',
+        'DATE OF BIRTH-MONTH.1':    '07/22/1975',
+        'DRIVERS STREET ADDRESS.1': '1620 W. Olympic Blvd',
+        'CITY.1':                   'Los Angeles',
+        'STATE.1':                  'CA',
+        'STATE2.1':                 'CA',
+        'ZIP CODE.1':               '90006',
+        'HOME PREFIX.1':            '323',
+        'HOME PHONE NUMBER.1':      '555-0047',
+        'PHONE NUMBER.1':           'N/A',
+
+        // Other party vehicle
+        "OTHER PARTY'S VEHICLE YEAR":       '2021',
+        'VEHICLE LICENSE PLATE 1':          userVals['VEHICLE LICENSE PLATE 1'] || '7RHK509',
+        'VEHICLE LICENSE PLATE OR ID NUMBER.1': userVals['VEHICLE LICENSE PLATE 1'] || '7RHK509',
+        'VEHICLE STATE.1':                  'CA',
+        'VEHICLE OWNER - PERSON OR COMPANY.1':          'James D. Porter',
+        'VEHICLE OWNER - PERSON OR COMPANY ADDRESS.1':  '1620 W. Olympic Blvd',
+        'VEHICLE OWNER - PERSON OR COMPANY CITY.1':     'Los Angeles',
+        'VEHICLE OWNER - PERSON OR COMPANY STATE.1':    'CA',
+        'VEHICLE OWNER - PERSON OR COMPANY ZIP CODE.1': '90006',
+        'VEHICLE OWNER - PERSON OR COMPANY DOB.1':      '07/22/1975',
+        'INSURANCE CO. NAME.221': 'State Farm',
+        'POLICY NUMBER.1':        'SF-B21-4490217',
+        'COMPANY NAIC NUMBER.1':  '25178',
+        'POLICY PERIOD FROM.1':   '06/01/2025',
+        'POLICY PERIOD TO.1':     '05/31/2026',
+
+        // SR-1A section
+        'Policy Number':      'SF-A24-8821034',
+        'Policy Period from': '01/01/2026',
+        'Policy Period to':   '12/31/2026',
+        'policy holders  ADDRESS': '742 Evergreen Terrace, Los Angeles, CA 90015',
+
+        // Injury / damage
+        'NAME &  ADDRESS OF INJURED OR DECEASED.0':   'Maria Gonzalez, 742 Evergreen Terrace, Los Angeles CA 90015',
+        'NAME &  ADDRESS OF INJURED OR DECEASED.1.0': 'N/A',
+        'NAME &  ADDRESS OF INJURED OR DECEASED.1.1': 'N/A',
+
+        // Signature
+        'PRINTED NAME': 'Maria Gonzalez',
+        'DATE':         '06/02/2026',
+        'Date':         '06/02/2026',
+        'Title':        'Client',
+      };
+
+      // User inputs override
+      Object.assign(textData, userVals);
+
+      // Fill text fields — try getTextField first, then raw widget scan for nested fields
+      const { PDFName, PDFString, PDFHexString } = window.PDFLib;
+
+      // Strip non-Latin characters that WinAnsiEncoding cannot handle
+      function toAsciiSafe(str) {
+        return String(str).replace(/[^\x00-\xFF]/g, '?');
+      }
+
+      function setFieldText(form, name, val) {
+        const safe = toAsciiSafe(val);
+        try { form.getTextField(name).setText(safe); return; } catch (_) {}
+        try {
+          form.getFields().forEach(f => {
+            if (f.getName() === name) {
+              try { f.setText(safe); } catch (_) {}
+            }
+          });
+        } catch (_) {}
+      }
+
+      Object.entries(textData).forEach(([name, val]) => setFieldText(form, name, val));
+
+      // ── Radio buttons / Checkboxes via raw PDF dict manipulation ──
+      // pdf-lib cannot resolve fields with numeric suffixes (.0, .1) as radio groups,
+      // so we walk the AcroForm field tree manually and set /V + /AS on matching widgets.
+      const radioSelections = {
+        'MOVING.0':                  'Moving',
+        'DRIVER1':                   'DRIVER',
+        'DRIVER2':                   'DRIVER',
+        'INJURED.0':                 'INJURED',
+        'DAMAGES OVER $1000 YES.0':  'yes',
+        'AM':                        'PM',
+        'DRIVING FOR EMPLOYER YES.0':'No',
+        'Yes2':                      'INJURED',
+      };
+
+      // Resolve a value that may be an indirect reference
+      function resolveObj(obj) {
+        try { return pdfDoc.context.lookup(obj) ?? obj; } catch (_) { return obj; }
+      }
+
+      function walkAcroFields(fieldArray, parentName, cb) {
+        const arr = resolveObj(fieldArray);
+        if (!arr || typeof arr.size !== 'function') return;
+        for (let i = 0; i < arr.size(); i++) {
+          const dict = resolveObj(arr.get(i));
+          if (!dict || typeof dict.has !== 'function') continue;
+          const tObj = dict.has(PDFName.of('T')) ? resolveObj(dict.get(PDFName.of('T'))) : null;
+          let tStr = null;
+          if (tObj) {
+            try { tStr = tObj.decodeText ? tObj.decodeText() : tObj.asString ? tObj.asString() : String(tObj); } catch (_) {}
+          }
+          const fullName = tStr ? (parentName ? parentName + '.' + tStr : tStr) : parentName;
+          cb(dict, fullName);
+          if (dict.has(PDFName.of('Kids'))) {
+            walkAcroFields(dict.get(PDFName.of('Kids')), fullName, cb);
+          }
+        }
+      }
+
+      function setRadio(fieldName, exportVal) {
+        const acroFormRef = pdfDoc.catalog.get(PDFName.of('AcroForm'));
+        const acroForm = resolveObj(acroFormRef);
+        if (!acroForm || typeof acroForm.get !== 'function') return;
+        const fieldsRef = acroForm.get(PDFName.of('Fields'));
+        if (!fieldsRef) return;
+        walkAcroFields(fieldsRef, '', (dict, fullName) => {
+          if (fullName !== fieldName) return;
+          // Set /V on parent field
+          dict.set(PDFName.of('V'), PDFName.of(exportVal));
+          if (!dict.has(PDFName.of('Kids'))) return;
+          const kidsArr = resolveObj(dict.get(PDFName.of('Kids')));
+          if (!kidsArr || typeof kidsArr.size !== 'function') return;
+          for (let k = 0; k < kidsArr.size(); k++) {
+            const kid = resolveObj(kidsArr.get(k));
+            if (!kid || typeof kid.get !== 'function') continue;
+            // Find the ON state name from /AP/N (the one key that isn't /Off)
+            let onState = null;
+            try {
+              const ap = resolveObj(kid.get(PDFName.of('AP')));
+              if (ap && typeof ap.get === 'function') {
+                const n = resolveObj(ap.get(PDFName.of('N')));
+                if (n && typeof n.keys === 'function') {
+                  for (const k2 of n.keys()) {
+                    const raw = k2.encodedName || String(k2);
+                    // raw looks like '/Moving' or 'Moving'
+                    const cleaned = raw.startsWith('/') ? raw.slice(1) : raw;
+                    if (cleaned !== 'Off') { onState = cleaned; break; }
+                  }
+                }
+              }
+            } catch (_) {}
+            const match = onState && onState.toLowerCase() === exportVal.toLowerCase();
+            if (match) {
+              // This is the selected widget — turn it ON
+              kid.set(PDFName.of('AS'), PDFName.of(onState));
+              kid.set(PDFName.of('V'), PDFName.of(onState));
+            } else {
+              // All other widgets in this group — turn OFF
+              kid.set(PDFName.of('AS'), PDFName.of('Off'));
+            }
+          }
+        });
+      }
+
+      Object.entries(radioSelections).forEach(([name, val]) => {
+        try { setRadio(name, val); } catch (_) {}
+      });
+
+      const bytes = await pdfDoc.save({ useObjectStreams: false });
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'SR-1_Maria_Gonzalez.pdf';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      showToast('SR-1 downloaded');
+      tlPrepend('ic-file', 'SR-1 Generated', 'SR-1 Traffic Accident Report downloaded', 'Ready to submit to DMV');
+    } catch (err) {
+      const msg = err.message || '';
+      if (msg.includes('WinAnsi') || msg.includes('encode')) {
+        showToast('Please use English characters only in the form fields.');
+      } else {
+        showToast('PDF error: ' + msg);
+      }
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+</script>
+</body>
+</html>

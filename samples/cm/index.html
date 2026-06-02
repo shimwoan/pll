@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>CM — Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F0F2F5;
+      max-width: 430px;
+      margin: 0 auto;
+      border-left: 1px solid #ddd;
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+    }
+    #scroll-root {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: none;
+    }
+
+    /* HEADER */
+    .page-header {
+      background: #fff;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid #EAECF0;
+      position: sticky; top: 0; z-index: 20;
+    }
+    .page-title { font-size: 18px; font-weight: 700; color: #101828; letter-spacing: -0.02em; }
+
+    /* SECTION LABEL */
+    .section-label { display:flex; justify-content: flex-end; font-size: 10px; font-weight: 700; color: #98A2B3; letter-spacing: .07em; text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; width: 100%; }
+
+    /* CASE TODO ROWS */
+    .case-todos { border-top: 1px solid #F2F4F7; margin-top: 10px; padding-top: 8px; display: flex; flex-direction: column; gap: 5px; }
+    .todo-row { display: flex; align-items: center; gap: 7px; }
+    .todo-icon { width: 14px; height: 14px; flex-shrink: 0; }
+    .todo-text { font-size: 11px; color: #344054; }
+    .todo-text.urgent { color: #B42318; font-weight: 600; }
+
+    /* CASE CARDS */
+    .case-list { display: flex; flex-direction: column; gap: 6px; }
+    .case-card { background: #fff; border-radius: 14px; border: 1px solid #EAECF0; padding: 14px; cursor: pointer; text-decoration: none; display: block; position: relative; transition: all .12s; }
+    .case-card:active { background: #F9FAFB; }
+    .case-card.new { border-color: #4B5B8C; }
+    .new-badge { position: absolute; top: 12px; right: 12px; font-size: 9px; font-weight: 700; color: #4B5B8C; background: #EEF2FF; padding: 2px 8px; border-radius: 20px; }
+    .case-name { font-size: 14px; font-weight: 700; color: #101828; margin-bottom: 3px; }
+    .case-meta { font-size: 11px; color: #667085; margin-bottom: 9px; }
+    .chips { display: flex; gap: 5px; flex-wrap: wrap; }
+    .chip { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 6px; }
+    .chip-red    { background: #FEF3F2; color: #B42318; }
+    .chip-amber  { background: #FFFAEB; color: #B54708; }
+    .chip-blue   { background: #EEF2FF; color: #3D4E7A; }
+    .chip-green  { background: #ECFDF5; color: #027A48; }
+    .chip-gray   { background: #F2F4F7; color: #667085; }
+    .chip-orange { background: #FFF8F0; color: #B54708; }
+
+    /* NOTIFICATION STACK — fixed bottom, toast-style */
+    @keyframes slideUp {
+      from { transform: translateY(120%); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .notif-stack {
+      position: fixed;
+      bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      padding: 0 12px calc(20px + env(safe-area-inset-bottom));
+      display: flex; flex-direction: column; gap: 8px;
+      z-index: 50;
+      pointer-events: none;
+    }
+    /* scrim so case cards don't bleed through */
+    .notif-stack::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 80px;
+      background: linear-gradient(to top, rgba(240,242,245,.95), transparent);
+      pointer-events: none;
+    }
+    .notif {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #EAECF0;
+      border-left: 2px solid #4B5B8C;
+      padding: 13px 14px;
+      display: flex; gap: 10px; align-items: center;
+      cursor: pointer; text-decoration: none;
+      pointer-events: auto;
+      box-shadow: 0 10px 28px rgba(16,24,40,0.13), 0 2px 6px rgba(16,24,40,0.06);
+      animation: slideUp .28s cubic-bezier(.2,.8,.2,1) both;
+      transition: opacity .15s, transform .15s;
+    }
+    .notif.urgent { border-left-color: #F04438; }
+    .notif:active { background: #F8F9FC; }
+    /* stack depth: second card peeks slightly behind */
+    .notif-stack > .notif + .notif {
+      transform: scale(.97);
+      opacity: .88;
+      margin-top: -4px;
+      animation-delay: .06s;
+    }
+    .notif-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .notif-icon-red  { background: #FEF3F2; }
+    .notif-icon-blue { background: #EEF2FF; }
+    .notif-content { flex: 1; min-width: 0; }
+    .notif-type { font-size: 10px; font-weight: 700; color: #4B5B8C; margin-bottom: 2px; }
+    .notif-type-red { color: #B42318; }
+    .notif-title { font-size: 13px; font-weight: 700; color: #101828; }
+    .notif-body { font-size: 11px; color: #667085; line-height: 1.4; margin-top: 2px; }
+    .notif-dismiss {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; color: #98A2B3;
+      flex-shrink: 0; cursor: pointer;
+      transition: background .12s;
+    }
+    .notif-dismiss:active { background: #F2F4F7; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">My Cases</div>
+  </div>
+
+  <div id="scroll-root">
+  <!-- CONTENT -->
+  <div style="padding: 12px 0 200px; display: flex; flex-direction: column; gap: 16px;">
+
+    <!-- Case List -->
+    <div style="padding: 0 12px;">
+      <div class="section-label" style="margin-bottom: 8px;">
+        <span>Active Cases</span>
+        <span class="section-count" style="font-size:12px;font-weight:700;color:#4B5B8C;">2</span>
+      </div>
+      <div class="case-list">
+
+        <a class="case-card new" href="case-detail.html">
+          <div class="new-badge">NEW</div>
+          <div class="case-name">Maria Gonzalez</div>
+          <div class="case-meta">Auto Accident · DOL 05/10/26 · State Farm · 🇪🇸 ES</div>
+          <div class="case-todos">
+            <div class="todo-row"><svg class="todo-icon" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5l3 3 6-6" stroke="#B42318" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="todo-text urgent">Thank You Letter needed</div></div>
+            <div class="todo-row"><svg class="todo-icon" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5l3 3 6-6" stroke="#101828" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="todo-text">SOL D-680 — monitor</div></div>
+          </div>
+        </a>
+
+        <a class="case-card" href="#">
+          <div class="case-name">James Kim</div>
+          <div class="case-meta">Slip &amp; Fall · DOL 03/02/26 · Allstate</div>
+          <div class="case-todos">
+            <div class="todo-row"><svg class="todo-icon" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5l3 3 6-6" stroke="#101828" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="todo-text">ACK pending D+18 — tracking insurer response</div></div>
+            <div class="todo-row"><svg class="todo-icon" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5l3 3 6-6" stroke="#101828" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="todo-text">Medical records collection in progress</div></div>
+          </div>
+        </a>
+
+
+      </div>
+    </div>
+
+  </div>
+  </div><!-- /scroll-root -->
+
+  <!-- Notifications — fixed bottom toast stack -->
+  <div class="notif-stack" id="notifStack">
+    <a class="notif" href="case-detail.html" data-notif>
+      <div class="notif-icon notif-icon-blue">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1.5 4.5C1.5 3.67 2.17 3 3 3H6.17C6.55 3 6.91 3.15 7.17 3.41L8 4.25H13C13.83 4.25 14.5 4.92 14.5 5.75V11.5C14.5 12.33 13.83 13 13 13H3C2.17 13 1.5 12.33 1.5 11.5V4.5Z" stroke="#3D4E7A" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="notif-content">
+        <div class="notif-type">New Case Assigned</div>
+        <div class="notif-title">Maria Gonzalez</div>
+        <div class="notif-body">Auto Accident · State Farm · 🇪🇸 Spanish · Thank You Letter needed</div>
+      </div>
+      <div class="notif-dismiss" onclick="dismissNotif(event, this)">✕</div>
+    </a>
+  </div>
+
+  <script>
+    function dismissNotif(e, btn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const notif = btn.closest('[data-notif]');
+      notif.style.opacity = '0';
+      notif.style.transform = 'translateY(8px)';
+      setTimeout(() => notif.remove(), 150);
+    }
+  </script>
+</body>
+</html>

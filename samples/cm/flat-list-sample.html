@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Flat List Sample</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #F9FAFB; display: flex; justify-content: center; padding: 24px 16px; }
+  .phone { width: 390px; }
+
+  /* Section label */
+  .section-label { font-size: 10px; font-weight: 700; color: #98A2B3; text-transform: uppercase; letter-spacing: .07em; padding: 0 2px; margin: 20px 0 8px; display: flex; align-items: center; gap: 5px; }
+
+  /* Flat list card */
+  .flat-card { background: #fff; border: 1px solid #F2F4F7; border-radius: 12px; overflow: hidden; }
+
+  /* Check item */
+  .check-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-bottom: 1px solid #F9FAFB; }
+  .check-item:last-child { border-bottom: none; }
+  .check-item.done { opacity: 0.4; pointer-events: none; }
+
+  .pri-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .pri-high { background: #F04438; }
+  .pri-mid  { background: #F79009; }
+
+  .check-text { flex: 1; font-size: 12px; color: #344054; line-height: 1.4; font-weight: 500; }
+  .check-sub  { font-size: 10px; color: #98A2B3; margin-top: 2px; font-weight: 400; }
+
+  .action-btn { font-size: 10px; font-weight: 500; padding: 5px 10px; border-radius: 6px; border: 1px solid #E4E7EC; cursor: pointer; white-space: nowrap; flex-shrink: 0; background: #F9FAFB; color: #475467; }
+  .action-btn:active { background: #F2F4F7; }
+
+  /* Done section */
+  .done-card { background: #fff; border: 1px solid #F2F4F7; border-radius: 12px; overflow: hidden; }
+  .done-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #F9FAFB; }
+  .done-item:last-child { border-bottom: none; }
+  .done-check { width: 16px; height: 16px; border-radius: 50%; background: #344054; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .done-check svg { display: block; }
+  .done-text { font-size: 11px; color: #98A2B3; text-decoration: line-through; flex: 1; }
+  .done-meta { font-size: 9px; color: #C0C7D4; margin-top: 1px; }
+  .done-time { font-size: 9px; color: #C0C7D4; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
+  #done-empty { padding: 14px; font-size: 11px; color: #C0C7D4; }
+
+  /* Stage advance */
+  .stage-advance-row { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #fff; border: 1px solid #F2F4F7; border-radius: 12px; margin-top: 8px; }
+  .stage-advance-hint { flex: 1; font-size: 10px; color: #98A2B3; line-height: 1.4; }
+  .stage-advance-btn { font-size: 10px; font-weight: 600; padding: 7px 12px; border-radius: 7px; background: #344054; color: #fff; border: none; cursor: pointer; white-space: nowrap; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: #fff; color: #344054; font-size: 11px; font-weight: 500; padding: 9px 18px; border-radius: 20px; white-space: nowrap; z-index: 60; opacity: 0; transition: opacity .2s; pointer-events: none; box-shadow: 0 4px 16px rgba(0,0,0,0.12); border: 1px solid #F2F4F7; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <div class="section-label">Stage 1 · Claim Setup</div>
+
+  <div class="flat-card">
+
+    <!-- SR-1 -->
+    <div class="check-item" id="item-sr1">
+      <div class="pri-dot pri-mid"></div>
+      <div style="flex:1;">
+        <div class="check-text">SR-1</div>
+        <div class="check-sub">DMV traffic accident report</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:5px;">
+          <button class="action-btn">Download</button>
+          <a href="https://www.dmv.ca.gov/portal/dmv-virtual-office/accident-reporting/" target="_blank" style="font-size:10px;color:#4B5B8C;text-decoration:underline;">dmv.ca.gov →</a>
+        </div>
+      </div>
+      <button onclick="markDone('item-sr1','SR-1 Submitted to DMV')" style="width:24px;height:24px;padding:0;display:flex;align-items:center;justify-content:center;border:none;border-radius:6px;background:#F2F4F7;cursor:pointer;flex-shrink:0;">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3.5 3.5 5.5-6" stroke="#C0C7D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <!-- LOR 1st -->
+    <div class="check-item" id="item-lor1">
+      <div class="pri-dot pri-high"></div>
+      <div style="flex:1;">
+        <div class="check-text">Send LOR (1st Party)</div>
+        <div class="check-sub">Client's insurer — LOR reply will include claim #</div>
+      </div>
+      <button class="action-btn" onclick="markDone('item-lor1','LOR (1st Party) Sent')">Send</button>
+    </div>
+
+    <!-- LOR 3rd -->
+    <div class="check-item" id="item-lor3">
+      <div class="pri-dot pri-high"></div>
+      <div style="flex:1;">
+        <div class="check-text">Send LOR (3rd Party)</div>
+        <div class="check-sub">Adverse insurer — LOR reply will include claim #</div>
+      </div>
+      <button class="action-btn" onclick="markDone('item-lor3','LOR (3rd Party) Sent')">Send</button>
+    </div>
+
+    <!-- Claim # -->
+    <div class="check-item" id="item-claim">
+      <div class="pri-dot pri-high"></div>
+      <div style="flex:1;">
+        <div class="check-text">Obtain BI &amp; PD Claim # + Adjuster Info</div>
+        <div class="check-sub">Via LOR reply email, phone, or direct entry</div>
+      </div>
+      <div style="display:flex;gap:4px;">
+        <button class="action-btn" onclick="markDone('item-claim','BI Claim # Obtained')">BI</button>
+        <button class="action-btn" onclick="markDone('item-claim','PD Claim # Obtained')">PD</button>
+      </div>
+    </div>
+
+    <!-- Coverage -->
+    <div class="check-item" id="item-coverage">
+      <div class="pri-dot pri-high"></div>
+      <div style="flex:1;">
+        <div class="check-text">Request Coverage &amp; Liability Decision</div>
+        <div class="check-sub">Request Coverage Letter + Liability acknowledgment</div>
+      </div>
+      <button class="action-btn" onclick="markDone('item-coverage','Coverage Request Sent')">Email</button>
+    </div>
+
+    <!-- Review Response -->
+    <div class="check-item" id="item-review">
+      <div class="pri-dot pri-high"></div>
+      <div style="flex:1;">
+        <div class="check-text">Review Liability / Coverage Letter</div>
+        <div class="check-sub">Coverage ✓/✗ · Admitted → proceed · Denied → dispute</div>
+      </div>
+      <button class="action-btn" onclick="markDone('item-review','Coverage Reviewed')">Inbox</button>
+    </div>
+
+  </div>
+
+  <!-- Done -->
+  <div class="section-label" style="margin-top:20px;">
+    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M5.5 8l2 2 3-3"/></svg>
+    Done
+  </div>
+  <div class="done-card">
+    <div id="done-list"></div>
+    <div id="done-empty">No completed items yet</div>
+  </div>
+
+  <!-- Stage Advance -->
+  <div class="stage-advance-row" style="margin-top:8px;">
+    <div class="stage-advance-hint">Claim # obtained · LOR sent · Coverage confirmed → next stage</div>
+    <button class="stage-advance-btn">Stage 2 →</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  function markDone(itemId, label) {
+    const el = document.getElementById(itemId);
+    if (!el) return;
+    el.style.display = 'none';
+
+    document.getElementById('done-empty').style.display = 'none';
+    const dl = document.getElementById('done-list');
+    const t = new Date();
+    const ts = t.getHours() + ':' + String(t.getMinutes()).padStart(2,'0');
+    dl.insertAdjacentHTML('afterbegin', `
+      <div class="done-item">
+        <div class="done-check">
+          <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
+            <path d="M2 5l2.5 2.5 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div style="flex:1;">
+          <div class="done-text">${label}</div>
+          <div class="done-meta">Stage 1 · Claim Setup</div>
+        </div>
+        <div class="done-time">Today ${ts}</div>
+      </div>
+    `);
+  }
+</script>
+</body>
+</html>

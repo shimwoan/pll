@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>CM — ACK Email</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Inter', sans-serif; background: #F0F2F5; max-width: 430px; margin: 0 auto; border-left: 1px solid #ddd; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
+    #scroll-root { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: none; }
+    .page-header { background: #fff; padding: 18px 16px 14px; border-bottom: 1px solid #EAECF0; position: sticky; top: 0; z-index: 20; }
+    .header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .back-btn { font-size: 22px; color: #4B5B8C; text-decoration: none; flex-shrink: 0; line-height: 1; }
+    .header-label { font-size: 11px; font-weight: 600; color: #98A2B3; flex: 1; }
+    .page-title { font-size: 16px; font-weight: 700; color: #101828; }
+    .page-sub   { font-size: 11px; color: #98A2B3; margin-top: 2px; }
+    .content { padding: 12px 12px 80px; display: flex; flex-direction: column; gap: 10px; }
+    .section-label { font-size: 10px; font-weight: 700; color: #98A2B3; letter-spacing: .07em; text-transform: uppercase; padding: 4px 0 2px; }
+    .meta-card { background: #fff; border-radius: 14px; border: 1px solid #EAECF0; overflow: hidden; }
+    .meta-header { display: flex; gap: 10px; padding: 14px; align-items: flex-start; }
+    .avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; background: #4B5B8C; }
+    .meta-info { flex: 1; }
+    .meta-from { font-size: 13px; font-weight: 700; color: #101828; }
+    .meta-case { font-size: 11px; color: #667085; margin-top: 2px; }
+    .meta-time { font-size: 10px; color: #98A2B3; white-space: nowrap; }
+    .meta-subject { padding: 0 14px 14px; font-size: 14px; font-weight: 700; color: #101828; border-bottom: 1px solid #F2F4F7; }
+    .case-match { display: flex; align-items: center; gap: 10px; padding: 11px 14px; }
+    .case-match-label { font-size: 10px; color: #98A2B3; text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
+    .case-match-value { font-size: 12px; font-weight: 700; color: #101828; }
+
+    /* SLA Timer Card */
+    .sla-card { background: #fff; border-radius: 14px; border: 1.5px solid #F79009; overflow: hidden; }
+    .sla-header { background: #FFFAEB; padding: 12px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #FEC84B; }
+    .sla-icon { font-size: 18px; }
+    .sla-title { font-size: 12px; font-weight: 700; color: #B54708; }
+    .sla-body { padding: 14px; }
+    .sla-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #F9FAFB; font-size: 12px; }
+    .sla-row:last-child { border-bottom: none; }
+    .sla-key { color: #667085; }
+    .sla-val { font-weight: 700; color: #101828; }
+    .sla-val-amber { color: #B54708; }
+    .sla-val-ok { color: #027A48; }
+
+    .ai-box { background: #fff; border-radius: 14px; border: 1px solid #E4E7EC; overflow: hidden; }
+    .ai-summary-block { background: #F9F5FF; border-bottom: 1px solid #E9D7FE; padding: 14px; }
+    .ai-summary-head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    .ai-summary-label { font-size: 11px; font-weight: 700; color: #6941C6; }
+    .ai-summary-text { font-size: 12px; color: #344054; line-height: 1.65; }
+    .ai-todos-block { background: #F0FDF4; padding: 14px; }
+    .ai-todos-label { font-size: 11px; font-weight: 700; color: #027A48; margin-bottom: 8px; }
+    .ai-todo-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid #D1FADF; font-size: 12px; color: #344054; }
+    .ai-todo-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .ai-todo-box { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid #6CE9A6; flex-shrink: 0; margin-top: 2px; }
+    .tag { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+    .tag-done  { background: #ECFDF5; color: #027A48; }
+    .tag-sched { background: #F2F4F7; color: #667085; }
+    .raw-card { background: #fff; border-radius: 14px; border: 1px solid #E4E7EC; padding: 16px; font-size: 12px; color: #667085; line-height: 1.75; white-space: pre-wrap; }
+    .action-bar { display: flex; gap: 8px; position: fixed; bottom: 0; left: 0; right: 0; max-width: 430px; margin: 0 auto; padding: 12px 12px 28px; background: #fff; border-top: 1px solid #EAECF0; }
+    .action-btn { flex: 1; padding: 13px; border-radius: 11px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; }
+    .btn-add { background: #4B5B8C; color: #fff; }
+    .btn-archive { background: #F2F4F7; color: #344054; }
+    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #101828; color: #fff; font-size: 12px; font-weight: 600; padding: 10px 20px; border-radius: 20px; white-space: nowrap; z-index: 60; opacity: 0; transition: opacity .2s; pointer-events: none; }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="header-top">
+      <a class="back-btn" href="inbox.html">‹</a>
+      <div class="header-label">Email Detail</div>
+    </div>
+    <div class="page-title">Allstate Claims · Jenny Park</div>
+  </div>
+
+  <div id="scroll-root">
+  <div class="content">
+    <div class="meta-card">
+      <div class="meta-header">
+        <div class="avatar">AL</div>
+        <div class="meta-info">
+          <div class="meta-from">Allstate Claims · Jenny Park</div>
+          <div class="meta-case">📁 James Kim · BI #3312</div>
+        </div>
+        <div class="meta-time">Yesterday 16:20</div>
+      </div>
+      <div class="meta-subject">Re: Medical Records Authorization — Kim</div>
+      <div class="case-match">
+        <div style="flex:1;">
+          <div class="case-match-label">📁 Case Match (AI)</div>
+          <div class="case-match-value">James Kim · BI #3312</div>
+        </div>
+        <span style="font-size:12px;color:#98A2B3;">▾</span>
+      </div>
+    </div>
+
+    <!-- ACK SLA Timer -->
+    <div>
+      <div class="section-label">ACK SLA Timer (D+30)</div>
+      <div class="sla-card">
+        <div class="sla-header">
+          <div class="sla-icon">⏱️</div>
+          <div>
+            <div class="sla-title">Awaiting ACK</div>
+            <div style="font-size:10px;color:#B54708;margin-top:2px;">Tracking insurer response within D+30 deadline</div>
+          </div>
+        </div>
+        <div class="sla-body">
+          <div class="sla-row"><div class="sla-key">ACK Received</div><div class="sla-val">2026-05-30 (Yesterday)</div></div>
+          <div class="sla-row"><div class="sla-key">D+30 Deadline</div><div class="sla-val sla-val-amber">2026-06-29</div></div>
+          <div class="sla-row"><div class="sla-key">Days Remaining</div><div class="sla-val sla-val-amber">D+12 (18 days left)</div></div>
+          <div class="sla-row"><div class="sla-key">Reminder Scheduled</div><div class="sla-val sla-val-ok">06/22 (D+23) Auto-send scheduled</div></div>
+          <div class="sla-row"><div class="sla-key">If No Response</div><div class="sla-val">Auto-escalate to action queue</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">AI Analysis</div>
+      <div class="ai-box">
+        <div class="ai-summary-block">
+          <div class="ai-summary-head"><span style="font-size:14px;">✦</span><div class="ai-summary-label">AI Summary</div></div>
+          <div class="ai-summary-text">Allstate confirmed receipt of medical records request. Processing expected within 30 days (per CA regulations). ACK timer started. If no response by D+30 (06/29), reminder auto-send and action queue escalation are scheduled.</div>
+        </div>
+        <div class="ai-todos-block">
+          <div class="ai-todos-label">📋 AI Recommended Actions</div>
+          <div class="ai-todo-item">
+            <div class="ai-todo-box"></div>
+            <div style="flex:1;">Mark ACK receipt confirmed</div>
+            <span class="tag tag-done">Mark Done</span>
+          </div>
+          <div class="ai-todo-item">
+            <div class="ai-todo-box"></div>
+            <div style="flex:1;">D+30 (06/29) ACK reminder auto-scheduled</div>
+            <span class="tag tag-sched">Auto-scheduled ✓</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Original</div>
+      <div class="raw-card">Dear Ms. Klein,
+
+Thank you for your submission. We have received your authorization form and medical records request for the above claimant.
+
+Our team will begin processing within 5 business days. You will receive a formal acknowledgment letter within 30 days per California regulations.
+
+Jenny Park
+Allstate Claims | (818) 555-0341</div>
+    </div>
+
+    <div style="height:80px;"></div>
+  </div>
+  </div><!-- /scroll-root -->
+
+  <div class="action-bar">
+    <button class="action-btn btn-add" onclick="showToast('✅ Added to James Kim case tasks')">Add to Tasks</button>
+    <button class="action-btn btn-archive" onclick="showToast('Archived')">Archive</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script>
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+  </script>
+</body>
+</html>

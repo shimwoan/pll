@@ -1,6 +1,0 @@
-{"type":"server-started","port":53128,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:53128","screen_dir":"/Users/jaemu/workspace/pll/.superpowers/brainstorm/2144-1780113170/content","state_dir":"/Users/jaemu/workspace/pll/.superpowers/brainstorm/2144-1780113170/state"}
-{"type":"screen-added","file":"/Users/jaemu/workspace/pll/.superpowers/brainstorm/2144-1780113170/content/retainer-layout.html"}
-{"type":"screen-added","file":"/Users/jaemu/workspace/pll/.superpowers/brainstorm/2144-1780113170/content/retainer-mockup.html"}
-{"type":"screen-updated","file":"/Users/jaemu/workspace/pll/.superpowers/brainstorm/2144-1780113170/content/retainer-mockup.html"}
-{"type":"screen-added","file":"/Users/jaemu/workspace/pll/.superpowers/brainstorm/2144-1780113170/content/retainer-mockup-v2.html"}
-{"type":"server-stopped","reason":"idle timeout"}

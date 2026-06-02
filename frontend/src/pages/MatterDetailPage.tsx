@@ -133,6 +133,11 @@ function StageChecklist({ stage, dynamicItems = [] }: { stage: string; dynamicIt
 
   const toggle = (id: string) => setChecked((prev) => ({ ...prev, [id]: !prev[id] }))
 
+  const allItems = [...dynamicItems.map((i) => i.id), ...(staticItems?.map((i) => i.id) ?? [])]
+  const allChecked = allItems.length > 0 && allItems.every((id) => checked[id])
+
+  if (allChecked) return null
+
   return (
     <div className="bg-white border border-gray-100 rounded px-4 py-3.5 mb-0">
       <div className="text-xs font-medium text-gray-700 mb-0.5">Checklist</div>
@@ -144,10 +149,10 @@ function StageChecklist({ stage, dynamicItems = [] }: { stage: string; dynamicIt
             onClick={() => toggle(id)}
             className={`flex items-center gap-2.5 text-left group ${isNew ? 'checklist-item-new' : ''}`}
           >
-            <div className={`w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0 transition-colors ${
-              checked[id] ? 'bg-gray-800 border-gray-800' : 'border-red-300 bg-white group-hover:border-red-400'
+            <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 transition-colors ${
+              checked[id] ? 'bg-gray-200' : 'bg-gray-100 group-hover:bg-gray-200'
             }`}>
-              {checked[id] && <Check size={8} strokeWidth={3} className="text-white" />}
+              {checked[id] && <Check size={12} strokeWidth={2.5} className="text-gray-600" />}
             </div>
             <span className={`text-xs transition-colors ${checked[id] ? 'line-through text-gray-300' : 'text-gray-700'}`}>
               {label}
@@ -160,10 +165,10 @@ function StageChecklist({ stage, dynamicItems = [] }: { stage: string; dynamicIt
             onClick={() => toggle(id)}
             className="flex items-center gap-2.5 text-left group"
           >
-            <div className={`w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0 transition-colors ${
-              checked[id] ? 'bg-gray-800 border-gray-800' : 'border-gray-300 bg-white group-hover:border-gray-500'
+            <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 transition-colors ${
+              checked[id] ? 'bg-gray-200' : 'bg-gray-100 group-hover:bg-gray-200'
             }`}>
-              {checked[id] && <Check size={8} strokeWidth={3} className="text-white" />}
+              {checked[id] && <Check size={12} strokeWidth={2.5} className="text-gray-600" />}
             </div>
             <span className={`text-xs transition-colors ${checked[id] ? 'line-through text-gray-300' : 'text-gray-600'}`}>
               {label}
@@ -824,7 +829,6 @@ const DETAIL_TABS = [
   { label: 'Dashboard',      active: true },
   { label: 'Summary',        active: false },
   { label: 'Parties',        active: false },
-  { label: 'Documents',      active: false },
   { label: 'Tasks & Review', active: false },
   { label: 'Memo & Emails',  active: true },
   { label: 'Retainer',       active: true },

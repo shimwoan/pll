@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>CM — Email Inbox</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F0F2F5;
+      max-width: 430px;
+      margin: 0 auto;
+      border-left: 1px solid #ddd;
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+    }
+    #scroll-root {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: none;
+    }
+
+    /* HEADER */
+    .page-header {
+      background: #fff;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid #EAECF0;
+      position: sticky; top: 0; z-index: 20;
+    }
+    .header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .back-btn { font-size: 22px; color: #4B5B8C; text-decoration: none; line-height: 1; flex-shrink: 0; }
+    .header-label { font-size: 11px; font-weight: 600; color: #98A2B3; flex: 1; }
+    .page-title { font-size: 18px; font-weight: 700; color: #101828; letter-spacing: -0.02em; }
+    .page-sub { font-size: 11px; color: #98A2B3; margin-top: 3px; }
+
+    /* FILTER */
+    .filter-bar { background: #fff; border-bottom: 1px solid #EAECF0; padding: 10px 12px; display: flex; gap: 6px; overflow-x: auto; }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-chip { font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 20px; border: 1.5px solid #E4E7EC; background: #fff; color: #667085; white-space: nowrap; cursor: pointer; }
+    .filter-chip.on { background: #4B5B8C; color: #fff; border-color: #4B5B8C; }
+
+    /* DATE STRIP */
+    .date-strip { padding: 14px 14px 6px; font-size: 11px; font-weight: 700; color: #667085; }
+
+    /* EMAIL CARD */
+    .email-card { background: #fff; border-radius: 14px; border: 1px solid #EAECF0; overflow: hidden; margin: 0 12px 6px; cursor: pointer; text-decoration: none; display: block; transition: background .12s; }
+    .email-card:active { background: #F9FAFB; }
+    .email-card.urgent { border-left: 3px solid #F04438; }
+    .email-card.unread { border-left: 3px solid #4B5B8C; }
+    .email-card.done   { opacity: 0.55; }
+
+    .email-header { padding: 12px 14px 8px; display: flex; gap: 10px; align-items: flex-start; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .email-meta { flex: 1; min-width: 0; }
+    .email-from { font-size: 13px; font-weight: 700; color: #101828; }
+    .email-case { font-size: 10px; color: #667085; margin-top: 2px; }
+    .email-time { font-size: 10px; color: #98A2B3; white-space: nowrap; flex-shrink: 0; }
+    .email-subject { font-size: 12px; font-weight: 600; color: #101828; padding: 0 14px 5px; }
+    .email-preview { font-size: 11px; color: #667085; padding: 0 14px 10px; line-height: 1.45; }
+    .email-footer { padding: 8px 14px 11px; border-top: 1px solid #F2F4F7; display: flex; align-items: center; gap: 7px; }
+    .ai-tag { font-size: 9px; font-weight: 700; color: #6941C6; background: #F9F5FF; padding: 2px 8px; border-radius: 20px; flex-shrink: 0; }
+    .ai-summary { flex: 1; font-size: 10px; font-weight: 600; }
+    .ai-urgent { color: #B42318; }
+    .ai-ok     { color: #027A48; }
+    .ai-amber  { color: #B54708; }
+    .open-btn { font-size: 10px; font-weight: 600; padding: 5px 12px; border-radius: 7px; background: #F2F4F7; color: #344054; border: none; cursor: pointer; white-space: nowrap; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="header-top">
+      <a class="back-btn" href="index.html">‹</a>
+      <div class="header-label">Inbox</div>
+    </div>
+    <div class="page-title">Email</div>
+  </div>
+
+  <div id="scroll-root">
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <div class="filter-chip on">All 12</div>
+    <div class="filter-chip">Urgent 3</div>
+    <div class="filter-chip">Insurer</div>
+    <div class="filter-chip">Medical</div>
+    <div class="filter-chip">Client</div>
+    <div class="filter-chip">Other</div>
+  </div>
+
+  <!-- LIST -->
+  <div style="padding-bottom: 40px;">
+
+    <div class="date-strip">Today · Action Required</div>
+
+    <!-- 1. State Farm — Liability -->
+    <a class="email-card urgent" href="email-liability.html">
+      <div class="email-header">
+        <div class="avatar" style="background:#B42318;">SF</div>
+        <div class="email-meta">
+          <div class="email-from">Tom Reid · State Farm</div>
+          <div class="email-case">📁 Rosa Martinez · BI #4421</div>
+        </div>
+        <div class="email-time">10:32</div>
+      </div>
+      <div class="email-subject">Re: Liability Decision — Martinez Claim</div>
+      <div class="email-preview">We have completed our investigation and are prepared to accept partial liability at 70%...</div>
+      <div class="email-footer">
+        <div class="ai-tag">✦ AI</div>
+        <div class="ai-summary ai-urgent">Liability accepted at 70% — negotiation required</div>
+        <a class="open-btn" href="email-liability.html">Open</a>
+      </div>
+    </a>
+
+    <!-- 2. Cedars-Sinai — Records -->
+    <a class="email-card urgent" href="email-records.html">
+      <div class="email-header">
+        <div class="avatar" style="background:#027A48;">CS</div>
+        <div class="email-meta">
+          <div class="email-from">Cedars-Sinai Records Dept</div>
+          <div class="email-case">📁 James Kim · Medical Records</div>
+        </div>
+        <div class="email-time">09:15</div>
+      </div>
+      <div class="email-subject">Medical Records — Kim, James (DOB 1988-03-12)</div>
+      <div class="email-preview">Please find attached the requested medical records and itemized billing statements...</div>
+      <div class="email-footer">
+        <div class="ai-tag">✦ AI</div>
+        <div class="ai-summary ai-ok">Medical records received — task auto-added</div>
+        <a class="open-btn" href="email-records.html">Open</a>
+      </div>
+    </a>
+
+    <!-- 3. Maria — Complaint -->
+    <a class="email-card urgent" href="email-complaint.html">
+      <div class="email-header">
+        <div class="avatar" style="background:#F79009;">MG</div>
+        <div class="email-meta">
+          <div class="email-from">Maria Gonzalez (Client)</div>
+          <div class="email-case">📁 Maria Gonzalez · New Assignment</div>
+        </div>
+        <div class="email-time">08:47</div>
+      </div>
+      <div class="email-subject">I have a question</div>
+      <div class="email-preview">Hola, no he recibido información sobre mi caso. ¿Cuándo me van a contactar?...</div>
+      <div class="email-footer">
+        <div class="ai-tag">✦ AI</div>
+        <div class="ai-summary ai-amber">No contact received — Thank You Letter not sent</div>
+        <a class="open-btn" href="email-complaint.html">Open</a>
+      </div>
+    </a>
+
+    <div class="date-strip">Yesterday · Review Needed</div>
+
+    <!-- 4. Allstate — ACK -->
+    <a class="email-card unread" href="email-ack.html">
+      <div class="email-header">
+        <div class="avatar" style="background:#4B5B8C;">AL</div>
+        <div class="email-meta">
+          <div class="email-from">Allstate Claims · Jenny Park</div>
+          <div class="email-case">📁 James Kim · BI #3312</div>
+        </div>
+        <div class="email-time">Yesterday 4:20 PM</div>
+      </div>
+      <div class="email-subject">Re: Medical Records Authorization — Kim</div>
+      <div class="email-preview">Thank you for your submission. We have received your authorization form and will process...</div>
+      <div class="email-footer">
+        <div class="ai-tag">✦ AI</div>
+        <div class="ai-summary ai-ok">ACK confirmed — 30-day wait started</div>
+        <a class="open-btn" href="email-ack.html">Open</a>
+      </div>
+    </a>
+
+    <!-- 5. ABC Auto Body -->
+    <a class="email-card unread" href="#">
+      <div class="email-header">
+        <div class="avatar" style="background:#6941C6;">AB</div>
+        <div class="email-meta">
+          <div class="email-from">ABC Auto Body Shop</div>
+          <div class="email-case">📁 David Chen · PD #5502</div>
+        </div>
+        <div class="email-time">Yesterday 11:05 AM</div>
+      </div>
+      <div class="email-subject">Repair Complete — Chen Vehicle Ready for Pickup</div>
+      <div class="email-preview">We are pleased to inform you that the vehicle has been fully repaired and is ready for pickup...</div>
+      <div class="email-footer">
+        <div class="ai-tag">✦ AI</div>
+        <div class="ai-summary ai-ok">Vehicle repair complete — PD claim can be closed</div>
+        <a class="open-btn" href="#">Open</a>
+      </div>
+    </a>
+
+    <div class="date-strip">Earlier · Completed</div>
+
+    <!-- 6. GEICO — Done -->
+    <a class="email-card done" href="#">
+      <div class="email-header">
+        <div class="avatar" style="background:#98A2B3;">GC</div>
+        <div class="email-meta">
+          <div class="email-from">GEICO Claims</div>
+          <div class="email-case">📁 Rosa Martinez · PD #4421-PD</div>
+        </div>
+        <div class="email-time">05/28</div>
+      </div>
+      <div class="email-subject">Coverage Confirmation — Martinez</div>
+      <div class="email-preview">This confirms full coverage under policy #GC-882341...</div>
+      <div class="email-footer">
+        <div class="ai-tag">✦ AI</div>
+        <div class="ai-summary" style="color:#98A2B3;">Coverage confirmed — processed</div>
+      </div>
+    </a>
+
+  </div>
+  </div><!-- /scroll-root -->
+
+</body>
+</html>

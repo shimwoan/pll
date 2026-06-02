@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "screen": "Case Manager (CM) — 단계 바",
+    "design_principle": "각 단계 = 'CM이 완료해야 하는 결과물/상태'. 단계 전환은 '연락했냐'가 아니라 구체적 산출물(레터 수령, 인정 여부 확정, 이관 완료)로 트리거된다. CM 전담 범위는 stage-1~5이며, stage-1~5의 마지막 결과물은 'Medical Collection 부서로의 Handoff'다. stage-6은 CM 화면에 보이되 '다음 부서 단계'로 명확히 구분한다.",
+    "cm_scope": "stage-1 ~ stage-5 (CM 전담)",
+    "handoff_point": "stage-5 완료 = Medical Collection 부서 이관",
+    "notes": [
+      "BI(대인)/PD(대물)는 병렬 트랙이다. 선형 단계 바로는 병렬 표현이 어려우므로, PD 업무는 stage-4(치료/PD 진행)의 tasks에 명시적으로 포함시켜 누락되지 않게 한다.",
+      "의료기록 '요청 발송'은 CM 업무, 의료기록 '수집/추적/완성'은 Medical Collection 부서 업무다. 따라서 stage-5의 트리거는 '모든 기록 수령'이 아니라 '요청 발송 완료 + MC 이관 완료'다.",
+      "치료는 기록 요청 이후에도 계속될 수 있으므로 stage-4의 트리거는 '치료 종결'이 아닌 '치료 안정화/종결 판단 완료'로 둔다."
+    ]
+  },
+  "stages": [
+    {
+      "id": "stage-1",
+      "label": "초기 셋업",
+      "sublabel": "Client Kickoff",
+      "completion_trigger": "Thank You Letter 발송 완료 + DMV 자료 요청 완료 + 정부보험(Medicare/Medi-Cal) 해당 여부 확정",
+      "tasks": [
+        { "id": "t1-1", "text": "Thank You Letter 발송 완료", "sub": "배정 직후 클라이언트 초기 연락", "priority": "high" },
+        { "id": "t1-2", "text": "DMV 사건보고/자료 요청 완료", "sub": "SR-1, Prop 213, SRS, SR-19, Logan 조회", "priority": "mid" },
+        { "id": "t1-3", "text": "정부보험 해당 여부 확정", "sub": "Medicare/Medi-Cal 여부 확인 후 태그", "priority": "high" },
+        { "id": "t1-4", "text": "정부보험 케이스 시 Medical Collection 사전 통보", "sub": "해당 시에만", "priority": "mid" }
+      ]
+    },
+    {
+      "id": "stage-2",
+      "label": "클레임 확정",
+      "sublabel": "Claim Setup",
+      "completion_trigger": "BI·PD 클레임 번호 확보 + Adjuster 정보 기록 + 양쪽 보험사에 클레임 서류 전달 완료",
+      "tasks": [
+        { "id": "t2-1", "text": "BI(대인) 클레임 번호 확보", "sub": "담당 Adjuster 연락처 기록", "priority": "high" },
+        { "id": "t2-2", "text": "PD(대물) 클레임 번호 확보", "sub": "담당 Adjuster 연락처 기록", "priority": "high" },
+        { "id": "t2-3", "text": "양쪽 보험사에 클레임 서류 전달 완료", "sub": "LOR 등 대리 개시 서류", "priority": "high" },
+        { "id": "t2-4", "text": "Coverage·Liability 확인 요청 발송", "sub": "다음 단계 트리거를 위한 요청", "priority": "mid" }
+      ]
+    },
+    {
+      "id": "stage-3",
+      "label": "책임 확정",
+      "sublabel": "Coverage / Liability",
+      "completion_trigger": "Coverage Letter 수령(있음/없음 확정) + Liability 인정 여부 확정",
+      "tasks": [
+        { "id": "t3-1", "text": "Coverage Letter 수령 + 커버리지 유무 확정", "sub": "있음/없음 기록", "priority": "high" },
+        { "id": "t3-2", "text": "Liability Letter 수령 + 인정 여부 확정", "sub": "상대 책임 인정 / 다툼 / Deny 분기", "priority": "high" },
+        { "id": "t3-3", "text": "Liability 다툼 시 대응 방향 결정", "sub": "우리 측 과실 주장 시 반박 근거 준비", "priority": "mid" },
+        { "id": "t3-4", "text": "최종 Deny 시 Drop / Litigation 이관 검토", "sub": "분기 판단 후 변호사 보고", "priority": "mid" }
+      ]
+    },
+    {
+      "id": "stage-4",
+      "label": "치료·PD 진행",
+      "sublabel": "Treatment & PD",
+      "completion_trigger": "치료 안정화/종결 판단 완료 + PD(차량) 손해 처리 마무리",
+      "tasks": [
+        { "id": "t4-1", "text": "치료 계획(Plan) 확인 + 진행 팔로우업", "sub": "BI 트랙 / 보험 한도 내 최대 치료 관리", "priority": "high" },
+        { "id": "t4-2", "text": "치료 안정화/종결 판단 완료", "sub": "기록 요청 가능 시점 확정", "priority": "high" },
+        { "id": "t4-3", "text": "차량 점검(Inspection) 일정 조율", "sub": "PD 트랙", "priority": "mid" },
+        { "id": "t4-4", "text": "Loss of Use 보상 확인", "sub": "PD 트랙 / 렌트카 지원 등", "priority": "mid" },
+        { "id": "t4-5", "text": "차량 내 물품 확인", "sub": "PD 트랙 / 카시트·개인 소지품", "priority": "low" }
+      ]
+    },
+    {
+      "id": "stage-5",
+      "label": "기록 요청·이관",
+      "sublabel": "Records Request & MC Handoff",
+      "completion_trigger": "병원에 Medical Records·Billing 요청 발송 완료 + Medical Collection 부서 이관 완료",
+      "tasks": [
+        { "id": "t5-1", "text": "의료기관에 Medical Records 요청 발송", "sub": "치료 의료기관 전체", "priority": "high" },
+        { "id": "t5-2", "text": "의료비 청구서(Billing) 요청 발송", "sub": "각 의료기관", "priority": "high" },
+        { "id": "t5-3", "text": "Medical Collection 부서 이관 완료", "sub": "수집·추적은 MC 부서가 담당", "priority": "high" },
+        { "id": "t5-4", "text": "이관 시 미처리 업무 Task 생성", "sub": "치료 장기화·정부보험 케이스 인계 메모", "priority": "mid" }
+      ]
+    },
+    {
+      "id": "stage-6",
+      "label": "Demand 준비",
+      "sublabel": "Next: Medical Collection / Demand",
+      "is_next_department": true,
+      "department": "Medical Collection → Demand",
+      "completion_trigger": "(CM 범위 외) Medical Collection 수집 완료 → Demand 부서 서류 작성·발송",
+      "tasks": [
+        { "id": "t6-1", "text": "Medical Collection 수집 완료 모니터링", "sub": "CM 직접 업무 아님 / 진행 가시화용", "priority": "low" },
+        { "id": "t6-2", "text": "Demand 부서 이관 후 진행 상황 확인", "sub": "다음 부서 단계", "priority": "low" }
+      ]
+    }
+  ]
+}

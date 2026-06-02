@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>CM — Medical Collection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F7F8FA;
+      max-width: 430px;
+      margin: 0 auto;
+      border-left: 1px solid #E4E7EC;
+      border-right: 1px solid #E4E7EC;
+      display: flex;
+      flex-direction: column;
+    }
+    #scroll-root { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: none; }
+
+    /* HEADER */
+    .page-header { background: #fff; padding: 16px 16px 14px; border-bottom: 1px solid #EAECF0; position: sticky; top: 0; z-index: 30; }
+    .header-top { display: flex; align-items: center; gap: 10px; }
+    .back-btn { font-size: 20px; color: #667085; text-decoration: none; flex-shrink: 0; line-height: 1; }
+    .page-title { font-size: 16px; font-weight: 700; color: #101828; letter-spacing: -0.01em; flex: 1; }
+    .nav-sol { font-size: 11px; font-weight: 700; color: #667085; flex-shrink: 0; margin-left: auto; }
+
+    /* STAGE BAR */
+    .stage-bar { padding: 10px 10px 8px; background: #fff; border-bottom: 1px solid #EAECF0; }
+    .stages-row { display: flex; align-items: flex-start; }
+    .stage-col { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; }
+    .stage-dot { width: 18px; height: 18px; border-radius: 50%; font-size: 7px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .dot-done    { background: #344054; color: #fff; }
+    .dot-active  { background: #4B5B8C; color: #fff; font-size: 7px; width: 20px; height: 20px; box-shadow: 0 0 0 3px #D6DBF0; }
+    .dot-next    { background: #F9FAFB; color: #C0C7D4; border: 1.5px dashed #D0D5DD; }
+    .stage-line-wrap { flex: 1; display: flex; align-items: center; padding-top: 9px; min-width: 4px; }
+    .stage-line { width: 100%; height: 1.5px; background: #E4E7EC; }
+    .stage-line.done { background: #344054; }
+    .stage-name { font-size: 9px; color: #98A2B3; margin-top: 3px; text-align: center; line-height: 1.3; }
+    .stage-name.active { color: #4B5B8C; font-weight: 700; }
+    .stage-name.done   { color: #344054; }
+    .stage-name.next-dept { color: #C0C7D4; }
+
+    /* TABS */
+    .tabs-row { background: #fff; border-bottom: 1.5px solid #EAECF0; display: flex; position: sticky; top: 0; z-index: 20; }
+    .tab-btn { flex: 1; text-align: center; padding: 10px 4px; font-size: 11px; font-weight: 600; color: #98A2B3; border: none; border-bottom: 2px solid transparent; margin-bottom: -1.5px; background: none; cursor: pointer; }
+    .tab-btn.active { color: #344054; border-bottom-color: #344054; }
+
+    .tab-panel { display: none; padding: 12px 12px 80px; flex-direction: column; gap: 7px; }
+    .tab-panel.active { display: flex; }
+
+    /* SECTION LABEL */
+    .section-label {
+      font-size: 10px; font-weight: 600; color: #98A2B3;
+      letter-spacing: .06em; text-transform: uppercase;
+      padding: 6px 2px 3px;
+      display: flex; align-items: center; gap: 5px;
+    }
+
+    /* CARD */
+    .card { background: #fff; border-radius: 10px; border: 1px solid #E4E7EC; overflow: hidden; }
+    .card-header { display: flex; align-items: center; gap: 9px; padding: 12px 13px; cursor: pointer; }
+    .card-icon { color: #98A2B3; flex-shrink: 0; }
+    .card-title { flex: 1; font-size: 12px; font-weight: 600; color: #344054; }
+    .card-badge { font-size: 10px; font-weight: 500; background: #F9FAFB; color: #667085; padding: 2px 8px; border-radius: 4px; border: 1px solid #E4E7EC; white-space: nowrap; }
+    .card-badge.warn { background: #FEF3F2; color: #B42318; border-color: #FECDCA; }
+    .card-badge.ok   { background: #ECFDF5; color: #027A48; border-color: #D1FADF; }
+    .card-chev { color: #C0C7D4; transition: transform .2s; flex-shrink: 0; }
+    .card-chev.open { transform: rotate(180deg); }
+    .card-body { border-top: 1px solid #F2F4F7; }
+
+    /* CHECK ITEM */
+    .check-item { display: flex; align-items: flex-start; gap: 10px; padding: 11px 13px; border-bottom: 1px solid #F9FAFB; }
+    .check-item:last-child { border-bottom: none; }
+    .check-text { flex: 1; font-size: 12px; color: #344054; line-height: 1.4; }
+    .check-sub  { font-size: 10px; color: #98A2B3; margin-top: 2px; }
+    .check-text.struck { color: #C0C7D4; text-decoration: line-through; }
+
+    /* status dot in check-item */
+    .pri-dot { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+
+    /* ACTION BUTTON */
+    .action-btn {
+      font-size: 10px; font-weight: 500; padding: 5px 10px; border-radius: 6px;
+      border: 1px solid #E4E7EC; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      background: #F9FAFB; color: #475467; align-self: flex-start;
+    }
+    .action-btn.primary { background: #344054; color: #fff; border-color: #344054; }
+    .action-btn.danger  { background: #fff; color: #B42318; border-color: #FECDCA; }
+
+    /* PROVIDER ROW */
+    .provider-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 13px; border-bottom: 1px solid #F9FAFB;
+    }
+    .provider-row:last-child { border-bottom: none; }
+    .provider-num {
+      width: 20px; height: 20px; border-radius: 50%; background: #F0F4FF;
+      border: 1.5px solid #C7D2F0; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700; color: #4B5B8C;
+    }
+    .provider-num.done { background: #4B5B8C; border-color: #4B5B8C; color: #fff; }
+    .provider-info { flex: 1; min-width: 0; }
+    .provider-name { font-size: 12px; font-weight: 600; color: #344054; }
+    .provider-meta { font-size: 10px; color: #98A2B3; margin-top: 1px; }
+    .provider-status {
+      font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 4px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .ps-pending  { background: #FFFAEB; color: #B54708; border: 1px solid #FEC; }
+    .ps-received { background: #ECFDF5; color: #027A48; border: 1px solid #D1FADF; }
+    .ps-missing  { background: #FEF3F2; color: #B42318; border: 1px solid #FECDCA; }
+
+    /* TREATMENT TIMELINE */
+    .treat-row { display: flex; align-items: center; gap: 10px; padding: 10px 13px; border-bottom: 1px solid #F9FAFB; }
+    .treat-row:last-child { border-bottom: none; }
+    .treat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .td-active  { background: #4B5B8C; }
+    .td-pending { background: #E4E7EC; }
+    .td-done    { background: #12B76A; }
+    .treat-info { flex: 1; }
+    .treat-label { font-size: 12px; color: #344054; font-weight: 500; }
+    .treat-sub   { font-size: 10px; color: #98A2B3; margin-top: 1px; }
+    .treat-date  { font-size: 10px; color: #667085; white-space: nowrap; flex-shrink: 0; }
+
+    /* EXCEPTION BANNER */
+    .exception-banner {
+      background: #FFFCF0; border-radius: 10px;
+      border: 1px solid #F0E0B0; border-left: 2px solid #F79009;
+      padding: 12px 13px; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .exc-icon { color: #F79009; flex-shrink: 0; margin-top: 1px; }
+    .exc-text  { flex: 1; }
+    .exc-label { font-size: 9px; font-weight: 700; color: #B54708; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 3px; }
+    .exc-msg   { font-size: 11px; color: #344054; line-height: 1.5; }
+    .exc-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+
+    /* GOV INSURANCE CARD */
+    .gov-card {
+      background: #F8F7FF; border-radius: 10px;
+      border: 1px solid #E9E5FF; overflow: hidden;
+    }
+    .gov-header { padding: 10px 13px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #EDE9FF; cursor: pointer; }
+    .gov-label { font-size: 9px; font-weight: 700; color: #7C5FBF; text-transform: uppercase; letter-spacing: .06em; }
+    .gov-title { font-size: 12px; font-weight: 600; color: #344054; flex: 1; }
+    .gov-badge { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: #EDE9FF; color: #6E47C7; }
+
+    /* DONE CARD */
+    .done-card { background: #fff; border-radius: 10px; border: 1px solid #E4E7EC; overflow: hidden; }
+    .done-item { display: flex; align-items: flex-start; gap: 9px; padding: 10px 13px; border-bottom: 1px solid #F9FAFB; }
+    .done-item:last-child { border-bottom: none; }
+    .done-check { width: 16px; height: 16px; border-radius: 4px; background: #344054; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .done-text { font-size: 11px; color: #98A2B3; text-decoration: line-through; flex: 1; }
+    .done-meta { font-size: 9px; color: #C0C7D4; margin-top: 1px; }
+    .done-time { font-size: 9px; color: #C0C7D4; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
+
+    /* STAGE ADVANCE ROW */
+    .stage-advance-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; margin: 4px 0 2px;
+      background: #F9FAFB; border-radius: 9px;
+      border: 1.5px dashed #D0D5DD;
+    }
+    .stage-advance-hint { flex: 1; font-size: 10px; color: #98A2B3; line-height: 1.4; }
+    .stage-advance-btn {
+      flex-shrink: 0; padding: 7px 12px;
+      border-radius: 7px; border: 1.5px solid #344054;
+      background: #344054; color: #fff;
+      font-size: 10px; font-weight: 600; cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 50; align-items: flex-end; justify-content: center; max-width: 430px; margin: 0 auto; }
+    .modal-overlay.open { display: flex; }
+    .modal-sheet { background: #fff; width: 100%; border-radius: 16px 16px 0 0; padding: 20px 16px 40px; animation: slideUp .22s ease; max-height: 92vh; overflow-y: auto; }
+    @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-handle { width: 32px; height: 3px; background: #E4E7EC; border-radius: 2px; margin: 0 auto 10px; }
+    .modal-title { font-size: 15px; font-weight: 700; color: #101828; margin-bottom: 4px; }
+    .modal-sub   { font-size: 11px; color: #98A2B3; margin-bottom: 16px; }
+    .modal-section { font-size: 9px; font-weight: 700; color: #98A2B3; text-transform: uppercase; letter-spacing: .07em; margin: 14px 0 6px; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .modal-submit { flex: 1; padding: 13px; border-radius: 9px; background: #4B5B8C; color: #fff; font-size: 13px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
+    .modal-cancel { flex: 1; padding: 13px; border-radius: 9px; background: #F2F4F7; border: none; color: #667085; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .modal-input { width: 100%; padding: 10px 12px; border: 1.5px solid #E4E7EC; border-radius: 8px; font-size: 13px; color: #101828; background: #F9FAFB; outline: none; font-family: inherit; }
+    .modal-input:focus { border-color: #4B5B8C; background: #fff; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #fff; color: #344054; font-size: 11px; font-weight: 500; padding: 9px 18px; border-radius: 20px; white-space: nowrap; z-index: 60; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 340px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); border: 1px solid #F2F4F7; }
+    .toast.show { opacity: 1; }
+
+    /* TIMELINE */
+    #timeline-list { position: relative; padding-left: 28px; }
+    #timeline-list::before { content:''; position:absolute; left:11px; top:0; bottom:0; width:2px; background:#BFCFFF; }
+    .tl-row { position: relative; margin-bottom: 8px; }
+    .tl-row::before { content:''; position:absolute; left:-21px; top:8px; width:10px; height:10px; border-radius:50%; background:#4B5B8C; z-index:1; }
+    .tl-date-group { font-size:10px; font-weight:700; color:#98A2B3; letter-spacing:.06em; text-transform:uppercase; padding:2px 0 6px; margin-top:8px; }
+    .tl-item { background:#fff; border-radius:10px; border:1px solid #E4E7EC; padding:12px 13px; }
+    .tl-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+    .tl-meta-label { font-size:10px; color:#98A2B3; margin-bottom:2px; }
+    .tl-meta-value { font-size:12px; font-weight:600; color:#101828; }
+    .tl-meta-date  { font-size:11px; color:#344054; font-weight:500; }
+    .tl-body { font-size:11px; color:#667085; line-height:1.5; }
+    .tl-decision { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:600; padding:3px 8px; border-radius:12px; margin-top:5px; }
+    .tl-decision.admit   { background:#ECFDF3; color:#027A48; }
+    .tl-decision.pending { background:#F2F4F7; color:#667085; }
+    .tl-attachments { display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
+    .tl-attach-btn { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:500; color:#4B5B8C; background:#F0F2FF; border:1px solid #D9DDFF; border-radius:6px; padding:4px 8px; cursor:pointer; text-decoration:none; }
+  </style>
+</head>
+<body>
+
+  <!-- SVG SPRITE -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+    <symbol id="ic-check"       viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"   stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5,8.5 6,12 13.5,4"/></symbol>
+    <symbol id="ic-check-circle"viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><polyline points="5,8 7,10.5 11,5.5"/></symbol>
+    <symbol id="ic-file"        viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 1.5H4a1 1 0 00-1 1v11a1 1 0 001 1h8a1 1 0 001-1V5.5L9.5 1.5z"/><polyline points="9.5,1.5 9.5,5.5 13.5,5.5"/><line x1="5" y1="8.5" x2="11" y2="8.5"/><line x1="5" y1="11" x2="8" y2="11"/></symbol>
+    <symbol id="ic-clipboard"   viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="10" height="12" rx="1.5"/><path d="M6 3V2a1 1 0 011-1h2a1 1 0 011 1v1"/><line x1="5.5" y1="7.5" x2="10.5" y2="7.5"/><line x1="5.5" y1="10" x2="8.5" y2="10"/></symbol>
+    <symbol id="ic-chevron"     viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,6 8,10 12,6"/></symbol>
+    <symbol id="ic-phone"       viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 1.5H3a1.5 1.5 0 00-1.5 1.5c0 6.075 4.925 11 11 11a1.5 1.5 0 001.5-1.5v-2.5l-3-1.5-1 1a8.001 8.001 0 01-4-4l1-1L5.5 1.5z"/></symbol>
+    <symbol id="ic-alert"       viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.15 2.4L1.4 12a1 1 0 00.85 1.5h11.5a1 1 0 00.85-1.5L8.85 2.4a1 1 0 00-1.7 0z"/><line x1="8" y1="6.5" x2="8" y2="9.5"/><circle cx="8" cy="11.5" r=".5" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="ic-arrow-right" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="8" x2="14" y2="8"/><polyline points="9,3 14,8 9,13"/></symbol>
+    <symbol id="ic-zap"         viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="9,1.5 2.5,9 8,9 7,14.5 13.5,7 8,7"/></symbol>
+  </svg>
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="header-top">
+      <a class="back-btn" href="case-detail.html">‹</a>
+      <div class="page-title">Maria Gonzalez 🇪🇸</div>
+      <div class="nav-sol">SOL D-680</div>
+    </div>
+  </div>
+
+  <!-- STAGE BAR -->
+  <div class="stage-bar">
+    <div class="stages-row">
+      <div class="stage-col">
+        <div class="stage-dot dot-done">
+          <svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-check"/></svg>
+        </div>
+        <div class="stage-name done">Claim</div>
+      </div>
+      <div class="stage-line-wrap"><div class="stage-line done"></div></div>
+      <div class="stage-col">
+        <div class="stage-dot dot-active">2</div>
+        <div class="stage-name active">Medical<br>Collection</div>
+      </div>
+      <div class="stage-line-wrap"><div class="stage-line"></div></div>
+      <div class="stage-col">
+        <div class="stage-dot dot-next">3</div>
+        <div class="stage-name next-dept">Demand</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-row">
+    <button class="tab-btn active" onclick="switchTab('todo',this)">TO DO</button>
+    <button class="tab-btn" onclick="switchTab('timeline',this)">Timeline</button>
+  </div>
+
+  <div id="scroll-root">
+
+  <!-- TAB: TO DO -->
+  <div class="tab-panel active" id="panel-todo">
+
+    <!-- ① Medical Records -->
+    <div class="section-label">
+      <svg width="11" height="11"><use href="#ic-file"/></svg>
+      Medical Records
+    </div>
+
+    <div class="card" id="card-records">
+      <div class="card-header" onclick="toggleCard('body-records','chev-records')">
+        <div class="card-title">Records &amp; Billing Collection</div>
+        <div class="card-badge warn" id="badge-records">2 pending</div>
+        <svg class="card-chev open" id="chev-records" width="14" height="14"><use href="#ic-chevron"/></svg>
+      </div>
+      <div class="card-body" id="body-records">
+
+        <!-- Provider 1 -->
+        <div class="provider-row" id="prov-1">
+          <div class="provider-num" id="pnum-1">1</div>
+          <div class="provider-info">
+            <div class="provider-name">Cedars-Sinai ER</div>
+            <div class="provider-meta">ER visit · 1 visit · Requested Apr 3</div>
+          </div>
+          <span class="provider-status ps-received">Received</span>
+        </div>
+
+        <!-- Provider 2 -->
+        <div class="provider-row" id="prov-2">
+          <div class="provider-num" id="pnum-2">2</div>
+          <div class="provider-info">
+            <div class="provider-name">LA Orthopedic Center</div>
+            <div class="provider-meta">Ortho · 3 visits · Requested Apr 3</div>
+          </div>
+          <span class="provider-status ps-pending">Pending</span>
+        </div>
+
+        <!-- Provider 3 -->
+        <div class="provider-row" id="prov-3">
+          <div class="provider-num" id="pnum-3">3</div>
+          <div class="provider-info">
+            <div class="provider-name">Pacific Chiropractic</div>
+            <div class="provider-meta">Chiro · 12 visits · Requested Apr 3</div>
+          </div>
+          <span class="provider-status ps-pending">Pending</span>
+        </div>
+
+        <!-- Billing check -->
+        <div class="check-item">
+          <svg class="pri-dot" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">Verify Billing Amounts</div>
+            <div class="check-sub">Confirm billing received matches treatment provided</div>
+          </div>
+          <button class="action-btn" onclick="showToast('Billing review opened')">Review</button>
+        </div>
+
+        <!-- Add provider -->
+        <div style="padding: 10px 13px; border-top: 1px solid #F2F4F7;">
+          <button class="action-btn" onclick="openAddProvider()" style="width:100%;text-align:center;justify-content:center;display:flex;align-items:center;gap:5px;">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+            Add Provider
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ② Treatment Timeline -->
+    <div class="section-label" style="margin-top:4px;">
+      <svg width="11" height="11"><use href="#ic-clipboard"/></svg>
+      Treatment Status
+    </div>
+
+    <div class="card">
+      <div class="card-header" onclick="toggleCard('body-treat','chev-treat')">
+        <div class="card-title">Client Treatment Follow-up</div>
+        <svg class="card-chev open" id="chev-treat" width="14" height="14"><use href="#ic-chevron"/></svg>
+      </div>
+      <div class="card-body" id="body-treat">
+
+        <div class="treat-row">
+          <div class="treat-dot td-done"></div>
+          <div class="treat-info">
+            <div class="treat-label">Treatment Started</div>
+            <div class="treat-sub">Confirmed clinic &amp; treatment plan</div>
+          </div>
+          <div class="treat-date" style="color:#027A48;font-weight:600;">Done</div>
+        </div>
+
+        <div class="treat-row">
+          <div class="treat-dot td-active"></div>
+          <div class="treat-info">
+            <div class="treat-label">Treatment In Progress</div>
+            <div class="treat-sub">Follow up to ensure max treatment within policy limits</div>
+          </div>
+          <div class="treat-date">Ongoing</div>
+        </div>
+
+        <div class="treat-row">
+          <div class="treat-dot td-pending"></div>
+          <div class="treat-info">
+            <div class="treat-label">MMI / Treatment End</div>
+            <div class="treat-sub">Maximum Medical Improvement reached — ready for Demand</div>
+          </div>
+          <div class="treat-date" style="color:#98A2B3;">Pending</div>
+        </div>
+
+        <!-- Call actions -->
+        <div class="check-item" style="border-top:1px solid #F2F4F7;">
+          <svg class="pri-dot" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">Treatment Progress Follow-up Call</div>
+            <div class="check-sub">Confirm client is continuing treatment</div>
+          </div>
+          <button class="action-btn" onclick="showToast('Calling client...')">Call</button>
+        </div>
+
+        <div class="check-item">
+          <svg class="pri-dot" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">Client Concerns / Additional Requests</div>
+            <div class="check-sub">Note any open items or complaints from client</div>
+          </div>
+          <button class="action-btn" onclick="showToast('Note added')">Note</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Property Damage -->
+    <div class="card" style="margin-top:0;">
+      <div class="card-header" onclick="toggleCard('body-pd','chev-pd')">
+        <div class="card-title">Property Damage (PD)</div>
+        <div class="card-badge ok">Resolved</div>
+        <svg class="card-chev" id="chev-pd" width="14" height="14"><use href="#ic-chevron"/></svg>
+      </div>
+      <div class="card-body" id="body-pd" style="display:none;">
+        <div class="check-item">
+          <svg class="pri-dot" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#12B76A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text struck">Vehicle Inspection Scheduled</div>
+            <div class="check-sub">Completed May 14</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <svg class="pri-dot" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#12B76A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text struck">Total Loss Determination — $18,400</div>
+            <div class="check-sub">Rental: 14 days authorized</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ Government Insurance -->
+    <div class="section-label" style="margin-top:4px;">
+      <svg width="11" height="11"><use href="#ic-zap"/></svg>
+      Government Insurance
+    </div>
+
+    <div class="gov-card" id="card-gov">
+      <div class="gov-header" onclick="toggleCard('body-gov','chev-gov')">
+        <div style="flex:1;">
+          <div class="gov-label">Lien Risk</div>
+          <div class="gov-title">Medicare / Medi-Cal Check</div>
+        </div>
+        <div class="gov-badge" id="gov-badge">Not Confirmed</div>
+        <svg class="card-chev" id="chev-gov" width="14" height="14"><use href="#ic-chevron"/></svg>
+      </div>
+      <div class="card-body" id="body-gov" style="display:none; background:#F8F7FF;">
+
+        <div class="check-item">
+          <svg class="pri-dot" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">Confirm Government Insurance Status</div>
+            <div class="check-sub">Medicare (65+/disability) or Medi-Cal/Medicaid (low income)</div>
+          </div>
+          <button class="action-btn" onclick="openGovConfirm()">Confirm</button>
+        </div>
+
+        <div class="check-item" id="gov-medi-cal-step" style="display:none;">
+          <svg class="pri-dot" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">Receive Docs from Insurer</div>
+            <div class="check-sub">Medical Portal: Step 1~2 → inquiry → lien letter received</div>
+          </div>
+          <button class="action-btn" onclick="showToast('Portal opened')">Portal</button>
+        </div>
+
+        <div class="check-item" id="gov-review-step" style="display:none;">
+          <svg class="pri-dot" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="flex:1;">
+            <div class="check-text">Review Docs — check for missing/incorrect treatment</div>
+            <div class="check-sub">Lien will pass to settlement stage — no further action in Demand/Nego</div>
+          </div>
+          <button class="action-btn" onclick="showToast('Review started')">Review</button>
+        </div>
+
+        <div style="padding:10px 13px;background:#F0F4FF;font-size:10px;color:#4B5B8C;line-height:1.5;border-top:1px solid #EDE9FF;">
+          Government pays treatment costs upfront → lien placed → must return govt-paid portion from settlement
+        </div>
+      </div>
+    </div>
+
+    <!-- Exception: Early Settle -->
+    <div class="exception-banner" id="exc-early" style="display:none; margin-top:4px;">
+      <div class="exc-icon">
+        <svg width="14" height="14"><use href="#ic-alert"/></svg>
+      </div>
+      <div class="exc-text">
+        <div class="exc-label">Exception · Treatment Prolonged</div>
+        <div class="exc-msg">Client severely injured — early settlement may be appropriate. Remaining billing tasks assigned to Medical Collection specialist.</div>
+        <div class="exc-actions">
+          <button class="action-btn" onclick="showToast('Task created for specialist')">Assign Task</button>
+          <button class="action-btn primary" onclick="showAdvance()">Proceed to Demand →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transfer to Demand -->
+    <div class="stage-advance-row" id="advance-demand" style="margin-top:4px;">
+      <div class="stage-advance-hint">
+        All treatment complete (MMI) · Records &amp; billing collected · Statute: BI 2yr / PD 3yr from DOL
+      </div>
+      <button class="stage-advance-btn" onclick="transferToDemand()">Transfer to Demand →</button>
+    </div>
+
+    <!-- Done section -->
+    <div class="section-label" id="done-label" style="margin-top:4px;display:none;">
+      <svg width="11" height="11"><use href="#ic-check-circle"/></svg>
+      Done
+    </div>
+    <div class="done-card" id="done-card" style="display:none;">
+      <div id="done-list"></div>
+    </div>
+
+  </div>
+
+  <!-- TAB: Timeline -->
+  <div class="tab-panel" id="panel-timeline">
+    <div class="section-label">Recent Activity</div>
+    <div id="timeline-list"></div>
+  </div>
+
+  </div><!-- /scroll-root -->
+
+  <!-- Add Provider Modal -->
+  <div class="modal-overlay" id="modal-provider" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Add Provider</div>
+      <div class="modal-sub">Add a medical provider for records &amp; billing collection</div>
+      <div class="modal-section">Provider Name</div>
+      <input class="modal-input" id="prov-name-input" placeholder="e.g. UCLA Medical Center" />
+      <div class="modal-section">Type</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;" id="prov-type-btns">
+        <button class="action-btn" onclick="selectProvType(this,'ER')">ER</button>
+        <button class="action-btn" onclick="selectProvType(this,'Orthopedic')">Orthopedic</button>
+        <button class="action-btn" onclick="selectProvType(this,'Chiropractic')">Chiropractic</button>
+        <button class="action-btn" onclick="selectProvType(this,'Pain Mgmt')">Pain Mgmt</button>
+        <button class="action-btn" onclick="selectProvType(this,'Other')">Other</button>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+        <button class="modal-submit" onclick="addProvider()">Add Provider</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gov Insurance Confirm Modal -->
+  <div class="modal-overlay" id="modal-gov" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Government Insurance</div>
+      <div class="modal-sub">Does the client have government insurance?</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+        <button class="action-btn" style="padding:12px;font-size:12px;text-align:left;" onclick="confirmGov('none')">
+          <strong>None</strong> — Private insurance only
+        </button>
+        <button class="action-btn" style="padding:12px;font-size:12px;text-align:left;" onclick="confirmGov('medicare')">
+          <strong>Medicare</strong> — Age 65+ or disability
+        </button>
+        <button class="action-btn" style="padding:12px;font-size:12px;text-align:left;" onclick="confirmGov('medi-cal')">
+          <strong>Medi-Cal / Medicaid</strong> — Low income assistance
+        </button>
+      </div>
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const ic = (id, size) =>
+    `<svg width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0;vertical-align:middle;"><use href="#${id}"/></svg>`;
+
+  function switchTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function toggleCard(bodyId, chevId) {
+    const body = document.getElementById(bodyId);
+    const chev = document.getElementById(chevId);
+    if (!body) return;
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : '';
+    if (chev) chev.classList.toggle('open', !isOpen);
+  }
+
+  function closeModal(e) {
+    if (!e || e.target === e.currentTarget) {
+      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+    }
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // ── Provider management ──────────────────────────────────────────────────
+  let providerCount = 3;
+  let selectedProvType = '';
+
+  function selectProvType(btn, type) {
+    document.querySelectorAll('#prov-type-btns .action-btn').forEach(b => b.classList.remove('primary'));
+    btn.classList.add('primary');
+    selectedProvType = type;
+  }
+
+  function openAddProvider() {
+    document.getElementById('prov-name-input').value = '';
+    selectedProvType = '';
+    document.querySelectorAll('#prov-type-btns .action-btn').forEach(b => b.classList.remove('primary'));
+    document.getElementById('modal-provider').classList.add('open');
+  }
+
+  function addProvider() {
+    const name = document.getElementById('prov-name-input').value.trim();
+    if (!name) { showToast('Enter provider name'); return; }
+    providerCount++;
+    const bodyRecords = document.getElementById('body-records');
+    const addBtn = bodyRecords.querySelector('[onclick="openAddProvider()"]').closest('div');
+    addBtn.insertAdjacentHTML('beforebegin', `
+      <div class="provider-row" id="prov-${providerCount}">
+        <div class="provider-num" id="pnum-${providerCount}">${providerCount}</div>
+        <div class="provider-info">
+          <div class="provider-name">${name}</div>
+          <div class="provider-meta">${selectedProvType || 'Provider'} · Added today</div>
+        </div>
+        <span class="provider-status ps-pending">Pending</span>
+      </div>
+    `);
+    updateRecordsBadge();
+    closeModal();
+    showToast(name + ' added');
+    tlAdd('ic-file', 'Provider Added', name, (selectedProvType || 'Medical provider') + ' · Records request to be sent');
+  }
+
+  function updateRecordsBadge() {
+    const pending = document.querySelectorAll('#body-records .ps-pending').length;
+    const badge = document.getElementById('badge-records');
+    if (pending > 0) {
+      badge.textContent = pending + ' pending';
+      badge.className = 'card-badge warn';
+    } else {
+      badge.textContent = 'All received';
+      badge.className = 'card-badge ok';
+    }
+  }
+
+  // ── Government Insurance ─────────────────────────────────────────────────
+  function openGovConfirm() {
+    document.getElementById('modal-gov').classList.add('open');
+  }
+
+  function confirmGov(type) {
+    closeModal();
+    const badge = document.getElementById('gov-badge');
+    if (type === 'none') {
+      badge.textContent = 'None';
+      badge.style.background = '#ECFDF5'; badge.style.color = '#027A48';
+      showToast('No government insurance — lien not applicable');
+      tlAdd('ic-check-circle', 'Gov. Insurance', 'No government insurance', 'Private insurance only · Lien N/A');
+    } else if (type === 'medi-cal') {
+      badge.textContent = 'Medi-Cal';
+      badge.style.background = '#FEF3F2'; badge.style.color = '#B42318';
+      document.getElementById('gov-medi-cal-step').style.display = '';
+      document.getElementById('gov-review-step').style.display = '';
+      // Open the card
+      const body = document.getElementById('body-gov');
+      if (body.style.display === 'none') toggleCard('body-gov','chev-gov');
+      showToast('Medi-Cal confirmed — lien tracking required');
+      tlAdd('ic-alert', 'Gov. Insurance Lien', 'Medi-Cal confirmed', 'Lien tracking required · Follow Medical Portal process');
+    } else if (type === 'medicare') {
+      badge.textContent = 'Medicare';
+      badge.style.background = '#FEF3F2'; badge.style.color = '#B42318';
+      document.getElementById('gov-medi-cal-step').style.display = '';
+      document.getElementById('gov-review-step').style.display = '';
+      if (document.getElementById('body-gov').style.display === 'none') toggleCard('body-gov','chev-gov');
+      showToast('Medicare confirmed — lien tracking required');
+      tlAdd('ic-alert', 'Gov. Insurance Lien', 'Medicare confirmed', 'Lien tracking required');
+    }
+  }
+
+  // ── Exception / Early settle toggle ─────────────────────────────────────
+  function showAdvance() {
+    document.getElementById('exc-early').style.display = 'none';
+    showToast('Proceeding to Demand');
+    setTimeout(() => transferToDemand(), 300);
+  }
+
+  // ── Transfer to Demand ───────────────────────────────────────────────────
+  function transferToDemand() {
+    const row = document.getElementById('advance-demand');
+    row.style.background = '#F0FAF4';
+    row.style.borderColor = '#A6E4BF';
+    row.style.borderStyle = 'solid';
+    row.querySelector('.stage-advance-hint').style.color = '#027A48';
+    row.querySelector('.stage-advance-hint').textContent = 'Medical Collection complete — Demand package transferred';
+    row.querySelector('.stage-advance-btn').style.display = 'none';
+    row.insertAdjacentHTML('beforeend', '<span style="font-size:10px;font-weight:700;color:#027A48;padding:5px 10px;background:#D1FADF;border-radius:6px;">Done ✓</span>');
+
+    showDone('Case Transferred to Demand', 'Demand Department');
+    tlAdd('ic-arrow-right', 'Stage Transfer', 'Medical Collection → Demand', 'All CM stages complete · Package forwarded to Demand');
+    showToast('Transferred to Demand');
+  }
+
+  // ── Done section ─────────────────────────────────────────────────────────
+  function showDone(text, meta) {
+    document.getElementById('done-label').style.removeProperty('display');
+    document.getElementById('done-card').style.removeProperty('display');
+    const t = new Date();
+    const ts = t.getHours() + ':' + String(t.getMinutes()).padStart(2, '0');
+    document.getElementById('done-list').insertAdjacentHTML('afterbegin', `
+      <div class="done-item">
+        <div class="done-check">${ic('ic-check', 9)}</div>
+        <div style="flex:1;">
+          <div class="done-text">${text}</div>
+          <div class="done-meta">${meta}</div>
+        </div>
+        <div class="done-time">Today ${ts}</div>
+      </div>
+    `);
+  }
+
+  // ── Timeline ─────────────────────────────────────────────────────────────
+  function tlAdd(icon, typeLabel, subject, body) {
+    const tl = document.getElementById('timeline-list');
+    const t = new Date();
+    const ts = t.getHours() + ':' + String(t.getMinutes()).padStart(2,'0');
+    tl.insertAdjacentHTML('afterbegin', `
+      <div class="tl-row">
+        <div class="tl-item">
+          <div class="tl-header">
+            <div>
+              <div class="tl-meta-label">${typeLabel} <span style="color:#C0C7D4;font-weight:400;">· Today ${ts}</span></div>
+              <div class="tl-meta-value">${subject}</div>
+            </div>
+          </div>
+          <div class="tl-body">${body}</div>
+        </div>
+      </div>
+    `);
+  }
+
+  function loadTimeline() {
+    const tl = document.getElementById('timeline-list');
+    tl.innerHTML = `
+      <div class="tl-date-group">May 2026 — Medical Collection</div>
+      <div class="tl-row">
+        <div class="tl-item">
+          <div class="tl-header">
+            <div><div class="tl-meta-label">Stage Advance</div><div class="tl-meta-value">Claim → Medical Collection</div></div>
+            <div style="text-align:right;"><div class="tl-meta-label">Date</div><div class="tl-meta-date">May 22, 16:05</div></div>
+          </div>
+          <div class="tl-body">All Stage 1 tasks complete · BI/PD claim numbers confirmed · Coverage verified</div>
+          <div class="tl-decision admit">Stage 1 complete</div>
+        </div>
+      </div>
+      <div class="tl-date-group">May 2026 — Claim</div>
+      <div class="tl-row">
+        <div class="tl-item">
+          <div class="tl-header">
+            <div><div class="tl-meta-label">Records Request</div><div class="tl-meta-value">Records &amp; Billing — 3 Providers</div></div>
+            <div style="text-align:right;"><div class="tl-meta-label">Date</div><div class="tl-meta-date">May 22, 09:30</div></div>
+          </div>
+          <div class="tl-body">Cedars-Sinai ER · LA Orthopedic Center · Pacific Chiropractic</div>
+          <div class="tl-attachments">
+            <a class="tl-attach-btn" href="#" onclick="showToast('Downloading...');return false;">Records_Request_CedarsSinai.pdf</a>
+            <a class="tl-attach-btn" href="#" onclick="showToast('Downloading...');return false;">Records_Request_Ortho.pdf</a>
+            <a class="tl-attach-btn" href="#" onclick="showToast('Downloading...');return false;">Records_Request_Chiro.pdf</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    loadTimeline();
+    updateRecordsBadge();
+
+    // Demo: show exception banner button
+    const advRow = document.getElementById('advance-demand');
+    advRow.insertAdjacentHTML('beforebegin', `
+      <div style="text-align:right;padding:2px 2px 0;">
+        <button class="action-btn" style="font-size:9px;" onclick="document.getElementById('exc-early').style.display='';this.closest('div').remove();">
+          Show Exception (Early Settle demo)
+        </button>
+      </div>
+    `);
+  });
+</script>
+</body>
+</html>
