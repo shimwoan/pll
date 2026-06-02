@@ -594,7 +594,7 @@
     <!-- LOR Reply AI Banner -->
     <div class="reply-banner" id="lor-reply-banner">
       <div class="reply-banner-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><polyline points="1.5,3.5 8,9 14.5,3.5"/></svg></div>
-      <div class="reply-banner-text"><strong>✦AI</strong> Insurer opened BI/PD claims — enter claim numbers to proceed.</div>
+      <div class="reply-banner-text"><strong>✦AI</strong> Insurer replied — BI/PD claim #s issued, coverage &amp; liability pending, adjuster assigned.</div>
       <button class="reply-banner-confirm" onclick="handleBannerAction()">Review</button>
     </div>
 
@@ -648,11 +648,7 @@
     </div>
 
 
-    <!-- ━━ Stage 2: Medical Collection ━━ -->
-    <div class="section-label" id="stage-label-2" style="margin-top:8px;display:none;">
-      <svg width="11" height="11"><use href="#ic-clipboard"/></svg>
-      Stage 2 · Medical Collection
-    </div>
+
 
     <!-- Card 1: Medical Records -->
     <div class="card" id="stage-2-card-1" style="display:none;">
@@ -664,24 +660,24 @@
         <div class="check-item">
           <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div style="flex:1;">
-            <div class="check-text">Medical Records 수령 확인</div>
-            <div class="check-sub">진료기록(Medical Records) — 누락 시 의료기관 직접 연락</div>
+            <div class="check-text">Confirm Medical Records received</div>
+            <div class="check-sub">Contact provider directly if missing</div>
           </div>
           <button class="action-btn" onclick="showToast('Calling')">Call</button>
         </div>
         <div class="check-item">
           <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div style="flex:1;">
-            <div class="check-text">Billing 수령 확인</div>
-            <div class="check-sub">의료비 청구서(Billing) — 누락 시 의료기관 직접 연락</div>
+            <div class="check-text">Confirm Billing received</div>
+            <div class="check-sub">Contact provider directly if missing</div>
           </div>
           <button class="action-btn" onclick="showToast('Calling')">Call</button>
         </div>
         <div class="check-item">
           <svg class="pri-dot pri-mid" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div style="flex:1;">
-            <div class="check-text">CM 입력 누락 / Form 오발송 / 서명 누락 체크</div>
-            <div class="check-sub">CM이 정보입력 누락한 것, form 오발송, 사인누락 여부 확인</div>
+            <div class="check-text">Check CM entry for errors</div>
+            <div class="check-sub">Missing info / wrong form sent / missing signature</div>
           </div>
         </div>
       </div>
@@ -690,63 +686,63 @@
     <!-- Card 2: Treatment Timeline -->
     <div class="card" id="stage-2-card-2" style="margin-top:7px;display:none;">
       <div class="card-header" onclick="toggleEl('s2-tl-body','s2-tl-chev')">
-        <div class="card-title">② 치료 타임라인 관리</div>
+        <div class="card-title">② Treatment Timeline</div>
         <svg class="card-chev open" id="s2-tl-chev" width="14" height="14"><use href="#ic-chevron"/></svg>
       </div>
       <div class="card-body" id="s2-tl-body">
         <div class="check-item">
           <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div style="flex:1;">
-            <div class="check-text">치료 시작 여부 확인</div>
-            <div class="check-sub">클라이언트가 치료를 실제로 시작했는지 확인</div>
+            <div class="check-text">Confirm client started treatment</div>
+            <div class="check-sub">Verify client is actively receiving care</div>
           </div>
           <button class="action-btn" onclick="showToast('Calling')">Call</button>
         </div>
         <div class="check-item">
           <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div style="flex:1;">
-            <div class="check-text">치료 진행 상황 주기적 체크</div>
-            <div class="check-sub">치료 계속 진행 중인지 — 중단 시 사유 확인</div>
+            <div class="check-text">Periodic treatment progress check</div>
+            <div class="check-sub">If discontinued — confirm reason</div>
           </div>
           <button class="action-btn" onclick="showToast('Calling')">Call</button>
         </div>
         <div class="check-item">
           <svg class="pri-dot pri-mid" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div style="flex:1;">
-            <div class="check-text">SOL 기한 관리</div>
-            <div class="check-sub">BI: 사고발생일로부터 2년 · PD: 3년</div>
+            <div class="check-text">Monitor SOL deadline</div>
+            <div class="check-sub">BI: 2 years from accident date · PD: 3 years</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Card 3: Government Insurance (conditional) -->
+    <!-- Card 3: Government Insurance -->
     <div class="card" id="stage-2-card-3" style="margin-top:7px;display:none;">
       <div class="card-header" onclick="toggleEl('s2-gov-body','s2-gov-chev')">
-        <div class="card-title">③ 정부보험 처리 <span style="font-size:9px;font-weight:500;color:#B42318;background:#FEF2F2;border-radius:4px;padding:2px 6px;margin-left:6px;">Medicare / Medi-Cal</span></div>
+        <div class="card-title">③ Government Insurance <span style="font-size:9px;font-weight:500;color:#B42318;background:#FEF2F2;border-radius:4px;padding:2px 6px;margin-left:6px;">Medicare / Medi-Cal</span></div>
         <svg class="card-chev open" id="s2-gov-chev" width="14" height="14"><use href="#ic-chevron"/></svg>
       </div>
       <div class="card-body" id="s2-gov-body">
         <div class="check-item">
           <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div style="flex:1;">
-            <div class="check-text">정부보험 여부 파악</div>
-            <div class="check-sub">병원이 준 서류 통해 Medicare / Medi-Cal 여부 확인</div>
+            <div class="check-text">Identify government insurance coverage</div>
+            <div class="check-sub">Confirm Medicare / Medi-Cal via hospital documents</div>
           </div>
         </div>
         <div class="check-item">
           <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div style="flex:1;">
-            <div class="check-text">정부보험사로부터 서류 수령</div>
-            <div class="check-sub">Medi-Cal: Medical Portal → Step 1~2 → inquiry 후 답변 레터 수령</div>
+            <div class="check-text">Obtain government insurer documents</div>
+            <div class="check-sub">Medi-Cal: Medical Portal → Step 1–2 → inquiry → receive response letter</div>
           </div>
           <button class="action-btn" onclick="showToast('Opening portal')">Portal</button>
         </div>
         <div class="check-item">
           <svg class="pri-dot pri-mid" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div style="flex:1;">
-            <div class="check-text">서류 검토</div>
-            <div class="check-sub">잘못 들어간 치료, 누락 치료 확인</div>
+            <div class="check-text">Review received documents</div>
+            <div class="check-sub">Check for incorrect or missing treatment entries</div>
           </div>
         </div>
       </div>
@@ -755,37 +751,37 @@
     <!-- Card 4: Transfer to Demand -->
     <div class="card" id="stage-2-card-4" style="margin-top:7px;display:none;">
       <div class="card-header" onclick="toggleEl('s2-tfr-body','s2-tfr-chev')">
-        <div class="card-title">④ Demand 부서에 자료 전달</div>
+        <div class="card-title">④ Transfer to Demand</div>
         <svg class="card-chev open" id="s2-tfr-chev" width="14" height="14"><use href="#ic-chevron"/></svg>
       </div>
       <div class="card-body" id="s2-tfr-body">
         <div class="check-item">
           <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div style="flex:1;">
-            <div class="check-text">모든 의료 자료 수집 완료 확인</div>
-            <div class="check-sub">Medical Records + Billing 모두 수령 완료</div>
+            <div class="check-text">Confirm all medical records collected</div>
+            <div class="check-sub">Medical Records + Billing both fully received</div>
           </div>
         </div>
         <div class="check-item">
           <svg class="pri-dot pri-high" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div style="flex:1;">
-            <div class="check-text">Demand 부서에 의료기록 전달</div>
-            <div class="check-sub">치료 종결(MMI) 또는 예외 사유 확인 후 전달</div>
+            <div class="check-text">Send medical records to Demand dept</div>
+            <div class="check-sub">After confirming MMI — or with documented exception</div>
           </div>
-          <button class="action-btn" onclick="showToast('Package sent to Demand')">Send</button>
+          <button class="action-btn" onclick="showToast('Sent to Demand dept')">Send</button>
         </div>
         <div class="check-item" style="background:#FFFBF0;">
           <svg class="pri-dot pri-mid" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div style="flex:1;">
-            <div class="check-text">예외 — 치료 장기화 시</div>
-            <div class="check-sub">Early settle 시도 · 미처리 Task 생성 후 Demand로 단계 변경</div>
+            <div class="check-text">Exception — prolonged treatment</div>
+            <div class="check-sub">Attempt early settle · Create open task → transfer to Demand</div>
           </div>
         </div>
         <div class="check-item" style="background:#FFFBF0;">
           <svg class="pri-dot pri-mid" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#98A2B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div style="flex:1;">
-            <div class="check-text">예외 — 정부보험 케이스</div>
-            <div class="check-sub">서류 수령 1년+ 소요 · 미처리 Task 생성 후 Demand로 단계 변경</div>
+            <div class="check-text">Exception — government insurance case</div>
+            <div class="check-sub">Docs may take 1+ year · Create open task → transfer to Demand</div>
           </div>
         </div>
       </div>
@@ -793,7 +789,7 @@
 
     <!-- Stage 2 advance button -->
     <div class="stage-advance-row" id="advance-2" style="display:none;">
-      <div class="stage-advance-hint">모든 의료 자료 수집 완료 · MMI 확인 → Demand 이관</div>
+      <div class="stage-advance-hint">All medical records collected · MMI confirmed → Transfer to Demand</div>
       <button class="stage-advance-btn" onclick="advanceStage(2)">Transfer to Demand →</button>
     </div>
 
@@ -971,11 +967,10 @@ omar@pacificlibertylaw.com</div>
       <!-- AI Summary -->
       <div style="background:#F8F7FF;border:1px solid #E9E5FF;border-radius:9px;padding:10px 12px;margin-bottom:14px;">
         <div style="font-size:9px;font-weight:700;color:#7C5FBF;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;">✦ AI Summary</div>
-        <div style="font-size:11px;color:#344054;line-height:1.5;">Insurer opened BI/PD claims, coverage &amp; liability both pending — enter claim numbers to proceed.</div>
+        <div style="font-size:11px;color:#344054;line-height:1.5;">Insurer replied — BI/PD claim #s issued, coverage &amp; liability pending, adjuster assigned.</div>
       </div>
 
       <!-- Email -->
-      <div style="font-size:9px;font-weight:700;color:#98A2B3;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">New Email · 3rd Party Insurer</div>
       <div style="font-size:13px;font-weight:700;color:#101828;margin-bottom:2px;">Re: LOR — Jorge Yonel Jr Ontiveros</div>
       <div style="font-size:11px;color:#98A2B3;margin-bottom:12px;">adjuster.3rd@statefarm.com · Today</div>
       <div class="email-preview" style="margin-bottom:18px;">Dear Pacific Liberty Law,
@@ -1262,21 +1257,33 @@ State Farm Insurance</div>
     }
 
     // Timeline entry
-    if (to <= 2) {
-      tlPrepend('ic-arrow-right', 'Stage Advance', STAGE_LABELS[from] + ' complete', '→ ' + STAGE_LABELS[to] + ' started');
-    } else {
-      tlPrepend('ic-arrow-right', 'Case Transfer', 'Demand package ready', 'All CM stages complete · Transferred to Demand');
-    }
+    try {
+      if (to <= 2) {
+        tlPrepend('ic-arrow-right', 'Stage Advance', STAGE_LABELS[from] + ' complete', '→ ' + STAGE_LABELS[to] + ' started');
+      } else {
+        tlPrepend('ic-arrow-right', 'Case Transfer', 'Demand package ready', 'All CM stages complete · Transferred to Demand');
+      }
+    } catch(e) {}
 
     // Reveal next stage content
-    const stageElements = {
-      2: ['stage-label-2', 'stage-2-card-1', 'stage-2-card-2', 'stage-2-card-3', 'stage-2-card-4', 'advance-2']
+    const ids2show = {
+      2: ['stage-2-card-1', 'stage-2-card-2', 'stage-2-card-3', 'stage-2-card-4', 'advance-2']
     };
-
-    if (stageElements[to]) {
-      stageElements[to].forEach(id => {
+    if (ids2show[to]) {
+      ids2show[to].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.style.display = '';
+        if (el) {
+          // Strip any inline display:none, then force visibility
+          const cleaned = (el.getAttribute('style') || '').replace(/display\s*:\s*none\s*;?/gi, '');
+          el.setAttribute('style', cleaned);
+          el.style.removeProperty('display');
+          // section-labels use display:flex from CSS; cards use block
+          if (el.classList.contains('section-label') || el.classList.contains('stage-advance-row')) {
+            el.style.setProperty('display', 'flex', 'important');
+          } else {
+            el.style.setProperty('display', 'block', 'important');
+          }
+        }
       });
     }
 
@@ -1289,11 +1296,8 @@ State Farm Insurance</div>
     if (doneCard) doneCard.style.display = 'none';
     doneCount = 0;
 
-    // Scroll to-do tab to new stage label
-    if (to <= 2) {
-      const targetLabel = document.getElementById('stage-label-' + to);
-      if (targetLabel) setTimeout(() => targetLabel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-    }
+    // Scroll to top
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
 
     showToast(to <= 2 ? (STAGE_LABELS[to] + ' stage started') : 'Demand transfer complete!');
   }
@@ -1711,7 +1715,7 @@ State Farm Insurance</div>
     setStatus('LOR sent · awaiting 3rd Party response', false, 'lor-3rd', 'Today', true);
 
     setTimeout(() => {
-      setStatus('Reply received — 3rd Party Insurer', false, 'lor-3rd', 'Today', false);
+      setStatus('LOR reply received · 3rd Party', true, 'lor-3rd', 'Today', false);
       showLorReplyBanner();
     }, 10000);
   }
@@ -1742,7 +1746,6 @@ State Farm Insurance</div>
   }
 
   function handleBannerAction() {
-    hideLorReplyBanner();
     lorParty = '3rd';
     openLorConfirm();
   }
@@ -1781,6 +1784,7 @@ State Farm Insurance</div>
     const bi = document.getElementById('confirm-bi').value.trim();
     const pd = document.getElementById('confirm-pd').value.trim();
     closeModal();
+    hideLorReplyBanner();
     removeStatus();
 
     // Stage 1 → 2 전환: Done 초기화 후 advanceStage
