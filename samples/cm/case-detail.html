@@ -787,11 +787,6 @@
       </div>
     </div>
 
-    <!-- Stage 2 advance button -->
-    <div class="stage-advance-row" id="advance-2" style="display:none;">
-      <div class="stage-advance-hint">All medical records collected · MMI confirmed → Transfer to Demand</div>
-      <button class="stage-advance-btn" onclick="advanceStage(2)">Transfer to Demand →</button>
-    </div>
 
     <!-- Done section -->
     <div class="section-label" id="done-section-label" style="margin-top:8px;display:none;">
@@ -1267,7 +1262,7 @@ State Farm Insurance</div>
 
     // Reveal next stage content
     const ids2show = {
-      2: ['stage-2-card-1', 'stage-2-card-2', 'stage-2-card-3', 'stage-2-card-4', 'advance-2']
+      2: ['stage-2-card-1', 'stage-2-card-2', 'stage-2-card-3', 'stage-2-card-4']
     };
     if (ids2show[to]) {
       ids2show[to].forEach(id => {
