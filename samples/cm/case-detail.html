@@ -1929,7 +1929,7 @@ State Farm Insurance</div>
       });
     }
     // Load PDF file
-    const res = await fetch('../../SR-1-unlocked.pdf');
+    const res = await fetch('./SR-1-unlocked.pdf');
     const buf = await res.arrayBuffer();
     sr1PdfBytes = new Uint8Array(buf);
     pdfLibReady = true;
